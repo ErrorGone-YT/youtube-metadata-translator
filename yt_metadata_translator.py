@@ -1240,7 +1240,8 @@ def find_secrets_files():
 
 
 def create_profile_wizard(profiles, secrets_files):
-    print(f"\n{t('profile_wizard_title')}")
+    clear_console()
+    print(t("profile_wizard_title"))
     name = ""
     while not name:
         name = input(t("profile_name_prompt")).strip()
@@ -1260,7 +1261,7 @@ def create_profile_wizard(profiles, secrets_files):
                 secrets_file = secrets_files[int(choice) - 1]
                 break
 
-    playlist_id = input(t("profile_playlist_prompt")).strip()
+    # The playlist is configured later in Settings — asking here confuses new users.
     existing_ids = {p["profile_id"] for p in profiles["profiles"]}
     profile_id = profile_slug(name, existing_ids)
     calendar_file = f"publ_calendar_{profile_id}.json"
@@ -1274,7 +1275,7 @@ def create_profile_wizard(profiles, secrets_files):
         "channel_title": "",
         "token_file": f"tokens/{profile_id}.pickle",
         "client_secrets_file": secrets_file,
-        "playlist_id": playlist_id,
+        "playlist_id": "",
         "publ_calendar_file": calendar_file,
     }
     profiles["profiles"].append(profile)

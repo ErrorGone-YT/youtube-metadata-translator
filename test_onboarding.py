@@ -55,7 +55,7 @@ print("TEST 2 OK: no re-onboarding")
 clean()
 for f in ("a", "b", "c"):
     open(f"data/client_secrets_{f}.json", "w").write("{}")
-out = run(["3", "Тестовый юзер", "Профіль Тест", "2", "", "", "0"])
+out = run(["3", "Тестовый юзер", "Профіль Тест", "2", "", "0"])
 assert "Выберите язык интерфейса" in out
 assert "Который из файлов ключей твой?" in out
 assert "Профиль 'Профіль Тест' создан" in out
