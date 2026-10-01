@@ -163,6 +163,9 @@ STRINGS = {
         "schedule_saved": "✅ {day}: {time}",
         "set_languages": "Translation languages",
         "set_parallel": "Number of parallel translations",
+        "setup_no_languages": "No translation languages selected — Settings → Translations → Translation languages.",
+        "setup_no_provider": "No translation provider with API keys — Settings → Translations → API providers.",
+        "setup_fix_now": "Fix it now? (yes/no): ",
         "api_title": "🔌 API providers",
         "api_add_item": "Add a new provider",
         "api_edit_item": "Edit provider settings",
@@ -333,6 +336,9 @@ STRINGS = {
         "schedule_saved": "✅ {day}: {time}",
         "set_languages": "Мови перекладу",
         "set_parallel": "Кількість одночасних перекладів",
+        "setup_no_languages": "Не вибрано мов перекладу — Налаштування → Переклади → Мови перекладу.",
+        "setup_no_provider": "Немає провайдера перекладача з ключами — Налаштування → Переклади → API-провайдери.",
+        "setup_fix_now": "Виправити зараз? (так/ні): ",
         "api_title": "🔌 API-провайдери",
         "api_add_item": "Додати нового провайдера",
         "api_edit_item": "Змінити налаштування провайдера",
@@ -503,6 +509,9 @@ STRINGS = {
         "schedule_saved": "✅ {day}: {time}",
         "set_languages": "Языки перевода",
         "set_parallel": "Количество одновременных переводов",
+        "setup_no_languages": "Не выбраны языки перевода — Настройки → Переводы → Языки перевода.",
+        "setup_no_provider": "Нет провайдера перевода с ключами — Настройки → Переводы → API-провайдеры.",
+        "setup_fix_now": "Исправить сейчас? (да/нет): ",
         "api_title": "🔌 API-провайдеры",
         "api_add_item": "Добавить нового провайдера",
         "api_edit_item": "Изменить настройки провайдера",
@@ -2421,6 +2430,16 @@ def profile_is_ready(profile):
     return bool(profile) and bool(get_profile_languages(profile)) and translator_ready()
 
 
+def setup_issues(profile):
+    """Precise list of what blocks the Translation item: [("languages"|"provider", text)]."""
+    issues = []
+    if not profile or not get_profile_languages(profile):
+        issues.append(("languages", t("setup_no_languages")))
+    if not translator_ready():
+        issues.append(("provider", t("setup_no_provider")))
+    return issues
+
+
 def _is_quota(error):
     return "quotaExceeded" in str(error)
 
@@ -2588,8 +2607,9 @@ def profile_menu(profile, profiles, youtube=None):
         ready = profile_is_ready(profile)
         if youtube is None:
             print(f"\n{t('no_auth_hint')}")
-        elif not ready:
-            print(f"\n{t('setup_not_finished')}")
+        else:
+            for _, issue in setup_issues(profile):
+                print(f"\n⚡ {issue}")
 
         print(f"\n1) {t('menu_translation')}")
         print(f"2) {t('menu_playlist')}")
@@ -2603,7 +2623,8 @@ def profile_menu(profile, profiles, youtube=None):
             if youtube is None:
                 print(t("no_auth_hint"))
             elif not ready:
-                print(t("setup_not_finished"))
+                for _, issue in setup_issues(profile):
+                    print(f"⚡ {issue}")
             else:
                 translation_menu(youtube, profile, profiles)
         elif choice == "2":
@@ -2648,6 +2669,16 @@ def main():
         except Exception as error:
             print(t("auth_failed").format(error=error))
             input(t("press_enter"))
+            return
+
+        if youtube is not None:
+            for issue_kind, issue in setup_issues(profile):
+                print(f"\n⚡ {issue}")
+                if confirm(t("setup_fix_now")):
+                    if issue_kind == "languages":
+                        manage_profile_languages(profile, profiles)
+                    else:
+                        api_providers_menu()
 
     profile_menu(profile, profiles, youtube)
 

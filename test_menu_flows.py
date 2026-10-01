@@ -126,7 +126,7 @@ buf = io.StringIO()
 with contextlib.redirect_stdout(buf):
     m.profile_menu(profile_no_langs, {"profiles": []}, youtube)
 out = buf.getvalue()
-assert "Настройка ещё не завершена" in out and "1) Перевод" in out
+assert "Не выбраны языки перевода" in out and "1) Перевод" in out
 print("GATING OK")
 
 # 5) no defaults -> playlist flow explains where to set them
