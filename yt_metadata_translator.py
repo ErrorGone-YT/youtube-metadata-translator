@@ -152,6 +152,12 @@ STRINGS = {
         "api_base_prompt": "Base URL (Enter — {default}): ",
         "api_keys_prompt": "API keys, comma-separated (Enter — skip): ",
         "api_model_prompt": "Model name: ",
+        "api_local_presets": "Local servers:",
+        "api_preset_lmstudio": "LM Studio",
+        "api_preset_ollama": "Ollama",
+        "api_preset_custom": "Custom (enter the base URL manually)",
+        "api_models_found": "Available models:",
+        "api_models_pick": "Pick a model (number, Enter — {default}): ",
         "api_added": "✅ Provider '{name}' added.",
         "api_make_active": "Make it the active provider? (yes/no): ",
         "api_pick": "Provider number: ",
@@ -287,6 +293,12 @@ STRINGS = {
         "api_base_prompt": "Base URL (Enter — {default}): ",
         "api_keys_prompt": "API-ключі через кому (Enter — пропустити): ",
         "api_model_prompt": "Назва моделі: ",
+        "api_local_presets": "Локальні сервери:",
+        "api_preset_lmstudio": "LM Studio",
+        "api_preset_ollama": "Ollama",
+        "api_preset_custom": "Свій варіант (ввести base URL вручну)",
+        "api_models_found": "Доступні моделі:",
+        "api_models_pick": "Вибери модель (номер, Enter — {default}): ",
         "api_added": "✅ Провайдера '{name}' додано.",
         "api_make_active": "Зробити його активним? (так/ні): ",
         "api_pick": "Номер провайдера: ",
@@ -422,6 +434,12 @@ STRINGS = {
         "api_base_prompt": "Base URL (Enter — {default}): ",
         "api_keys_prompt": "API-ключи через запятую (Enter — пропустить): ",
         "api_model_prompt": "Название модели: ",
+        "api_local_presets": "Локальные серверы:",
+        "api_preset_lmstudio": "LM Studio",
+        "api_preset_ollama": "Ollama",
+        "api_preset_custom": "Свой вариант (ввести base URL вручную)",
+        "api_models_found": "Доступные модели:",
+        "api_models_pick": "Выбери модель (номер, Enter — {default}): ",
         "api_added": "✅ Провайдер '{name}' добавлен.",
         "api_make_active": "Сделать его активным? (да/нет): ",
         "api_pick": "Номер провайдера: ",
@@ -1983,6 +2001,35 @@ def _mask_key(key):
     return key[:10] + "…" if len(key) > 12 else key
 
 
+def fetch_local_models(base_url):
+    """Model ids from an OpenAI-compatible server's /models; empty when unreachable."""
+    try:
+        response = requests.get(f"{(base_url or '').rstrip('/')}/models", timeout=5)
+        response.raise_for_status()
+        return [m.get("id") for m in response.json().get("data", []) if m.get("id")]
+    except Exception:
+        return []
+
+
+def _pick_model(base_url, online):
+    """Model name for a provider: fetched list for local servers, manual for online."""
+    models = [] if online else fetch_local_models(base_url)
+    if models:
+        print(t("api_models_found"))
+        for index, model_id in enumerate(models, start=1):
+            print(f"  {index}) {model_id}")
+        answer = input(t("api_models_pick").format(default=models[0])).strip()
+        if answer == "0":
+            return None
+        if answer.isdigit() and 1 <= int(answer) <= len(models):
+            return models[int(answer) - 1]
+        return answer or models[0]
+    answer = input(t("api_model_prompt")).strip()
+    if answer == "0":
+        return None
+    return answer or "auto"
+
+
 def add_provider_wizard(reg):
     clear_console()
     print(t("api_add_title"))
@@ -1994,39 +2041,71 @@ def add_provider_wizard(reg):
     if kind not in ("1", "2"):
         print(t("invalid_choice"))
         return
-    auth = kind == "2"
-    online = auth
+    online = kind == "2"
+    keys = []
 
-    name = _ask_or_cancel(t("api_name_prompt"))
-    if name is None:
-        print(t("api_canceled"))
-        return
-    if not name:
-        name = t("api_online") if online else t("api_local")
-
-    base_url = ""
-    while not base_url:
-        default_base = "" if online else "http://localhost:1234/v1"
-        base_url = _ask_or_cancel(t("api_base_prompt").format(default=default_base)) or default_base
-        if base_url is None:
+    if online:
+        name = _ask_or_cancel(t("api_name_prompt"))
+        if name is None:
             print(t("api_canceled"))
             return
-        if not base_url:
-            print(t("api_need_url"))
-
-    keys_raw = _ask_or_cancel(t("api_keys_prompt"), "") or ""
-    keys = [key.strip() for key in re.split(r"[,\s]+", keys_raw) if key.strip()]
-
-    model = _ask_or_cancel(t("api_model_prompt"), "auto" if not online else None)
-    if model is None:
-        print(t("api_canceled"))
-        return
+        if not name:
+            name = t("api_online")
+        base_url = ""
+        while not base_url:
+            base_url = _ask_or_cancel(t("api_base_prompt").format(default="")) or ""
+            if base_url is None:
+                print(t("api_canceled"))
+                return
+            if not base_url:
+                print(t("api_need_url"))
+        keys_raw = _ask_or_cancel(t("api_keys_prompt"), "") or ""
+        keys = [key.strip() for key in re.split(r"[,\s]+", keys_raw) if key.strip()]
+        model = _pick_model(base_url, online=True)
+        if model is None:
+            print(t("api_canceled"))
+            return
+    else:
+        print(t("api_local_presets"))
+        print(f"1) {t('api_preset_lmstudio')} — http://localhost:1234/v1")
+        print(f"2) {t('api_preset_ollama')} — http://localhost:11434/v1")
+        print(f"3) {t('api_preset_custom')}")
+        preset = input("> ").strip()
+        if preset == "0":
+            print(t("api_canceled"))
+            return
+        if preset == "1":
+            name, base_url = t("api_preset_lmstudio"), "http://localhost:1234/v1"
+        elif preset == "2":
+            name, base_url = t("api_preset_ollama"), "http://localhost:11434/v1"
+        elif preset == "3":
+            name = _ask_or_cancel(t("api_name_prompt"))
+            if name is None:
+                print(t("api_canceled"))
+                return
+            if not name:
+                name = t("api_local")
+            base_url = _ask_or_cancel(
+                t("api_base_prompt").format(default="http://localhost:1234/v1"),
+                "http://localhost:1234/v1",
+            )
+            if base_url is None:
+                print(t("api_canceled"))
+                return
+        else:
+            print(t("invalid_choice"))
+            return
+        # A local server needs no keys and usually serves exactly its loaded models.
+        model = _pick_model(base_url, online=False)
+        if model is None:
+            print(t("api_canceled"))
+            return
 
     provider = {
         "id": profile_slug(name, [p["id"] for p in reg["providers"]]),
         "name": name,
         "kind": "openai",
-        "auth": auth,
+        "auth": online,
         "base_url": base_url,
         "api_keys": keys,
         "model": model or "auto",
@@ -2046,17 +2125,19 @@ def edit_provider_menu(reg, provider):
         print(f"base URL: {provider.get('base_url') or '—'}")
         print(f"{t('api_edit_model')}: {provider.get('model', 'auto')}")
         keys = provider.get("api_keys", [])
-        if keys:
-            print(t("api_keys_current").format(n=len(keys)))
-            for index, key in enumerate(keys, start=1):
-                print(f"  {index}) {_mask_key(key)}")
-        else:
-            print(t("api_no_keys"))
+        if provider.get("auth"):
+            if keys:
+                print(t("api_keys_current").format(n=len(keys)))
+                for index, key in enumerate(keys, start=1):
+                    print(f"  {index}) {_mask_key(key)}")
+            else:
+                print(t("api_no_keys"))
         print(f"\n1) {t('api_edit_name')}")
         print(f"2) {t('api_edit_base')}")
         print(f"3) {t('api_edit_model')}")
-        print(f"4) {t('api_edit_addkeys')}")
-        print(f"5) {t('api_edit_delkey')}")
+        if provider.get("auth"):
+            print(f"4) {t('api_edit_addkeys')}")
+            print(f"5) {t('api_edit_delkey')}")
         print(f"6) {t('api_edit_active')}")
         print(f"0) {t('back')}")
         choice = input(f"\n{t('menu_choice')}").strip()
@@ -2072,16 +2153,17 @@ def edit_provider_menu(reg, provider):
             if answer:
                 provider["base_url"] = answer
         elif choice == "3":
-            answer = input(t("api_enter_new")).strip()
-            if answer:
-                provider["model"] = answer
-        elif choice == "4":
+            answer = _pick_model(provider.get("base_url"), online=bool(provider.get("auth")))
+            if answer is None:
+                continue
+            provider["model"] = answer
+        elif choice == "4" and provider.get("auth"):
             answer = input(t("api_keys_prompt")).strip()
             new_keys = [key.strip() for key in re.split(r"[,\s]+", answer) if key.strip()]
             if new_keys:
                 provider.setdefault("api_keys", []).extend(new_keys)
                 print(t("api_added_keys").format(n=len(new_keys)))
-        elif choice == "5":
+        elif choice == "5" and provider.get("auth"):
             if not keys:
                 print(t("api_no_keys"))
                 continue
@@ -2124,10 +2206,10 @@ def api_providers_menu():
         print(f"\n{t('api_title')}")
         for index, provider in enumerate(reg["providers"], start=1):
             mark = "●" if active and provider["id"] == active["id"] else " "
-            keys_n = len(provider.get("api_keys", []))
             kind = t("api_online") if provider.get("auth") else t("api_local")
-            print(f"{mark} {index}) {provider['name']} [{kind}] — {provider.get('model', 'auto')} "
-                  f"({t('api_keys_count').format(n=keys_n)})")
+            extra = f" ({t('api_keys_count').format(n=len(provider.get('api_keys', [])))})" \
+                if provider.get("auth") else ""
+            print(f"{mark} {index}) {provider['name']} [{kind}] — {provider.get('model', 'auto')}{extra}")
         print(f"\n1) {t('api_add_item')}")
         print(f"2) {t('api_edit_item')}")
         print(f"3) {t('api_delete_item')}")
