@@ -168,6 +168,11 @@ STRINGS = {
         "api_edit_addkeys": "Add API keys",
         "api_edit_delkey": "Remove a key",
         "api_edit_active": "Make active",
+        "api_backup_item": "Make the backup provider",
+        "api_backup_set": "✅ '{name}' is now the backup provider.",
+        "api_backup_cleared": "Backup provider cleared.",
+        "api_backup_same": "This provider is already the active one.",
+        "api_legend": "● active · ○ backup",
         "api_keys_current": "Current keys ({n}):",
         "api_no_keys": "No keys yet.",
         "api_deleted": "✅ Provider deleted.",
@@ -309,6 +314,11 @@ STRINGS = {
         "api_edit_addkeys": "Додати API-ключі",
         "api_edit_delkey": "Видалити ключ",
         "api_edit_active": "Зробити активним",
+        "api_backup_item": "Зробити резервним провайдером",
+        "api_backup_set": "✅ '{name}' тепер резервний провайдер.",
+        "api_backup_cleared": "Резервного провайдера скинуто.",
+        "api_backup_same": "Цей провайдер уже активний.",
+        "api_legend": "● активний · ○ резервний",
         "api_keys_current": "Поточні ключі ({n}):",
         "api_no_keys": "Ключів ще немає.",
         "api_deleted": "✅ Провайдера видалено.",
@@ -450,6 +460,11 @@ STRINGS = {
         "api_edit_addkeys": "Добавить API-ключи",
         "api_edit_delkey": "Удалить ключ",
         "api_edit_active": "Сделать активным",
+        "api_backup_item": "Сделать резервным провайдером",
+        "api_backup_set": "✅ '{name}' теперь резервный провайдер.",
+        "api_backup_cleared": "Резервный провайдер сброшен.",
+        "api_backup_same": "Этот провайдер уже активный.",
+        "api_legend": "● активный · ○ резервный",
         "api_keys_current": "Текущие ключи ({n}):",
         "api_no_keys": "Ключей ещё нет.",
         "api_deleted": "✅ Провайдер удалён.",
@@ -998,6 +1013,16 @@ def get_active_provider(reg=None):
     return reg["providers"][0] if reg["providers"] else None
 
 
+def get_backup_provider(reg=None):
+    """The fallback provider used when the active one fails; None if unset."""
+    reg = reg or load_provider_registry()
+    backup_id = reg.get("backup")
+    for provider in reg["providers"]:
+        if provider["id"] == backup_id:
+            return provider
+    return None
+
+
 def suggested_parallelism(config=None):
     """How many translations can safely run at once: one per cloud API key."""
     provider = get_active_provider()
@@ -1278,7 +1303,22 @@ def clean_existing_series_footers(localizations, source_description):
 
 def localize_language_via_llm(provider, config, language_code,
                               language_name, source_title, source_description):
-    """Localize metadata for one language; raises after the final retry fails."""
+    """Localize for one language; on final failure try the backup provider."""
+    backup = get_backup_provider()
+    try:
+        return _localize_with_provider(provider, config, language_code,
+                                       language_name, source_title, source_description)
+    except Exception as error:
+        if backup and backup["id"] != provider.get("id"):
+            print(f"⚠️ Провайдер '{provider.get('name')}' не сработал "
+                  f"({str(error).splitlines()[0][:90]}), пробую резервного '{backup['name']}'.")
+            return _localize_with_provider(backup, config, language_code,
+                                           language_name, source_title, source_description)
+        raise
+
+
+def _localize_with_provider(provider, config, language_code,
+                            language_name, source_title, source_description):
     max_attempts = max(1, config.get("retry_attempts", 6 if provider.get("auth") else 3))
     system_prompt = "You are a precise multilingual YouTube metadata localizer."
     series_names = load_series_names()
@@ -2139,6 +2179,7 @@ def edit_provider_menu(reg, provider):
             print(f"4) {t('api_edit_addkeys')}")
             print(f"5) {t('api_edit_delkey')}")
         print(f"6) {t('api_edit_active')}")
+        print(f"7) {t('api_backup_item')}")
         print(f"0) {t('back')}")
         choice = input(f"\n{t('menu_choice')}").strip()
 
@@ -2173,6 +2214,15 @@ def edit_provider_menu(reg, provider):
         elif choice == "6":
             reg["active"] = provider["id"]
             print(t("api_now_active").format(name=provider["name"]))
+        elif choice == "7":
+            if provider["id"] == reg.get("active"):
+                print(t("api_backup_same"))
+            elif reg.get("backup") == provider["id"]:
+                reg["backup"] = None
+                print(t("api_backup_cleared"))
+            else:
+                reg["backup"] = provider["id"]
+                print(t("api_backup_set").format(name=provider["name"]))
         else:
             print(t("invalid_choice"))
             continue
@@ -2194,6 +2244,8 @@ def delete_provider_menu(reg):
     reg["providers"].remove(provider)
     if reg.get("active") == provider["id"] and reg["providers"]:
         reg["active"] = reg["providers"][0]["id"]
+    if reg.get("backup") == provider["id"]:
+        reg["backup"] = None
     save_provider_registry(reg)
     print(t("api_deleted"))
 
@@ -2204,12 +2256,19 @@ def api_providers_menu():
         reg = load_provider_registry()
         active = get_active_provider(reg)
         print(f"\n{t('api_title')}")
+        backup = get_backup_provider(reg)
         for index, provider in enumerate(reg["providers"], start=1):
-            mark = "●" if active and provider["id"] == active["id"] else " "
+            if active and provider["id"] == active["id"]:
+                mark = "●"
+            elif backup and provider["id"] == backup["id"]:
+                mark = "○"
+            else:
+                mark = " "
             kind = t("api_online") if provider.get("auth") else t("api_local")
             extra = f" ({t('api_keys_count').format(n=len(provider.get('api_keys', [])))})" \
                 if provider.get("auth") else ""
             print(f"{mark} {index}) {provider['name']} [{kind}] — {provider.get('model', 'auto')}{extra}")
+        print(t("api_legend"))
         print(f"\n1) {t('api_add_item')}")
         print(f"2) {t('api_edit_item')}")
         print(f"3) {t('api_delete_item')}")
