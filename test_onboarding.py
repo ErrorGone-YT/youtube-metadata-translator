@@ -39,7 +39,7 @@ def run(answers):
 
 # TEST 1: uk first run, no secrets -> skip -> restricted menu -> settings -> exit
 clean()
-out = run(["2", "Майстро", "0", "1", "0", "0", "0"])
+out = run(["2", "Майстро", "0", "1", "1", "0", "0", "0", "0"])
 assert "Виберіть мову інтерфейсу" in out
 assert "Не знайдено файл client_secrets" in out
 assert "README.uk.md" in out and "console.cloud.google.com" in out
@@ -78,6 +78,26 @@ print("TEST 3 OK: ru wizard, multi-secrets pick, no playlist question, graceful 
 out = run(["0", "0"])
 assert "Твои профили каналов" in out and "Профіль Тест" in out
 print("TEST 4 OK: profile list shown, exit works")
+
+# TEST 5: migration — old-layout files move into profiles/<id>/
+clean()
+os.makedirs(os.path.join(TMP, "tokens"), exist_ok=True)
+open(os.path.join(TMP, "tokens", "old.pickle"), "w").write("token")
+open(os.path.join(TMP, "publ_calendar_old.json"), "w").write("{}")
+json.dump({"profiles": [{
+    "profile_id": "old", "display_name": "Old", "channel_id": "", "channel_title": "",
+    "token_file": "tokens/old.pickle", "client_secrets_file": "client_secrets_x.json",
+    "playlist_id": "", "publ_calendar_file": "publ_calendar_old.json",
+}]}, open(os.path.join(TMP, "channel_profiles.json"), "w", encoding="utf-8"))
+open(os.path.join(TMP, "client_secrets_x.json"), "w").write("{}")
+out = run(["3", "Юзер", "0", "0", "0"])  # lang, name, pick profile -> menu -> exit
+assert os.path.isfile(os.path.join(TMP, "profiles", "old", "token.pickle"))
+assert os.path.isfile(os.path.join(TMP, "profiles", "old", "calendar.json"))
+assert not os.path.exists(os.path.join(TMP, "tokens"))
+profiles = json.load(open(os.path.join(TMP, "channel_profiles.json"), encoding="utf-8"))
+assert profiles["profiles"][0]["token_file"] == "profiles/old/token.pickle"
+assert profiles["profiles"][0]["publ_calendar_file"] == "profiles/old/calendar.json"
+print("TEST 5 OK: old-layout files migrated into profiles/old/")
 
 shutil.rmtree(TMP)
 print("ALL TESTS PASSED")

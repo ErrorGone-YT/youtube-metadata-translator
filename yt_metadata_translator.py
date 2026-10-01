@@ -8,10 +8,12 @@ but the menu items that use it are enabled in later phases.
 import os
 import json
 import re
+import sys
 import time
 import html
 import pickle
 import random
+import shutil
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta
@@ -105,6 +107,20 @@ STRINGS = {
         "settings_title_no_channel": "⚙️ Settings",
         "set_language": "Interface language",
         "set_name": "How to address you",
+        "settings_interface": "Interface",
+        "settings_translations": "Translations",
+        "settings_playlists": "Playlists",
+        "playlists_title": "▶️ Playlists — {channel}",
+        "playlist_current": "Current playlist ID: {id}",
+        "playlist_none": "No playlist set — videos are not added to any playlist.",
+        "playlist_edit": "Set playlist ID",
+        "playlist_prompt": "Playlist ID (the part after list= in the link; '-' — clear): ",
+        "playlist_saved": "✅ Saved.",
+        "schedule_title": "⏰ Scheduled publishing — {channel}",
+        "schedule_note": "Videos go live on these weekdays at the local times below.",
+        "schedule_time_prompt": "New local time (HH:MM, Enter — keep): ",
+        "schedule_bad_time": "❌ Doesn't look like a HH:MM time.",
+        "schedule_saved": "✅ {day}: {time}",
         "set_languages": "Translation languages",
         "set_parallel": "Number of parallel translations",
         "back": "Back",
@@ -116,6 +132,7 @@ STRINGS = {
         "languages_list_title": "Languages (x = selected):",
         "languages_toggle_hint": "Numbers separated by comma or space — toggle, A — select all, N — clear all, 0 — done",
         "languages_toggle_prompt": "Selection: ",
+        "languages_keys_hint": "↑/↓ move · Space toggle · A/Ф select all · N/Т clear all · Enter done",
         "languages_didnt_understand": "❌ Didn't understand the selection.",
         "languages_add_prompt": "Language code (es, pt-BR, zh-Hans): ",
         "languages_bad_code": "❌ Doesn't look like a language code.",
@@ -124,7 +141,8 @@ STRINGS = {
         "parallel_current": "🧵 Parallel translations now: {n}",
         "parallel_keys_found": "Found {n} API keys — that's how many translations can run at once.",
         "parallel_local_note": "For a local LM Studio more than 2 parallel translations rarely helps.",
-        "parallel_prompt": "New value (Enter to keep {n}): ",
+        "parallel_prompt": "New value (Enter to keep {n}, auto = one per key): ",
+        "parallel_saved_auto": "✅ Auto mode: one translation per API key ({n} now).",
         "parallel_not_positive": "❌ Enter a positive number.",
         "parallel_over_warning": "⚠️ More than {n} won't speed things up: extra threads will just wait in line.",
         "parallel_over_confirm": "Set anyway? (yes/no): ",
@@ -175,6 +193,20 @@ STRINGS = {
         "settings_title_no_channel": "⚙️ Налаштування",
         "set_language": "Мова інтерфейсу",
         "set_name": "Як до вас звертатися",
+        "settings_interface": "Інтерфейс",
+        "settings_translations": "Переклади",
+        "settings_playlists": "Плейлисти",
+        "playlists_title": "▶️ Плейлисти — {channel}",
+        "playlist_current": "Поточний ID плейлиста: {id}",
+        "playlist_none": "Плейлист не задано — відео нікуди не додаються.",
+        "playlist_edit": "Задати ID плейлиста",
+        "playlist_prompt": "ID плейлиста (частина після list= у посиланні; '-' — прибрати): ",
+        "playlist_saved": "✅ Збережено.",
+        "schedule_title": "⏰ Відкладена публікація — {channel}",
+        "schedule_note": "Відео виходять у ці дні тижня о вказаний локальний час.",
+        "schedule_time_prompt": "Новий локальний час (HH:MM, Enter — залишити): ",
+        "schedule_bad_time": "❌ Не схоже на час HH:MM.",
+        "schedule_saved": "✅ {day}: {time}",
         "set_languages": "Мови перекладу",
         "set_parallel": "Кількість одночасних перекладів",
         "back": "Назад",
@@ -186,6 +218,7 @@ STRINGS = {
         "languages_list_title": "Мови (x = вибрано):",
         "languages_toggle_hint": "Номери через кому або пробіл — перемкнути, A — вибрати всі, N — зняти всі, 0 — готово",
         "languages_toggle_prompt": "Вибір: ",
+        "languages_keys_hint": "↑/↓ рух · Пробіл — вибрати/зняти · A/Ф — вибрати всі · N/Т — зняти всі · Enter — готово",
         "languages_didnt_understand": "❌ Не зрозумів вибір.",
         "languages_add_prompt": "Код мови (es, pt-BR, zh-Hans): ",
         "languages_bad_code": "❌ Не схоже на мовний код.",
@@ -194,7 +227,8 @@ STRINGS = {
         "parallel_current": "🧵 Одночасних перекладів зараз: {n}",
         "parallel_keys_found": "Знайдено {n} API-ключів — стільки перекладів можна вести одночасно.",
         "parallel_local_note": "Для локального LM Studio більше 2 одночасних перекладів рідко допомагає.",
-        "parallel_prompt": "Нове значення (Enter — залишити {n}): ",
+        "parallel_prompt": "Нове значення (Enter — залишити {n}, auto = за кількістю ключів): ",
+        "parallel_saved_auto": "✅ Авто-режим: один переклад на кожен ключ (зараз {n}).",
         "parallel_not_positive": "❌ Введіть додатне число.",
         "parallel_over_warning": "⚠️ Більше ніж {n} не прискорить: зайві потоки просто чекатимуть черги.",
         "parallel_over_confirm": "Усе одно встановити? (так/ні): ",
@@ -245,6 +279,20 @@ STRINGS = {
         "settings_title_no_channel": "⚙️ Настройки",
         "set_language": "Язык интерфейса",
         "set_name": "Как к тебе обращаться",
+        "settings_interface": "Интерфейс",
+        "settings_translations": "Переводы",
+        "settings_playlists": "Плейлисты",
+        "playlists_title": "▶️ Плейлисты — {channel}",
+        "playlist_current": "Текущий ID плейлиста: {id}",
+        "playlist_none": "Плейлист не задан — видео никуда не добавляются.",
+        "playlist_edit": "Задать ID плейлиста",
+        "playlist_prompt": "ID плейлиста (часть после list= в ссылке; '-' — убрать): ",
+        "playlist_saved": "✅ Сохранено.",
+        "schedule_title": "⏰ Отложенная публикация — {channel}",
+        "schedule_note": "Видео выходят в эти дни недели в указанное локальное время.",
+        "schedule_time_prompt": "Новое локальное время (HH:MM, Enter — оставить): ",
+        "schedule_bad_time": "❌ Не похоже на время HH:MM.",
+        "schedule_saved": "✅ {day}: {time}",
         "set_languages": "Языки перевода",
         "set_parallel": "Количество одновременных переводов",
         "back": "Назад",
@@ -256,6 +304,7 @@ STRINGS = {
         "languages_list_title": "Языки (x = выбрано):",
         "languages_toggle_hint": "Номера через запятую или пробел — переключить, A — выбрать все, N — снять все, 0 — готово",
         "languages_toggle_prompt": "Выбор: ",
+        "languages_keys_hint": "↑/↓ движение · Пробел — выбрать/снять · A/Ф — выбрать все · N/Т — снять все · Enter — готово",
         "languages_didnt_understand": "❌ Не понял выбор.",
         "languages_add_prompt": "Код языка (es, pt-BR, zh-Hans): ",
         "languages_bad_code": "❌ Не похоже на языковой код.",
@@ -264,7 +313,8 @@ STRINGS = {
         "parallel_current": "🧵 Одновременных переводов сейчас: {n}",
         "parallel_keys_found": "Найдено {n} API-ключей — столько переводов можно вести одновременно.",
         "parallel_local_note": "Для локального LM Studio больше 2 одновременных переводов редко даёт выигрыш.",
-        "parallel_prompt": "Новое значение (Enter — оставить {n}): ",
+        "parallel_prompt": "Новое значение (Enter — оставить {n}, auto = по числу ключей): ",
+        "parallel_saved_auto": "✅ Авто-режим: один перевод на каждый ключ (сейчас {n}).",
         "parallel_not_positive": "❌ Введи положительное число.",
         "parallel_over_warning": "⚠️ Больше {n} не ускорит: лишние потоки просто будут ждать очереди.",
         "parallel_over_confirm": "Всё равно установить? (да/нет): ",
@@ -312,8 +362,9 @@ def load_json_file(filename):
 
 
 def save_json_file(filename, data):
-    os.makedirs(DATA_DIR, exist_ok=True)
-    with open(os.path.join(DATA_DIR, filename), "w", encoding="utf-8") as f:
+    full_path = os.path.join(DATA_DIR, filename)
+    os.makedirs(os.path.dirname(full_path), exist_ok=True)
+    with open(full_path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
@@ -1130,7 +1181,7 @@ def localize_metadata_via_llm(metadata, target_languages=None):
 
     queued = [code for code in target_languages if code != "en"]
     if queued:
-        max_workers = min(len(queued), max(1, config.get("max_parallel_languages", 5)))
+        max_workers = min(len(queued), resolve_parallelism(config))
         with ThreadPoolExecutor(max_workers=max_workers) as pool:
             def delayed(idx, code):
                 # Stagger starts so all threads don't slam the model at once.
@@ -1191,6 +1242,28 @@ def load_channel_profiles():
 
 def save_channel_profiles(profiles):
     save_json_file(CHANNEL_PROFILES_FILE, profiles)
+
+
+def migrate_profile_paths(profile):
+    """Move per-profile files into profiles/<profile_id>/ (pre-folder layout kept at data/ root)."""
+    migrated = False
+    for key, new_name in (("token_file", "token.pickle"), ("publ_calendar_file", "calendar.json")):
+        new_rel = f"profiles/{profile['profile_id']}/{new_name}"
+        old_rel = profile.get(key, "")
+        if old_rel == new_rel:
+            continue
+        old_abs = os.path.join(DATA_DIR, old_rel)
+        new_abs = os.path.join(DATA_DIR, new_rel)
+        if os.path.isfile(old_abs):
+            os.makedirs(os.path.dirname(new_abs), exist_ok=True)
+            shutil.move(old_abs, new_abs)
+            # Drop the legacy folder if the move left it empty (e.g. tokens/).
+            old_dir = os.path.dirname(old_abs)
+            if os.path.normpath(old_dir) != os.path.normpath(DATA_DIR) and not os.listdir(old_dir):
+                os.rmdir(old_dir)
+        profile[key] = new_rel
+        migrated = True
+    return migrated
 
 
 def get_profile_languages(profile):
@@ -1264,16 +1337,17 @@ def create_profile_wizard(profiles, secrets_files):
     # The playlist is configured later in Settings — asking here confuses new users.
     existing_ids = {p["profile_id"] for p in profiles["profiles"]}
     profile_id = profile_slug(name, existing_ids)
-    calendar_file = f"publ_calendar_{profile_id}.json"
-    if not os.path.exists(data_file_path(calendar_file)):
-        save_json_file(calendar_file, {})
+    # Everything a profile owns lives in its own subfolder: profiles/<profile_id>/
+    token_file = f"profiles/{profile_id}/token.pickle"
+    calendar_file = f"profiles/{profile_id}/calendar.json"
+    save_json_file(calendar_file, {})
 
     profile = {
         "profile_id": profile_id,
         "display_name": name,
         "channel_id": "",
         "channel_title": "",
-        "token_file": f"tokens/{profile_id}.pickle",
+        "token_file": token_file,
         "client_secrets_file": secrets_file,
         "playlist_id": "",
         "publ_calendar_file": calendar_file,
@@ -1365,11 +1439,112 @@ def manage_profile_languages(profile, profiles):
         save_channel_profiles(profiles)
 
 
+def _enable_ansi_windows():
+    """Enable ANSI escape codes in the classic Windows console."""
+    if os.name != "nt":
+        return
+    try:
+        import ctypes
+        kernel32 = ctypes.windll.kernel32
+        handle = kernel32.GetStdHandle(-11)
+        mode = ctypes.c_uint32()
+        if kernel32.GetConsoleMode(handle, ctypes.byref(mode)):
+            kernel32.SetConsoleMode(handle, mode.value | 0x0004)
+    except Exception:
+        pass
+
+
+def _read_key():
+    """One keypress: 'up', 'down', 'space', 'enter', or the lowercase character."""
+    if os.name == "nt":
+        import msvcrt
+        ch = msvcrt.getwch()
+        if ch in ("\x00", "\xe0"):
+            ch2 = msvcrt.getwch()
+            return {"H": "up", "P": "down"}.get(ch2, "")
+        if ch in ("\r", "\n"):
+            return "enter"
+        if ch == " ":
+            return "space"
+        return ch.lower()
+    import termios
+    import tty
+    fd = sys.stdin.fileno()
+    old_attrs = termios.tcgetattr(fd)
+    try:
+        tty.setraw(fd)
+        ch = sys.stdin.read(1)
+        if ch == "\x1b":
+            seq = ch + sys.stdin.read(2)
+            return {"\x1b[A": "up", "\x1b[B": "down"}.get(seq, "")
+        if ch in ("\r", "\n"):
+            return "enter"
+        if ch == " ":
+            return "space"
+        return ch.lower()
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_attrs)
+
+
 def choose_languages_from_catalog(selected):
-    """Toggle-menu over the language catalog; returns the new selection."""
+    """Toggle-menu over the language catalog; returns the new selection.
+
+    Interactive checkbox list (arrows + space) in a real terminal; the
+    numbered-input mode stays as a fallback for non-interactive terminals.
+    """
     catalog = available_language_catalog()
     codes = sorted(catalog) + [code for code in selected if code not in catalog]
     working = list(selected)
+
+    if not (sys.stdin.isatty() and sys.stdout.isatty()):
+        return _choose_languages_by_number(codes, catalog, working)
+
+    _enable_ansi_windows()
+    cursor = 0
+
+    def render(first=False):
+        if not first:
+            # Jump back above the list and clear it for a flicker-free redraw.
+            sys.stdout.write("\x1b[%dA\x1b[J" % (len(codes) + 1))
+        lines = []
+        for index, code in enumerate(codes):
+            arrow = "❯" if index == cursor else " "
+            mark = "x" if code in working else " "
+            lines.append(f"{arrow} [{mark}] {index + 1}) {code} — {catalog.get(code, code)}")
+        lines.append(t("languages_keys_hint"))
+        print("\n".join(lines), flush=True)
+
+    print(t("languages_list_title"))
+    sys.stdout.write("\x1b[?25l")  # hide the cursor while the list is live
+    try:
+        render(first=True)
+        while True:
+            key = _read_key()
+            if key == "up":
+                cursor = (cursor - 1) % len(codes)
+            elif key == "down":
+                cursor = (cursor + 1) % len(codes)
+            elif key == "space":
+                code = codes[cursor]
+                if code in working:
+                    working.remove(code)
+                else:
+                    working.append(code)
+            elif key in ("a", "а", "ф"):
+                working = list(codes)
+            elif key in ("n", "н", "т"):
+                working = []
+            elif key in ("enter", "0", "q"):
+                break
+            render()
+    finally:
+        sys.stdout.write("\x1b[?25h")  # show the cursor back
+        print()
+    return working
+
+
+def _choose_languages_by_number(codes, catalog, working):
+    """Numbered-input fallback for terminals without raw key access."""
     while True:
         clear_console()
         print(t("languages_list_title"))
@@ -1416,18 +1591,33 @@ def suggested_parallelism(config):
     return 2
 
 
+def resolve_parallelism(config):
+    """'auto' (or anything unparsable) = one thread per cloud API key."""
+    value = config.get("max_parallel_languages", "auto")
+    try:
+        return max(1, int(value))
+    except (TypeError, ValueError):
+        return max(1, suggested_parallelism(config))
+
+
 def manage_parallelism_setting():
     config = load_local_llm_config()
-    current = int(config.get("max_parallel_languages", 5))
     suggested = suggested_parallelism(config)
+    raw_current = config.get("max_parallel_languages", "auto")
+    current_display = "auto" if str(raw_current).lower() == "auto" else raw_current
     provider = resolve_llm_provider(config)
-    print(f"\n{t('parallel_current').format(n=current)}")
+    print(f"\n{t('parallel_current').format(n=current_display)}")
     if provider in ("gemini", "ollama", "codecraft"):
         print(t("parallel_keys_found").format(n=suggested))
     else:
         print(t("parallel_local_note"))
-    answer = input(t("parallel_prompt").format(n=current)).strip()
+    answer = input(t("parallel_prompt").format(n=current_display)).strip().lower()
     if not answer:
+        return
+    if answer in ("auto", "аuto", "а", "a"):
+        config["max_parallel_languages"] = "auto"
+        save_json_file("local_llm.json", config)
+        print(t("parallel_saved_auto").format(n=suggested))
         return
     if not answer.isdigit() or int(answer) < 1:
         print(t("parallel_not_positive"))
@@ -1442,19 +1632,12 @@ def manage_parallelism_setting():
     print(t("parallel_saved").format(n=value))
 
 
-def settings_menu(profile, profiles):
+def interface_menu():
     while True:
         clear_console()
-        if profile and (profile.get("channel_title") or profile.get("display_name")):
-            channel = profile.get("channel_title") or profile.get("display_name")
-            print(f"\n{t('settings_title').format(channel=channel)}")
-        else:
-            print(f"\n{t('settings_title_no_channel')}")
+        print(f"\n{t('settings_interface')}")
         print(f"1) {t('set_language')}")
         print(f"2) {t('set_name')}")
-        if profile:
-            print(f"3) {t('set_languages')}")
-            print(f"4) {t('set_parallel')}")
         print(f"0) {t('back')}")
         choice = input(f"\n{t('menu_choice')}").strip()
         if choice == "0":
@@ -1465,10 +1648,114 @@ def settings_menu(profile, profiles):
         elif choice == "2":
             ask_user_name()
             save_ui_settings()
-        elif choice == "3" and profile:
+        else:
+            print(t("invalid_choice"))
+
+
+def translations_menu(profile, profiles):
+    while True:
+        clear_console()
+        print(f"\n{t('settings_translations')}")
+        print(f"1) {t('set_languages')}")
+        print(f"2) {t('set_parallel')}")
+        print(f"0) {t('back')}")
+        choice = input(f"\n{t('menu_choice')}").strip()
+        if choice == "0":
+            return
+        if choice == "1":
             manage_profile_languages(profile, profiles)
-        elif choice == "4" and profile:
+        elif choice == "2":
             manage_parallelism_setting()
+        else:
+            print(t("invalid_choice"))
+
+
+def playlists_menu(profile, profiles):
+    while True:
+        clear_console()
+        channel = profile.get("channel_title") or profile.get("display_name")
+        print(f"\n{t('playlists_title').format(channel=channel)}")
+        playlist_id = profile.get("playlist_id", "")
+        if playlist_id:
+            print(t("playlist_current").format(id=playlist_id))
+        else:
+            print(t("playlist_none"))
+        print(f"\n1) {t('playlist_edit')}")
+        print(f"0) {t('back')}")
+        choice = input(f"\n{t('menu_choice')}").strip()
+        if choice == "0":
+            return
+        if choice == "1":
+            answer = input(t("playlist_prompt")).strip()
+            if not answer:
+                continue
+            if answer == "-":
+                answer = ""
+            profile["playlist_id"] = answer
+            save_channel_profiles(profiles)
+            print(t("playlist_saved"))
+        else:
+            print(t("invalid_choice"))
+
+
+def schedule_menu(profile, profiles):
+    """Per-profile publishing calendar: a local time for each allowed weekday."""
+    while True:
+        clear_console()
+        channel = profile.get("channel_title") or profile.get("display_name")
+        print(f"\n{t('schedule_title').format(channel=channel)}")
+        print(t("schedule_note"))
+        publ_calendar = load_json_file(profile["publ_calendar_file"])
+        for index, day in enumerate(ALLOWED_DAYS, start=1):
+            times = publ_calendar.get(day) or []
+            day_time = times[0] if times else DEFAULT_PUBLISH_TIME
+            print(f"{index}) {translate_day(day)} — {day_time}")
+        print(f"0) {t('back')}")
+        choice = input(f"\n{t('menu_choice')}").strip()
+        if choice == "0":
+            return
+        if choice.isdigit() and 1 <= int(choice) <= len(ALLOWED_DAYS):
+            day = ALLOWED_DAYS[int(choice) - 1]
+            answer = input(t("schedule_time_prompt")).strip()
+            if not answer:
+                continue
+            try:
+                datetime.strptime(answer, "%H:%M")
+            except ValueError:
+                print(t("schedule_bad_time"))
+                continue
+            publ_calendar[day] = [answer]
+            save_json_file(profile["publ_calendar_file"], publ_calendar)
+            print(t("schedule_saved").format(day=translate_day(day), time=answer))
+        else:
+            print(t("invalid_choice"))
+
+
+def settings_menu(profile, profiles):
+    while True:
+        clear_console()
+        if profile and (profile.get("channel_title") or profile.get("display_name")):
+            channel = profile.get("channel_title") or profile.get("display_name")
+            print(f"\n{t('settings_title').format(channel=channel)}")
+        else:
+            print(f"\n{t('settings_title_no_channel')}")
+        print(f"1) {t('settings_interface')}")
+        if profile:
+            print(f"2) {t('settings_translations')}")
+            print(f"3) {t('settings_playlists')}")
+            print(f"4) {t('menu_schedule')}")
+        print(f"0) {t('back')}")
+        choice = input(f"\n{t('menu_choice')}").strip()
+        if choice == "0":
+            return
+        if choice == "1":
+            interface_menu()
+        elif choice == "2" and profile:
+            translations_menu(profile, profiles)
+        elif choice == "3" and profile:
+            playlists_menu(profile, profiles)
+        elif choice == "4" and profile:
+            schedule_menu(profile, profiles)
         else:
             print(t("invalid_choice"))
 
@@ -1522,6 +1809,9 @@ def profile_menu(profile, profiles):
 def main():
     restore_ui_settings()
     profiles = load_channel_profiles()
+    for existing_profile in profiles["profiles"]:
+        if migrate_profile_paths(existing_profile):
+            save_channel_profiles(profiles)
     secrets_files = ensure_secrets()
 
     profile = None
@@ -1536,9 +1826,10 @@ def main():
             youtube = authenticate(profile)
             refresh_profile_identity(youtube, profile, profiles)
             print(t("auth_success").format(channel=profile.get("channel_title")))
+            time.sleep(1.5)  # a beat to read the success line, then straight to the menu
         except Exception as error:
             print(t("auth_failed").format(error=error))
-        input(t("press_enter"))
+            input(t("press_enter"))
 
     profile_menu(profile, profiles)
 
