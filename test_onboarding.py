@@ -47,8 +47,9 @@ assert "Вітаю, Майстро! Що робитимемо?" in out
 assert "Авторизація YouTube не завершена" in out  # no auth -> hint instead of setup
 assert "1) Переклад" in out and "2) Додати до плейлиста" in out and "3) Відкладена публікація" in out
 assert "1) Інтерфейс" in out  # settings opened (language inside the submenu)
-assert json.load(open(os.path.join(TMP, "ui_settings.json"), encoding="utf-8")) == {
-    "ui_language": "uk", "user_name": "Майстро"}
+saved_ui = json.load(open(os.path.join(TMP, "ui_settings.json"), encoding="utf-8"))
+assert saved_ui["ui_language"] == "uk" and saved_ui["user_name"] == "Майстро"
+assert saved_ui["ask_playlists"] is True and saved_ui["ask_schedule"] is True
 print("TEST 1 OK: uk onboarding, secrets screen with links, restricted menu")
 
 # TEST 2: relaunch — no onboarding repeat
@@ -73,7 +74,7 @@ assert profiles["profiles"][0]["display_name"] == "Профіль Тест"
 assert profiles["profiles"][0].get("playlist_id", "") == ""
 assert profiles["profiles"][0]["playlists"] == []
 saved = json.load(open(os.path.join(TMP, "ui_settings.json"), encoding="utf-8"))
-assert saved == {"ui_language": "ru", "user_name": "Тестовый юзер"}
+assert saved["ui_language"] == "ru" and saved["user_name"] == "Тестовый юзер"
 print("TEST 3 OK: ru wizard, multi-secrets pick, no playlist question, graceful auth failure")
 
 # TEST 4: relaunch with profile — select list, 0 exits cleanly

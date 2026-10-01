@@ -201,6 +201,17 @@ STRINGS = {
         "api_base_prompt": "Base URL (Enter — {default}): ",
         "api_keys_prompt": "API keys, comma-separated (Enter — skip): ",
         "api_model_prompt": "Model name: ",
+        "parts_menu_title": "What do we translate?",
+        "parts_all": "Everything",
+        "parts_titles": "Titles only",
+        "parts_descs": "Descriptions only",
+        "source_menu_title": "Where do the title and description come from?",
+        "source_from_video": "From the video",
+        "source_manual": "Enter manually",
+        "source_desc_editor": "Open the editor and paste a description",
+        "source_desc_keep": "Keep the video's description",
+        "set_ask_playlists": "Ask about adding to playlists after translation",
+        "set_ask_schedule": "Ask about deferred publishing after translation",
         "api_local_presets": "Local servers:",
         "api_preset_lmstudio": "LM Studio",
         "api_preset_ollama": "Ollama",
@@ -396,6 +407,17 @@ STRINGS = {
         "api_base_prompt": "Base URL (Enter — {default}): ",
         "api_keys_prompt": "API-ключі через кому (Enter — пропустити): ",
         "api_model_prompt": "Назва моделі: ",
+        "parts_menu_title": "Що перекладаємо?",
+        "parts_all": "Усе",
+        "parts_titles": "Тільки назви",
+        "parts_descs": "Тільки описи",
+        "source_menu_title": "Звідки взяти назву та опис?",
+        "source_from_video": "З відео",
+        "source_manual": "Вписати самому",
+        "source_desc_editor": "Відкрити редактор і вставити опис",
+        "source_desc_keep": "Залишити опис з відео",
+        "set_ask_playlists": "Питати про додавання до плейлистів після перекладу",
+        "set_ask_schedule": "Питати про відкладену публікацію після перекладу",
         "api_local_presets": "Локальні сервери:",
         "api_preset_lmstudio": "LM Studio",
         "api_preset_ollama": "Ollama",
@@ -591,6 +613,17 @@ STRINGS = {
         "api_base_prompt": "Base URL (Enter — {default}): ",
         "api_keys_prompt": "API-ключи через запятую (Enter — пропустить): ",
         "api_model_prompt": "Название модели: ",
+        "parts_menu_title": "Что переводим?",
+        "parts_all": "Всё",
+        "parts_titles": "Только названия",
+        "parts_descs": "Только описания",
+        "source_menu_title": "Откуда взять название и описание?",
+        "source_from_video": "Из видео",
+        "source_manual": "Вписать самому",
+        "source_desc_editor": "Открыть редактор и вставить описание",
+        "source_desc_keep": "Оставить описание с видео",
+        "set_ask_playlists": "Спрашивать про добавление в плейлисты после перевода",
+        "set_ask_schedule": "Спрашивать про отложенную публикацию после перевода",
         "api_local_presets": "Локальные серверы:",
         "api_preset_lmstudio": "LM Studio",
         "api_preset_ollama": "Ollama",
@@ -649,7 +682,7 @@ STRINGS = {
     },
 }
 
-_ui = {"language": None, "user_name": ""}
+_ui = {"language": None, "user_name": "", "ask_playlists": True, "ask_schedule": True}
 
 
 def t(key, **kwargs):
@@ -704,7 +737,14 @@ def load_ui_settings():
 
 
 def save_ui_settings():
-    save_json_file(UI_SETTINGS_FILE, {"ui_language": _ui["language"], "user_name": _ui["user_name"]})
+    data = dict(_ui)
+    data["ui_language"] = data.pop("language")
+    save_json_file(UI_SETTINGS_FILE, data)
+
+
+def toggle_ask_flag(flag):
+    _ui[flag] = not _ui.get(flag, True)
+    save_ui_settings()
 
 
 def restore_ui_settings():
@@ -714,6 +754,8 @@ def restore_ui_settings():
         if saved.get("ui_language") in STRINGS:
             _ui["language"] = saved["ui_language"]
         _ui["user_name"] = str(saved.get("user_name", "")).strip()
+        _ui["ask_playlists"] = bool(saved.get("ask_playlists", True))
+        _ui["ask_schedule"] = bool(saved.get("ask_schedule", True))
     except (FileNotFoundError, ValueError):
         pass
     needs_onboarding = False
@@ -2057,6 +2099,10 @@ def translations_menu(profile, profiles):
         print(f"1) {t('set_languages')}")
         print(f"2) {t('set_parallel')}")
         print(f"3) {t('api_title')}")
+        ask_pl = "✓" if _ui.get("ask_playlists", True) else "✗"
+        ask_sc = "✓" if _ui.get("ask_schedule", True) else "✗"
+        print(f"4) {t('set_ask_playlists')} [{ask_pl}]")
+        print(f"5) {t('set_ask_schedule')} [{ask_sc}]")
         print(f"0) {t('back')}")
         choice = input(f"\n{t('menu_choice')}").strip()
         if choice == "0":
@@ -2067,6 +2113,10 @@ def translations_menu(profile, profiles):
             manage_parallelism_setting()
         elif choice == "3":
             api_providers_menu()
+        elif choice == "4":
+            toggle_ask_flag("ask_playlists")
+        elif choice == "5":
+            toggle_ask_flag("ask_schedule")
         else:
             print(t("invalid_choice"))
 
@@ -2554,7 +2604,7 @@ def apply_translations(youtube, profile, video_id, metadata, localizations):
         return
     print(t("video_updated").format(id=video_id))
     defaults = profile.get("default_playlists", [])
-    if defaults and confirm(t("add_to_defaults_q")):
+    if defaults and _ui.get("ask_playlists", True) and confirm(t("add_to_defaults_q")):
         added = 0
         for pl_id in defaults:
             try:
@@ -2564,7 +2614,7 @@ def apply_translations(youtube, profile, video_id, metadata, localizations):
                 print(t("quota_exceeded") if _is_quota(error) else f"❌ {error}")
                 break
         print(t("added_to_playlists").format(n=added))
-    if confirm(t("schedule_q")):
+    if _ui.get("ask_schedule", True) and confirm(t("schedule_q")):
         try:
             publ_calendar = load_json_file(profile["publ_calendar_file"])
             publish_datetime, publish_time = ask_publish_date(publ_calendar)
@@ -2601,33 +2651,84 @@ def _pick_translation_targets(videos, durations, mode):
     return []
 
 
-def _ask_parts():
-    """Which parts to translate: both, titles only, or descriptions only."""
-    print(t("parts_prompt"))
-    choice = input(t("menu_choice")).strip()
-    return {"1": ("title", "description"),
-            "2": ("title",),
-            "3": ("description",)}.get(choice, ("title", "description"))
+def _ask_parts_screen(context):
+    """Full-screen 'what do we translate' choice; None = back."""
+    while True:
+        clear_console()
+        print(f"\n{context}\n")
+        print(t("parts_menu_title"))
+        print(f"1) {t('parts_all')}")
+        print(f"2) {t('parts_titles')}")
+        print(f"3) {t('parts_descs')}")
+        print(f"0) {t('back')}")
+        choice = input(f"\n{t('menu_choice')}").strip()
+        if choice == "0":
+            return None
+        if choice == "1":
+            return ("title", "description")
+        if choice == "2":
+            return ("title",)
+        if choice == "3":
+            return ("description",)
+        print(t("invalid_choice"))
 
 
-def _ask_source_overrides(metadata):
-    """Offer manual title/description; Enter keeps the video's own text."""
-    if input(t("source_choice_prompt")).strip() != "2":
-        return
-    title = input(t("source_title_prompt")).strip()
-    if title:
-        metadata["title"] = title
-    if input(t("source_desc_prompt")).strip() == "2":
-        try:
-            desc = get_description_from_dialog()
+def _ask_source_screen(context):
+    """Full-screen source choice; returns 'video' | 'manual' | None (back)."""
+    while True:
+        clear_console()
+        print(f"\n{context}\n")
+        print(t("source_menu_title"))
+        print(f"1) {t('source_from_video')}")
+        print(f"2) {t('source_manual')}")
+        print(f"0) {t('back')}")
+        choice = input(f"\n{t('menu_choice')}").strip()
+        if choice == "0":
+            return None
+        if choice == "1":
+            return "video"
+        if choice == "2":
+            return "manual"
+        print(t("invalid_choice"))
+
+
+def _ask_manual_title(context):
+    """Manual title screen; None = back, empty string = keep the video's title."""
+    while True:
+        clear_console()
+        print(f"\n{context}\n")
+        answer = input(t("source_title_prompt")).strip()
+        if answer == "0":
+            return None
+        return answer
+
+
+def _ask_manual_description(context, metadata):
+    """Manual description screen; None = back, otherwise metadata is updated."""
+    while True:
+        clear_console()
+        print(f"\n{context}\n")
+        print(f"1) {t('source_desc_editor')}")
+        print(f"2) {t('source_desc_keep')}")
+        print(f"0) {t('back')}")
+        choice = input(f"\n{t('menu_choice')}").strip()
+        if choice == "0":
+            return None
+        if choice == "1":
+            try:
+                desc = get_description_from_dialog()
+            except Exception:
+                return None
             if desc and desc.strip():
                 metadata["description"] = normalize_description(desc)
-        except Exception:
-            pass  # dialog cancelled — keep the video's description
+            return metadata
+        if choice == "2":
+            return metadata
+        print(t("invalid_choice"))
 
 
-def _translate_one(youtube, profile, video_id, parts=("title", "description"), ask_source=True):
-    """Fetch the video's metadata (or take the manual override), localize, apply back."""
+def _translate_one(youtube, profile, video_id, context, parts=None, ask_source=True):
+    """Fetch metadata, ask parts/source on their own screens, localize, apply back."""
     try:
         metadata = fetch_video_source_metadata(youtube, video_id)
     except (ValueError, HttpError) as error:
@@ -2635,8 +2736,25 @@ def _translate_one(youtube, profile, video_id, parts=("title", "description"), a
         return False
     print(t("metadata_fetched").format(
         title=metadata["title"], n=len(metadata["description"])))
+
+    if parts is None:
+        parts = _ask_parts_screen(context)
+        if parts is None:
+            return False
+
     if ask_source:
-        _ask_source_overrides(metadata)
+        source = _ask_source_screen(context)
+        if source is None:
+            return False
+        if source == "manual":
+            title = _ask_manual_title(context)
+            if title is None:
+                return False
+            if title:
+                metadata["title"] = title
+            if _ask_manual_description(context, metadata) is None:
+                return False
+
     save_json_file(METADATA_FILE, metadata)
     if not run_localization(metadata, profile, parts):
         return False
@@ -2683,14 +2801,14 @@ def translation_menu(youtube, profile, profiles):
                 if not targets:
                     print(t("tr_no_matches"))
                     continue
-                parts = _ask_parts()
-                if not _translate_one(youtube, profile, targets[0], parts):
+                context = t("tr_last_title")
+                if not _translate_one(youtube, profile, targets[0], context):
                     continue
                 input(t("press_enter"))
         elif choice == "2":
             clear_console()
             print(f"\n{t('tr_specific_title')}\n")
-            parts = _ask_parts()
+            context = t("tr_specific_title")
             while True:
                 link = input(t("video_link_prompt")).strip()
                 if link in ("0", ""):
@@ -2699,7 +2817,7 @@ def translation_menu(youtube, profile, profiles):
                 if not video_id:
                     print(t("bad_video_link"))
                     continue
-                _translate_one(youtube, profile, video_id, parts)
+                _translate_one(youtube, profile, video_id, context)
         elif choice == "3":
             # All videos: longs or shorts in one batch
             while True:
@@ -2718,10 +2836,14 @@ def translation_menu(youtube, profile, profiles):
                     continue
                 if not confirm(t("tr_batch_confirm").format(n=len(targets))):
                     continue
-                parts = _ask_parts()
+                context = t("tr_all_title")
+                parts = _ask_parts_screen(context)
+                if parts is None:
+                    continue
                 done = 0
                 for video_id in targets:
-                    if _translate_one(youtube, profile, video_id, parts, ask_source=False):
+                    if _translate_one(youtube, profile, video_id, context,
+                                      parts=parts, ask_source=False):
                         done += 1
                 print(t("tr_done").format(n=done))
                 input(t("press_enter"))

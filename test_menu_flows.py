@@ -151,7 +151,7 @@ print("NO-DEFAULTS WARN OK")
 
 # 6) batch modes: all longs and all shorts, picked by duration
 fetched = []
-def fake_translate_one(yt, profile, vid, parts=("title", "description"), ask_source=True):
+def fake_translate_one(yt, profile, vid, context=None, parts=None, ask_source=True):
     fetched.append(vid)
     return True
 m._translate_one = fake_translate_one
