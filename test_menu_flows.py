@@ -110,7 +110,7 @@ print("TRANSLATION FLOW OK")
 
 # 2) Playlists: add a video link to the defaults
 youtube.inserts.clear()
-out = run(["2", "https://youtu.be/xyz789abcde", "н", "0"])
+out = run(["2", "2", "https://youtu.be/xyz789abcde", "1", "0", "0", "0"])
 assert "Основной — PLdef123456789" in out
 assert len(youtube.inserts) == 1 and "xyz789abcde" in str(youtube.inserts[0])
 print("PLAYLIST FLOW OK")
@@ -139,7 +139,7 @@ print("GATING OK")
 
 # 5) no defaults -> playlist flow explains where to set them
 out = run.__wrapped__ if False else None
-it = iter(["2", "0"])
+it = iter(["2", "2", "https://youtu.be/xyz789abcde", "1", "0", "0", "0", "0"])
 builtins.input = lambda *a, **k: next(it)
 buf = io.StringIO()
 with contextlib.redirect_stdout(buf):

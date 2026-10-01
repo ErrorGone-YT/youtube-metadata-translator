@@ -71,6 +71,14 @@ STRINGS = {
         "menu_schedule": "Scheduled publishing",
         "menu_settings": "Settings",
         "menu_switch_profile": "Switch profile",
+        "pl_menu_title": "What do we add to a playlist?",
+        "pl_last_title": "Adding the latest video",
+        "pl_specific_title": "Adding specific videos",
+        "pl_all_title": "Adding all videos",
+        "pl_target_title": "Which playlist do we add to?",
+        "pl_target_default": "The default ones (★)",
+        "pl_target_pick": "Pick from the list (multiple allowed)",
+        "pl_none_selected": "Nothing selected.",
         "source_choice_prompt": "Where do the title and description come from?\n1) From the video\n2) Enter manually\n> ",
         "source_title_prompt": "New title (Enter — keep the video's one): ",
         "source_desc_prompt": "Paste a new description? (2 — open the editor, Enter — keep the video's one): ",
@@ -277,6 +285,14 @@ STRINGS = {
         "menu_schedule": "Відкладена публікація",
         "menu_settings": "Налаштування",
         "menu_switch_profile": "Змінити профіль",
+        "pl_menu_title": "Що додаємо до плейлиста?",
+        "pl_last_title": "Додаємо останнє відео",
+        "pl_specific_title": "Додаємо конкретні відео",
+        "pl_all_title": "Додаємо всі відео",
+        "pl_target_title": "До якого плейлиста додати?",
+        "pl_target_default": "Задані за замовчуванням (★)",
+        "pl_target_pick": "Вибрати зі списку (можна кілька)",
+        "pl_none_selected": "Нічого не вибрано.",
         "source_choice_prompt": "Звідки взяти назву та опис?\n1) З відео\n2) Вписати самому\n> ",
         "source_title_prompt": "Нова назва (Enter — залишити з відео): ",
         "source_desc_prompt": "Вставити новий опис? (2 — відкрити редактор, Enter — залишити з відео): ",
@@ -483,6 +499,14 @@ STRINGS = {
         "menu_schedule": "Отложенная публикация",
         "menu_settings": "Настройки",
         "menu_switch_profile": "Сменить профиль",
+        "pl_menu_title": "Что добавляем в плейлист?",
+        "pl_last_title": "Добавляем последнее видео",
+        "pl_specific_title": "Добавляем конкретные видео",
+        "pl_all_title": "Добавляем все видео",
+        "pl_target_title": "В какой плейлист добавить?",
+        "pl_target_default": "Заданные по умолчанию (★)",
+        "pl_target_pick": "Выбрать из списка (можно несколько)",
+        "pl_none_selected": "Ничего не выбрано.",
         "source_choice_prompt": "Откуда взять название и описание?\n1) Из видео\n2) Вписать самому\n> ",
         "source_title_prompt": "Новое название (Enter — оставить с видео): ",
         "source_desc_prompt": "Вставить новое описание? (2 — открыть редактор, Enter — оставить с видео): ",
@@ -2076,10 +2100,12 @@ def interface_menu():
     while True:
         clear_console()
         print(f"\n{t('settings_interface')}")
-        print(f"1) {t('set_language')}")
-        print(f"2) {t('set_name')}")
-        print(f"0) {t('back')}")
-        choice = input(f"\n{t('menu_choice')}").strip()
+        show_menu(t("settings_interface"), [
+            f"1) {t('set_language')}",
+            f"2) {t('set_name')}",
+            f"0) {t('back')}",
+        ])
+        choice = input(t("menu_choice")).strip()
         if choice == "0":
             return
         if choice == "1":
@@ -2096,15 +2122,17 @@ def translations_menu(profile, profiles):
     while True:
         clear_console()
         print(f"\n{t('settings_translations')}")
-        print(f"1) {t('set_languages')}")
-        print(f"2) {t('set_parallel')}")
-        print(f"3) {t('api_title')}")
         ask_pl = "✓" if _ui.get("ask_playlists", True) else "✗"
         ask_sc = "✓" if _ui.get("ask_schedule", True) else "✗"
-        print(f"4) {t('set_ask_playlists')} [{ask_pl}]")
-        print(f"5) {t('set_ask_schedule')} [{ask_sc}]")
-        print(f"0) {t('back')}")
-        choice = input(f"\n{t('menu_choice')}").strip()
+        show_menu(t("settings_translations"), [
+            f"1) {t('set_languages')}",
+            f"2) {t('set_parallel')}",
+            f"3) {t('api_title')}",
+            f"4) {t('set_ask_playlists')} [{ask_pl}]",
+            f"5) {t('set_ask_schedule')} [{ask_sc}]",
+            f"0) {t('back')}",
+        ])
+        choice = input(t("menu_choice")).strip()
         if choice == "0":
             return
         if choice == "1":
@@ -2160,12 +2188,13 @@ def playlists_menu(profile, profiles, youtube=None):
         else:
             print(t("playlist_none"))
 
-        print(f"\n1) {t('playlist_edit')}")
-        if playlists:
-            print(f"2) {t('playlists_defaults_item')}")
-            print(f"3) {t('playlists_remove_item')}")
-        print(f"0) {t('back')}")
-        choice = input(f"\n{t('menu_choice')}").strip()
+        show_menu("", [
+            f"1) {t('playlist_edit')}",
+            *( [f"2) {t('playlists_defaults_item')}", f"3) {t('playlists_remove_item')}"]
+               if playlists else [] ),
+            f"0) {t('back')}",
+        ])
+        choice = input(t("menu_choice")).strip()
 
         if choice == "0":
             return
@@ -2226,12 +2255,12 @@ def schedule_menu(profile, profiles):
         print(f"\n{t('schedule_title').format(channel=channel)}")
         print(t("schedule_note"))
         publ_calendar = load_json_file(profile["publ_calendar_file"])
-        for index, day in enumerate(ALLOWED_DAYS, start=1):
-            times = publ_calendar.get(day) or []
-            day_time = times[0] if times else DEFAULT_PUBLISH_TIME
-            print(f"{index}) {translate_day(day)} — {day_time}")
-        print(f"0) {t('back')}")
-        choice = input(f"\n{t('menu_choice')}").strip()
+        show_menu("", [
+            f"{index}) {translate_day(day)} — "
+            f"{(publ_calendar.get(day) or [DEFAULT_PUBLISH_TIME])[0]}"
+            for index, day in enumerate(ALLOWED_DAYS, start=1)
+        ] + [f"0) {t('back')}"])
+        choice = input(t("menu_choice")).strip()
         if choice == "0":
             return
         if choice.isdigit() and 1 <= int(choice) <= len(ALLOWED_DAYS):
@@ -2477,8 +2506,8 @@ def api_providers_menu():
         clear_console()
         reg = load_provider_registry()
         active = get_active_provider(reg)
-        print(f"\n{t('api_title')}")
         backup = get_backup_provider(reg)
+        lines = []
         for index, provider in enumerate(reg["providers"], start=1):
             if active and provider["id"] == active["id"]:
                 mark = "●"
@@ -2489,8 +2518,9 @@ def api_providers_menu():
             kind = t("api_online") if provider.get("auth") else t("api_local")
             extra = f" ({t('api_keys_count').format(n=len(provider.get('api_keys', [])))})" \
                 if provider.get("auth") else ""
-            print(f"{mark} {index}) {provider['name']} [{kind}] — {provider.get('model', 'auto')}{extra}")
-        print(t("api_legend"))
+            lines.append(f"{mark} {index}) {provider['name']} [{kind}] — "
+                         f"{provider.get('model', 'auto')}{extra}")
+        show_menu(t("api_title"), lines, [t("api_legend")])
         print(f"\n1) {t('api_add_item')}")
         print(f"2) {t('api_edit_item')}")
         print(f"3) {t('api_delete_item')}")
@@ -2524,13 +2554,14 @@ def settings_menu(profile, profiles, youtube=None):
             print(f"\n{t('settings_title').format(channel=channel)}")
         else:
             print(f"\n{t('settings_title_no_channel')}")
-        print(f"1) {t('settings_interface')}")
+        options = [f"1) {t('settings_interface')}"]
         if profile:
-            print(f"2) {t('settings_translations')}")
-            print(f"3) {t('settings_playlists')}")
-            print(f"4) {t('menu_schedule')}")
-        print(f"0) {t('back')}")
-        choice = input(f"\n{t('menu_choice')}").strip()
+            options += [f"2) {t('settings_translations')}",
+                        f"3) {t('settings_playlists')}",
+                        f"4) {t('menu_schedule')}"]
+        options.append(f"0) {t('back')}")
+        show_menu("", options)
+        choice = input(t("menu_choice")).strip()
         if choice == "0":
             return
         if choice == "1":
@@ -2776,12 +2807,13 @@ def translation_menu(youtube, profile, profiles):
 
     while True:
         clear_console()
-        print(f"\n{t('tr_menu_title')}\n")
-        print(f"1) {t('tr_last')}")
-        print(f"2) {t('tr_specific')}")
-        print(f"3) {t('tr_all')}")
-        print(f"0) {t('back')}")
-        choice = input(f"\n{t('menu_choice')}").strip()
+        show_menu(t("tr_menu_title"), [
+            f"1) {t('tr_last')}",
+            f"2) {t('tr_specific')}",
+            f"3) {t('tr_all')}",
+            f"0) {t('back')}",
+        ])
+        choice = input(t("menu_choice")).strip()
 
         if choice == "0":
             return
@@ -2789,11 +2821,12 @@ def translation_menu(youtube, profile, profiles):
             # Last video: pick long or short
             while True:
                 clear_console()
-                print(f"\n{t('tr_last_title')}\n")
-                print(f"1) {t('tr_long')}")
-                print(f"2) {t('tr_short')}")
-                print(f"0) {t('back')}")
-                pick = input(f"\n{t('menu_choice')}").strip()
+                show_menu(t("tr_last_title"), [
+                    f"1) {t('tr_long')}",
+                    f"2) {t('tr_short')}",
+                    f"0) {t('back')}",
+                ])
+                pick = input(t("menu_choice")).strip()
                 if pick == "0":
                     break
                 mode = "last_long" if pick == "1" else "last_short"
@@ -2822,11 +2855,12 @@ def translation_menu(youtube, profile, profiles):
             # All videos: longs or shorts in one batch
             while True:
                 clear_console()
-                print(f"\n{t('tr_all_title')}\n")
-                print(f"1) {t('tr_longs')}")
-                print(f"2) {t('tr_shorts')}")
-                print(f"0) {t('back')}")
-                pick = input(f"\n{t('menu_choice')}").strip()
+                show_menu(t("tr_all_title"), [
+                    f"1) {t('tr_longs')}",
+                    f"2) {t('tr_shorts')}",
+                    f"0) {t('back')}",
+                ])
+                pick = input(t("menu_choice")).strip()
                 if pick == "0":
                     break
                 mode = "all_long" if pick == "1" else "all_short"
@@ -2904,6 +2938,164 @@ def scheduled_publish_menu(youtube, profile, profiles):
             return
 
 
+def show_menu(title, options, footers=()):
+    """Uniform menu screen: air above/below the title and the option list."""
+    print(f"\n{title}\n")
+    for option in options:
+        print(option)
+    print()
+    for footer in footers:
+        print(footer)
+
+
+def show_menu(title, options, footers=()):
+    """Uniform menu screen: air above/below the title and the option list."""
+    print(f"\n{title}\n")
+    for option in options:
+        print(option)
+    print()
+    for footer in footers:
+        print(footer)
+
+
+def _pl_target_screen(context, profile, youtube=None):
+    """Full-screen 'which playlist?' choice; returns ids or None (back)."""
+    while True:
+        playlists = profile.setdefault("playlists", [])
+        defaults = profile.get("default_playlists", [])
+        names = {pl["id"]: pl["name"] for pl in playlists}
+        show_menu(context, [
+            f"1) {t('pl_target_default')}",
+            *(f"   ★ {names.get(pl_id, pl_id)} — {pl_id}" for pl_id in defaults),
+            f"2) {t('pl_target_pick')}",
+            f"3) {t('playlist_edit')}",
+            f"0) {t('back')}",
+        ])
+        choice = input(t("menu_choice")).strip()
+        if choice == "0":
+            return None
+        if choice == "1":
+            if not defaults:
+                print(t("defaults_missing"))
+                continue
+            return list(defaults)
+        if choice == "2":
+            if not playlists:
+                print(t("playlist_none"))
+                continue
+            labels = [f"{pl['name']} — {pl['id']}" for pl in playlists]
+            chosen = interactive_checkbox(
+                t("pl_target_pick"), labels,
+                {index for index, pl in enumerate(playlists) if pl["id"] in defaults},
+            )
+            ids = [playlists[index]["id"] for index in sorted(chosen)]
+            if not ids:
+                print(t("pl_none_selected"))
+                continue
+            return ids
+        if choice == "3":
+            playlists_menu(profile, profile and {"profiles": []}, youtube)
+        else:
+            print(t("invalid_choice"))
+
+
+def _add_video_to_playlists(youtube, video_id, pl_ids):
+    """Add one video to every playlist; returns how many succeeded."""
+    added = 0
+    for pl_id in pl_ids:
+        try:
+            add_video_to_playlist(youtube, video_id, pl_id)
+            added += 1
+        except HttpError as error:
+            print(t("quota_exceeded") if _is_quota(error) else f"❌ {error}")
+            return added
+    return added
+
+
+def add_to_playlist_menu(youtube, profile, profiles):
+    try:
+        videos, durations = get_channel_videos(youtube)
+    except HttpError as error:
+        print(t("quota_exceeded") if _is_quota(error) else f"❌ {error}")
+        return
+    if not videos:
+        print(t("no_videos"))
+        return
+    videos.sort(key=lambda x: x["snippet"]["publishedAt"], reverse=True)
+
+    while True:
+        show_menu(t("pl_menu_title"), [
+            f"1) {t('tr_last')}",
+            f"2) {t('tr_specific')}",
+            f"3) {t('tr_all')}",
+            f"0) {t('back')}",
+        ])
+        choice = input(t("menu_choice")).strip()
+
+        if choice == "0":
+            return
+        if choice == "1":
+            while True:
+                show_menu(t("pl_last_title"), [
+                    f"1) {t('tr_long')}",
+                    f"2) {t('tr_short')}",
+                    f"0) {t('back')}",
+                ])
+                pick = input(t("menu_choice")).strip()
+                if pick == "0":
+                    break
+                mode = "last_long" if pick == "1" else "last_short"
+                targets = _pick_translation_targets(videos, durations, mode)
+                if not targets:
+                    print(t("tr_no_matches"))
+                    continue
+                pl_ids = _pl_target_screen(t("pl_last_title"), profile, youtube)
+                if not pl_ids:
+                    continue
+                print(t("added_to_playlists").format(
+                    n=_add_video_to_playlists(youtube, targets[0], pl_ids)))
+        elif choice == "2":
+            while True:
+                link = input(t("video_link_prompt")).strip()
+                if link in ("0", ""):
+                    break
+                video_id = extract_video_id(link)
+                if not video_id:
+                    print(t("bad_video_link"))
+                    continue
+                pl_ids = _pl_target_screen(t("pl_specific_title"), profile, youtube)
+                if not pl_ids:
+                    continue
+                print(t("added_to_playlists").format(
+                    n=_add_video_to_playlists(youtube, video_id, pl_ids)))
+        elif choice == "3":
+            while True:
+                show_menu(t("pl_all_title"), [
+                    f"1) {t('tr_longs')}",
+                    f"2) {t('tr_shorts')}",
+                    f"0) {t('back')}",
+                ])
+                pick = input(t("menu_choice")).strip()
+                if pick == "0":
+                    break
+                mode = "all_long" if pick == "1" else "all_short"
+                targets = _pick_translation_targets(videos, durations, mode)
+                if not targets:
+                    print(t("tr_no_matches"))
+                    continue
+                if not confirm(t("tr_batch_confirm").format(n=len(targets))):
+                    continue
+                pl_ids = _pl_target_screen(t("pl_all_title"), profile, youtube)
+                if not pl_ids:
+                    continue
+                done = 0
+                for video_id in targets:
+                    done += _add_video_to_playlists(youtube, video_id, pl_ids)
+                print(t("tr_done").format(n=done))
+        else:
+            print(t("invalid_choice"))
+
+
 def profile_menu(profile, profiles, youtube=None):
     while True:
         clear_console()
@@ -2915,13 +3107,15 @@ def profile_menu(profile, profiles, youtube=None):
             for _, issue in setup_issues(profile):
                 print(f"\n⚡ {issue}")
 
-        print(f"\n1) {t('menu_translation')}")
-        print(f"2) {t('menu_playlist')}")
-        print(f"3) {t('menu_schedule')}")
-        print(f"4) {t('menu_settings')}")
-        print(f"5) {t('menu_switch_profile')}")
-        print(f"0) {t('menu_exit')}")
-        choice = input(f"\n{t('menu_choice')}").strip()
+        show_menu("", [
+            f"1) {t('menu_translation')}",
+            f"2) {t('menu_playlist')}",
+            f"3) {t('menu_schedule')}",
+            f"4) {t('menu_settings')}",
+            f"5) {t('menu_switch_profile')}",
+            f"0) {t('menu_exit')}",
+        ])
+        choice = input(t("menu_choice")).strip()
         if choice == "0":
             return
         if choice == "1":
