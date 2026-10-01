@@ -113,7 +113,23 @@ STRINGS = {
         "playlists_title": "▶️ Playlists — {channel}",
         "playlist_current": "Current playlist ID: {id}",
         "playlist_none": "No playlist set — videos are not added to any playlist.",
-        "playlist_edit": "Set playlist ID",
+        "playlist_edit": "Add a playlist",
+        "playlists_defaults_item": "Default playlists",
+        "playlists_remove_item": "Remove a playlist",
+        "playlists_defaults_title": "Default playlists — new videos go here:",
+        "playlists_defaults_hint": "Numbers separated by comma or space — toggle, Enter — done",
+        "defaults_star_note": "★ = default playlist: new videos are added to these automatically.",
+        "defaults_saved": "✅ Saved. New videos will be added to the selected playlists.",
+        "defaults_empty_note": "⚠️ No defaults selected: adding to playlists will be skipped.",
+        "playlists_add_prompt": "Playlist link or ID: ",
+        "playlist_bad_link": "❌ Couldn't extract a playlist ID from that.",
+        "playlist_fetched_name": "Name from YouTube: {name}",
+        "playlist_name_prompt": "Playlist name (Enter — keep as is): ",
+        "playlist_name_fallback": "Playlist name (Enter — use the ID): ",
+        "playlist_exists": "This playlist is already in the list.",
+        "playlist_added": "✅ Playlist added.",
+        "remove_prompt": "Playlist number: ",
+        "removed": "✅ Removed.",
         "playlist_prompt": "Playlist ID (the part after list= in the link; '-' — clear): ",
         "playlist_saved": "✅ Saved.",
         "schedule_title": "⏰ Scheduled publishing — {channel}",
@@ -199,7 +215,23 @@ STRINGS = {
         "playlists_title": "▶️ Плейлисти — {channel}",
         "playlist_current": "Поточний ID плейлиста: {id}",
         "playlist_none": "Плейлист не задано — відео нікуди не додаються.",
-        "playlist_edit": "Задати ID плейлиста",
+        "playlist_edit": "Додати плейлист",
+        "playlists_defaults_item": "Плейлисти за замовчуванням",
+        "playlists_remove_item": "Видалити плейлист",
+        "playlists_defaults_title": "Плейлисти за замовчуванням — нові відео попадатимуть сюди:",
+        "playlists_defaults_hint": "Номери через кому або пробіл — перемкнути, Enter — готово",
+        "defaults_star_note": "★ = плейлист за замовчуванням: нові відео додаються туди автоматично.",
+        "defaults_saved": "✅ Збережено. Нові відео додаватимуться у вибрані плейлисти.",
+        "defaults_empty_note": "⚠️ Не вибрано жодного: додавання до плейлистів пропускатиметься.",
+        "playlists_add_prompt": "Посилання на плейлист або ID: ",
+        "playlist_bad_link": "❌ Не вдалося витягти ID плейлиста.",
+        "playlist_fetched_name": "Назва з YouTube: {name}",
+        "playlist_name_prompt": "Назва плейлиста (Enter — залишити): ",
+        "playlist_name_fallback": "Назва плейлиста (Enter — використати ID): ",
+        "playlist_exists": "Цей плейлист уже у списку.",
+        "playlist_added": "✅ Плейлист додано.",
+        "remove_prompt": "Номер плейлиста: ",
+        "removed": "✅ Видалено.",
         "playlist_prompt": "ID плейлиста (частина після list= у посиланні; '-' — прибрати): ",
         "playlist_saved": "✅ Збережено.",
         "schedule_title": "⏰ Відкладена публікація — {channel}",
@@ -285,7 +317,23 @@ STRINGS = {
         "playlists_title": "▶️ Плейлисты — {channel}",
         "playlist_current": "Текущий ID плейлиста: {id}",
         "playlist_none": "Плейлист не задан — видео никуда не добавляются.",
-        "playlist_edit": "Задать ID плейлиста",
+        "playlist_edit": "Добавить плейлист",
+        "playlists_defaults_item": "Плейлисты по умолчанию",
+        "playlists_remove_item": "Удалить плейлист",
+        "playlists_defaults_title": "Плейлисты по умолчанию — новые видео будут попадать сюда:",
+        "playlists_defaults_hint": "Номера через запятую или пробел — переключить, Enter — готово",
+        "defaults_star_note": "★ = плейлист по умолчанию: новые видео добавляются туда автоматически.",
+        "defaults_saved": "✅ Сохранено. Новые видео будут добавляться в выбранные плейлисты.",
+        "defaults_empty_note": "⚠️ Не выбрано ни одного: добавление в плейлисты будет пропускаться.",
+        "playlists_add_prompt": "Ссылка на плейлист или ID: ",
+        "playlist_bad_link": "❌ Не удалось извлечь ID плейлиста.",
+        "playlist_fetched_name": "Название с YouTube: {name}",
+        "playlist_name_prompt": "Название плейлиста (Enter — оставить): ",
+        "playlist_name_fallback": "Название плейлиста (Enter — использовать ID): ",
+        "playlist_exists": "Этот плейлист уже в списке.",
+        "playlist_added": "✅ Плейлист добавлен.",
+        "remove_prompt": "Номер плейлиста: ",
+        "removed": "✅ Удалено.",
         "playlist_prompt": "ID плейлиста (часть после list= в ссылке; '-' — убрать): ",
         "playlist_saved": "✅ Сохранено.",
         "schedule_title": "⏰ Отложенная публикация — {channel}",
@@ -1244,6 +1292,19 @@ def save_channel_profiles(profiles):
     save_json_file(CHANNEL_PROFILES_FILE, profiles)
 
 
+def migrate_playlist_model(profile):
+    """Convert the legacy single playlist_id into playlists + default_playlists."""
+    if profile.get("playlists"):
+        return False
+    legacy = (profile.get("playlist_id") or "").strip()
+    if not legacy:
+        return False
+    profile["playlists"] = [{"id": legacy, "name": legacy}]
+    profile["default_playlists"] = [legacy]
+    profile["playlist_id"] = ""
+    return True
+
+
 def migrate_profile_paths(profile):
     """Move per-profile files into profiles/<profile_id>/ (pre-folder layout kept at data/ root)."""
     migrated = False
@@ -1349,7 +1410,8 @@ def create_profile_wizard(profiles, secrets_files):
         "channel_title": "",
         "token_file": token_file,
         "client_secrets_file": secrets_file,
-        "playlist_id": "",
+        "playlists": [],
+        "default_playlists": [],
         "publ_calendar_file": calendar_file,
     }
     profiles["profiles"].append(profile)
@@ -1486,18 +1548,43 @@ def _read_key():
         termios.tcsetattr(fd, termios.TCSADRAIN, old_attrs)
 
 
-def choose_languages_from_catalog(selected):
-    """Toggle-menu over the language catalog; returns the new selection.
+def interactive_checkbox(title, labels, selected):
+    """Checkbox list over labeled rows; returns the new set of selected indices.
 
-    Interactive checkbox list (arrows + space) in a real terminal; the
-    numbered-input mode stays as a fallback for non-interactive terminals.
+    Arrows move the cursor, Space toggles, A/Ф selects all, N/Т clears,
+    Enter/0/q confirms. Falls back to numbered input in non-interactive
+    terminals (scripts, pipes).
     """
-    catalog = available_language_catalog()
-    codes = sorted(catalog) + [code for code in selected if code not in catalog]
-    working = list(selected)
-
-    if not (sys.stdin.isatty() and sys.stdout.isatty()):
-        return _choose_languages_by_number(codes, catalog, working)
+    selected = set(selected)
+    interactive = sys.stdin.isatty() and sys.stdout.isatty()
+    if not interactive:
+        while True:
+            clear_console()
+            print(title)
+            for index, label in enumerate(labels, start=1):
+                mark = "x" if index - 1 in selected else " "
+                print(f"  [{mark}] {index}) {label}")
+            print(f"\n{t('languages_toggle_hint')}")
+            answer = input(t("languages_toggle_prompt")).strip().lower()
+            if answer in ("0", ""):
+                return selected
+            if answer in ("a", "а", "ф"):
+                selected = set(range(len(labels)))
+                continue
+            if answer in ("n", "н", "т"):
+                selected = set()
+                continue
+            toggled = False
+            for token in re.split(r"[,\s]+", answer):
+                if token.isdigit() and 1 <= int(token) <= len(labels):
+                    index = int(token) - 1
+                    if index in selected:
+                        selected.remove(index)
+                    else:
+                        selected.add(index)
+                    toggled = True
+            if not toggled:
+                print(t("languages_didnt_understand"))
 
     _enable_ansi_windows()
     cursor = 0
@@ -1505,73 +1592,53 @@ def choose_languages_from_catalog(selected):
     def render(first=False):
         if not first:
             # Jump back above the list and clear it for a flicker-free redraw.
-            sys.stdout.write("\x1b[%dA\x1b[J" % (len(codes) + 1))
+            sys.stdout.write("\x1b[%dA\x1b[J" % (len(labels) + 1))
         lines = []
-        for index, code in enumerate(codes):
+        for index, label in enumerate(labels):
             arrow = "❯" if index == cursor else " "
-            mark = "x" if code in working else " "
-            lines.append(f"{arrow} [{mark}] {index + 1}) {code} — {catalog.get(code, code)}")
+            mark = "x" if index in selected else " "
+            lines.append(f"{arrow} [{mark}] {index + 1}) {label}")
         lines.append(t("languages_keys_hint"))
         print("\n".join(lines), flush=True)
 
-    print(t("languages_list_title"))
+    print(title)
     sys.stdout.write("\x1b[?25l")  # hide the cursor while the list is live
     try:
         render(first=True)
         while True:
             key = _read_key()
             if key == "up":
-                cursor = (cursor - 1) % len(codes)
+                cursor = (cursor - 1) % len(labels)
             elif key == "down":
-                cursor = (cursor + 1) % len(codes)
+                cursor = (cursor + 1) % len(labels)
             elif key == "space":
-                code = codes[cursor]
-                if code in working:
-                    working.remove(code)
+                if cursor in selected:
+                    selected.remove(cursor)
                 else:
-                    working.append(code)
+                    selected.add(cursor)
             elif key in ("a", "а", "ф"):
-                working = list(codes)
+                selected = set(range(len(labels)))
             elif key in ("n", "н", "т"):
-                working = []
+                selected = set()
             elif key in ("enter", "0", "q"):
                 break
             render()
     finally:
         sys.stdout.write("\x1b[?25h")  # show the cursor back
         print()
-    return working
+    return selected
 
 
-def _choose_languages_by_number(codes, catalog, working):
-    """Numbered-input fallback for terminals without raw key access."""
-    while True:
-        clear_console()
-        print(t("languages_list_title"))
-        for index, code in enumerate(codes, start=1):
-            mark = "x" if code in working else " "
-            print(f"  [{mark}] {index}) {code} — {catalog.get(code, code)}")
-        print(f"\n{t('languages_toggle_hint')}")
-        answer = input(t("languages_toggle_prompt")).strip().lower()
-        if answer == "0":
-            return working
-        if answer in ("a", "а", "ф"):
-            working = list(codes)
-            continue
-        if answer in ("n", "н", "т"):
-            working = []
-            continue
-        toggled = False
-        for token in re.split(r"[,\s]+", answer):
-            if token.isdigit() and 1 <= int(token) <= len(codes):
-                code = codes[int(token) - 1]
-                if code in working:
-                    working.remove(code)
-                else:
-                    working.append(code)
-                toggled = True
-        if not toggled:
-            print(t("languages_didnt_understand"))
+def choose_languages_from_catalog(selected):
+    """Toggle-menu over the language catalog; returns the new selection."""
+    catalog = available_language_catalog()
+    codes = sorted(catalog) + [code for code in selected if code not in catalog]
+    labels = [f"{code} — {catalog.get(code, code)}" for code in codes]
+    chosen = interactive_checkbox(
+        t("languages_list_title"), labels,
+        {codes.index(code) for code in selected},
+    )
+    return [codes[index] for index in sorted(chosen)]
 
 
 def suggested_parallelism(config):
@@ -1670,32 +1737,101 @@ def translations_menu(profile, profiles):
             print(t("invalid_choice"))
 
 
-def playlists_menu(profile, profiles):
+def parse_playlist_id(text):
+    """Extract a playlist ID from a link (list=...) or accept a bare ID."""
+    text = (text or "").strip()
+    match = re.search(r"[?&]list=([A-Za-z0-9_-]+)", text)
+    if match:
+        return match.group(1)
+    if re.fullmatch(r"[A-Za-z0-9_-]{12,}", text):
+        return text
+    return None
+
+
+def fetch_playlist_title(youtube, playlist_id):
+    """Real playlist title from YouTube; None when it can't be fetched."""
+    if not youtube:
+        return None
+    try:
+        response = youtube.playlists().list(part="snippet", id=playlist_id).execute()
+        items = response.get("items", [])
+        return items[0]["snippet"]["title"] if items else None
+    except Exception:
+        return None
+
+
+def playlists_menu(profile, profiles, youtube=None):
     while True:
         clear_console()
         channel = profile.get("channel_title") or profile.get("display_name")
         print(f"\n{t('playlists_title').format(channel=channel)}")
-        playlist_id = profile.get("playlist_id", "")
-        if playlist_id:
-            print(t("playlist_current").format(id=playlist_id))
+        playlists = profile.setdefault("playlists", [])
+        defaults = profile.setdefault("default_playlists", [])
+
+        if playlists:
+            for index, pl in enumerate(playlists, start=1):
+                star = "★" if pl["id"] in defaults else " "
+                print(f"{index}) [{star}] {pl['name']} — {pl['id']}")
+            print(t("defaults_star_note"))
         else:
             print(t("playlist_none"))
+
         print(f"\n1) {t('playlist_edit')}")
+        if playlists:
+            print(f"2) {t('playlists_defaults_item')}")
+            print(f"3) {t('playlists_remove_item')}")
         print(f"0) {t('back')}")
         choice = input(f"\n{t('menu_choice')}").strip()
+
         if choice == "0":
             return
         if choice == "1":
-            answer = input(t("playlist_prompt")).strip()
-            if not answer:
+            link = input(t("playlists_add_prompt")).strip()
+            if not link:
                 continue
-            if answer == "-":
-                answer = ""
-            profile["playlist_id"] = answer
+            playlist_id = parse_playlist_id(link)
+            if not playlist_id:
+                print(t("playlist_bad_link"))
+                continue
+            if any(pl["id"] == playlist_id for pl in playlists):
+                print(t("playlist_exists"))
+                continue
+            name = fetch_playlist_title(youtube, playlist_id) or ""
+            if name:
+                print(t("playlist_fetched_name").format(name=name))
+                custom = input(t("playlist_name_prompt")).strip()
+                name = custom or name
+            else:
+                name = input(t("playlist_name_fallback")).strip() or playlist_id
+            playlists.append({"id": playlist_id, "name": name})
             save_channel_profiles(profiles)
-            print(t("playlist_saved"))
-        else:
-            print(t("invalid_choice"))
+            print(t("playlist_added"))
+            continue
+        if choice == "2" and playlists:
+            labels = [f"{pl['name']} — {pl['id']}" for pl in playlists]
+            chosen = interactive_checkbox(
+                t("playlists_defaults_title"), labels,
+                {index for index, pl in enumerate(playlists) if pl["id"] in defaults},
+            )
+            defaults[:] = [playlists[index]["id"] for index in sorted(chosen)]
+            save_channel_profiles(profiles)
+            if defaults:
+                print(t("defaults_saved"))
+            else:
+                print(t("defaults_empty_note"))
+            continue
+        if choice == "3" and playlists:
+            answer = input(t("remove_prompt")).strip()
+            if not answer.isdigit() or not 1 <= int(answer) <= len(playlists):
+                print(t("invalid_choice"))
+                continue
+            removed = playlists.pop(int(answer) - 1)
+            if removed["id"] in defaults:
+                defaults.remove(removed["id"])
+            save_channel_profiles(profiles)
+            print(t("removed"))
+            continue
+        print(t("invalid_choice"))
 
 
 def schedule_menu(profile, profiles):
@@ -1731,7 +1867,7 @@ def schedule_menu(profile, profiles):
             print(t("invalid_choice"))
 
 
-def settings_menu(profile, profiles):
+def settings_menu(profile, profiles, youtube=None):
     while True:
         clear_console()
         if profile and (profile.get("channel_title") or profile.get("display_name")):
@@ -1753,7 +1889,7 @@ def settings_menu(profile, profiles):
         elif choice == "2" and profile:
             translations_menu(profile, profiles)
         elif choice == "3" and profile:
-            playlists_menu(profile, profiles)
+            playlists_menu(profile, profiles, youtube)
         elif choice == "4" and profile:
             schedule_menu(profile, profiles)
         else:
@@ -1770,7 +1906,7 @@ def profile_is_ready(profile):
     return bool(profile) and bool(get_profile_languages(profile)) and translator_ready()
 
 
-def profile_menu(profile, profiles):
+def profile_menu(profile, profiles, youtube=None):
     while True:
         clear_console()
         print(t("menu_greeting").format(name=_ui["user_name"]))
@@ -1801,7 +1937,7 @@ def profile_menu(profile, profiles):
             print(f"\n{t('coming_soon')}")
             input(t("press_enter"))
         elif choice == "4":
-            settings_menu(profile, profiles)
+            settings_menu(profile, profiles, youtube)
         else:
             print(t("invalid_choice"))
 
@@ -1810,11 +1946,13 @@ def main():
     restore_ui_settings()
     profiles = load_channel_profiles()
     for existing_profile in profiles["profiles"]:
-        if migrate_profile_paths(existing_profile):
+        migrated_playlists = migrate_playlist_model(existing_profile)
+        if migrate_profile_paths(existing_profile) or migrated_playlists:
             save_channel_profiles(profiles)
     secrets_files = ensure_secrets()
 
     profile = None
+    youtube = None
     if profiles["profiles"]:
         profile = select_profile(profiles)
     elif secrets_files:
@@ -1831,7 +1969,7 @@ def main():
             print(t("auth_failed").format(error=error))
             input(t("press_enter"))
 
-    profile_menu(profile, profiles)
+    profile_menu(profile, profiles, youtube)
 
 
 if __name__ == "__main__":

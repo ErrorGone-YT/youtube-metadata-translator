@@ -69,7 +69,8 @@ assert "Ошибка авторизации" in out  # fake secrets rejected, sc
 profiles = json.load(open(os.path.join(TMP, "channel_profiles.json"), encoding="utf-8"))
 assert profiles["profiles"][0]["client_secrets_file"] == "client_secrets_b.json"
 assert profiles["profiles"][0]["display_name"] == "Профіль Тест"
-assert profiles["profiles"][0]["playlist_id"] == ""
+assert profiles["profiles"][0].get("playlist_id", "") == ""
+assert profiles["profiles"][0]["playlists"] == []
 saved = json.load(open(os.path.join(TMP, "ui_settings.json"), encoding="utf-8"))
 assert saved == {"ui_language": "ru", "user_name": "Тестовый юзер"}
 print("TEST 3 OK: ru wizard, multi-secrets pick, no playlist question, graceful auth failure")
