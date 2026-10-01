@@ -98,7 +98,7 @@ def run(answers):
     return buf.getvalue()
 
 # 1) Translation: translate actual data -> update -> add to defaults -> no schedule
-out = run(["1", "1.1", "д", "н", "0", "0"])
+out = run(["1", "1", "1", "д", "н", "0", "0", "0", "0"])
 assert "Последнее видео" in out and "Fresh title" in out
 assert captured["langs"] == ["de", "ja"]
 assert "Перевожу на 2 языков" in out
@@ -156,15 +156,15 @@ def fake_translate_one(yt, profile, vid):
 m._translate_one = fake_translate_one
 m.get_channel_videos = lambda yt: m.get_channel_videos_all(yt)
 
-out = run(["1", "3.1", "д", "0", "0"])
+out = run(["1", "3", "1", "д", "0", "0", "0", "0"])
 assert fetched == [VIDEO_ID], fetched
 fetched.clear()
-out = run(["1", "3.2", "д", "0", "0"])
+out = run(["1", "3", "2", "д", "0", "0", "0", "0"])
 assert fetched == [SHORT_ID], fetched
 print("BATCH LONG/SHORT OK")
 
 # 7) last short
-out = run(["1", "1.2", "0", "0"])
+out = run(["1", "1", "2", "н", "н", "0", "0", "0", "0"])
 assert fetched[-1] == SHORT_ID
 print("LAST SHORT OK")
 

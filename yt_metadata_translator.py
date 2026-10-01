@@ -78,6 +78,11 @@ STRINGS = {
         "metadata_fetched": "Title: {title} ({n} characters of description)",
         "translate_actual": "Translate the video's actual title/description",
         "tr_menu_title": "What do we translate?",
+        "tr_last_title": "Translating the latest video",
+        "tr_specific_title": "Specific videos — paste links one by one",
+        "tr_all_title": "Translating all videos",
+        "tr_longs": "Longs",
+        "tr_shorts": "Shorts",
         "tr_last": "Latest video",
         "tr_long": "Long",
         "tr_short": "Short",
@@ -260,6 +265,11 @@ STRINGS = {
         "metadata_fetched": "Назва: {title} ({n} символів опису)",
         "translate_actual": "Перекласти актуальні дані з відео",
         "tr_menu_title": "Що перекладаємо?",
+        "tr_last_title": "Перекладаємо останнє відео",
+        "tr_specific_title": "Конкретні відео — вставляй посилання по одному",
+        "tr_all_title": "Перекладаємо всі відео",
+        "tr_longs": "Лонги",
+        "tr_shorts": "Шортси",
         "tr_last": "Останнє відео",
         "tr_long": "Лонг",
         "tr_short": "Шортс",
@@ -442,6 +452,11 @@ STRINGS = {
         "metadata_fetched": "Название: {title} ({n} символов описания)",
         "translate_actual": "Перевести актуальные данные с видео",
         "tr_menu_title": "Что переводим?",
+        "tr_last_title": "Переводим последнее видео",
+        "tr_specific_title": "Конкретные видео — вставляй ссылки по одной",
+        "tr_all_title": "Переводим все видео",
+        "tr_longs": "Лонги",
+        "tr_shorts": "Шортсы",
         "tr_last": "Последнее видео",
         "tr_long": "Лонг",
         "tr_short": "Шортс",
@@ -2584,26 +2599,35 @@ def translation_menu(youtube, profile, profiles):
     while True:
         clear_console()
         print(f"\n{t('tr_menu_title')}\n")
-        print(f"1. {t('tr_last')}")
-        print(f"   1.1. {t('tr_long')}")
-        print(f"   1.2. {t('tr_short')}")
-        print(f"2. {t('tr_specific')}")
-        print(f"3. {t('tr_all')}")
-        print(f"   3.1. {t('tr_long')}")
-        print(f"   3.2. {t('tr_short')}")
-        print(f"0. {t('back')}")
-        choice = input(f"\n{t('menu_choice')}").strip().lower().replace(" ", ".")
+        print(f"1) {t('tr_last')}")
+        print(f"2) {t('tr_specific')}")
+        print(f"3) {t('tr_all')}")
+        print(f"0) {t('back')}")
+        choice = input(f"\n{t('menu_choice')}").strip()
 
-        if choice in ("0", "q", "back"):
+        if choice == "0":
             return
-        if choice in ("1.1", "1.2"):
-            mode = "last_long" if choice == "1.1" else "last_short"
-            targets = _pick_translation_targets(videos, durations, mode)
-            if not targets:
-                print(t("tr_no_matches"))
-                continue
-            _translate_one(youtube, profile, targets[0])
+        if choice == "1":
+            # Last video: pick long or short
+            while True:
+                clear_console()
+                print(f"\n{t('tr_last_title')}\n")
+                print(f"1) {t('tr_long')}")
+                print(f"2) {t('tr_short')}")
+                print(f"0) {t('back')}")
+                pick = input(f"\n{t('menu_choice')}").strip()
+                if pick == "0":
+                    break
+                mode = "last_long" if pick == "1" else "last_short"
+                targets = _pick_translation_targets(videos, durations, mode)
+                if not targets:
+                    print(t("tr_no_matches"))
+                    continue
+                _translate_one(youtube, profile, targets[0])
+                input(t("press_enter"))
         elif choice == "2":
+            clear_console()
+            print(f"\n{t('tr_specific_title')}\n")
             while True:
                 link = input(t("video_link_prompt")).strip()
                 if link in ("0", ""):
@@ -2613,19 +2637,30 @@ def translation_menu(youtube, profile, profiles):
                     print(t("bad_video_link"))
                     continue
                 _translate_one(youtube, profile, video_id)
-        elif choice in ("3.1", "3.2"):
-            mode = "all_long" if choice == "3.1" else "all_short"
-            targets = _pick_translation_targets(videos, durations, mode)
-            if not targets:
-                print(t("tr_no_matches"))
-                continue
-            if not confirm(t("tr_batch_confirm").format(n=len(targets))):
-                continue
-            done = 0
-            for video_id in targets:
-                if _translate_one(youtube, profile, video_id):
-                    done += 1
-            print(t("tr_done").format(n=done))
+        elif choice == "3":
+            # All videos: longs or shorts in one batch
+            while True:
+                clear_console()
+                print(f"\n{t('tr_all_title')}\n")
+                print(f"1) {t('tr_longs')}")
+                print(f"2) {t('tr_shorts')}")
+                print(f"0) {t('back')}")
+                pick = input(f"\n{t('menu_choice')}").strip()
+                if pick == "0":
+                    break
+                mode = "all_long" if pick == "1" else "all_short"
+                targets = _pick_translation_targets(videos, durations, mode)
+                if not targets:
+                    print(t("tr_no_matches"))
+                    continue
+                if not confirm(t("tr_batch_confirm").format(n=len(targets))):
+                    continue
+                done = 0
+                for video_id in targets:
+                    if _translate_one(youtube, profile, video_id):
+                        done += 1
+                print(t("tr_done").format(n=done))
+                input(t("press_enter"))
         else:
             print(t("invalid_choice"))
 
