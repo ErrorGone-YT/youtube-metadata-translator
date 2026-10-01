@@ -139,6 +139,39 @@ STRINGS = {
         "schedule_saved": "✅ {day}: {time}",
         "set_languages": "Translation languages",
         "set_parallel": "Number of parallel translations",
+        "api_title": "🔌 API providers",
+        "api_add_item": "Add a new provider",
+        "api_edit_item": "Edit provider settings",
+        "api_delete_item": "Delete a provider",
+        "api_add_title": "— Adding a new provider —",
+        "api_cancel_hint": "(type 0 at any step to cancel)",
+        "api_kind_prompt": "Provider type:\n1) Local\n2) Online\n> ",
+        "api_local": "Local",
+        "api_online": "Online",
+        "api_name_prompt": "Provider display name: ",
+        "api_base_prompt": "Base URL (Enter — {default}): ",
+        "api_keys_prompt": "API keys, comma-separated (Enter — skip): ",
+        "api_model_prompt": "Model name: ",
+        "api_added": "✅ Provider '{name}' added.",
+        "api_make_active": "Make it the active provider? (yes/no): ",
+        "api_pick": "Provider number: ",
+        "api_edit_title": "— Editing provider: {name} —",
+        "api_edit_name": "Name",
+        "api_edit_base": "Base URL",
+        "api_edit_model": "Model",
+        "api_edit_addkeys": "Add API keys",
+        "api_edit_delkey": "Remove a key",
+        "api_edit_active": "Make active",
+        "api_keys_current": "Current keys ({n}):",
+        "api_no_keys": "No keys yet.",
+        "api_deleted": "✅ Provider deleted.",
+        "api_canceled": "Canceled.",
+        "api_need_url": "❌ A base URL is required for an online provider.",
+        "api_enter_new": "New value (Enter — keep): ",
+        "api_added_keys": "✅ {n} key(s) added.",
+        "api_now_active": "✅ '{name}' is now the active provider.",
+        "api_delete_confirm": "Delete provider '{name}'? (yes/no): ",
+        "api_keys_count": "{n} keys",
         "back": "Back",
         "name_saved": "✅ Got it, {name}!",
         "languages_screen_title": "🌍 Translation languages — {channel}",
@@ -241,6 +274,39 @@ STRINGS = {
         "schedule_saved": "✅ {day}: {time}",
         "set_languages": "Мови перекладу",
         "set_parallel": "Кількість одночасних перекладів",
+        "api_title": "🔌 API-провайдери",
+        "api_add_item": "Додати нового провайдера",
+        "api_edit_item": "Змінити налаштування провайдера",
+        "api_delete_item": "Видалити провайдера",
+        "api_add_title": "— Додавання нового провайдера —",
+        "api_cancel_hint": "(0 на будь-якому кроці — скасувати)",
+        "api_kind_prompt": "Тип провайдера:\n1) Локальний\n2) Онлайн\n> ",
+        "api_local": "Локальний",
+        "api_online": "Онлайн",
+        "api_name_prompt": "Ім'я провайдера для показу: ",
+        "api_base_prompt": "Base URL (Enter — {default}): ",
+        "api_keys_prompt": "API-ключі через кому (Enter — пропустити): ",
+        "api_model_prompt": "Назва моделі: ",
+        "api_added": "✅ Провайдера '{name}' додано.",
+        "api_make_active": "Зробити його активним? (так/ні): ",
+        "api_pick": "Номер провайдера: ",
+        "api_edit_title": "— Зміна провайдера: {name} —",
+        "api_edit_name": "Ім'я",
+        "api_edit_base": "Base URL",
+        "api_edit_model": "Модель",
+        "api_edit_addkeys": "Додати API-ключі",
+        "api_edit_delkey": "Видалити ключ",
+        "api_edit_active": "Зробити активним",
+        "api_keys_current": "Поточні ключі ({n}):",
+        "api_no_keys": "Ключів ще немає.",
+        "api_deleted": "✅ Провайдера видалено.",
+        "api_canceled": "Скасовано.",
+        "api_need_url": "❌ Для онлайн-провайдера потрібен base URL.",
+        "api_enter_new": "Нове значення (Enter — залишити): ",
+        "api_added_keys": "✅ Додано ключів: {n}.",
+        "api_now_active": "✅ '{name}' тепер активний провайдер.",
+        "api_delete_confirm": "Видалити провайдера '{name}'? (так/ні): ",
+        "api_keys_count": "ключів: {n}",
         "back": "Назад",
         "name_saved": "✅ Домовилися, {name}!",
         "languages_screen_title": "🌍 Мови перекладу — {channel}",
@@ -343,6 +409,39 @@ STRINGS = {
         "schedule_saved": "✅ {day}: {time}",
         "set_languages": "Языки перевода",
         "set_parallel": "Количество одновременных переводов",
+        "api_title": "🔌 API-провайдеры",
+        "api_add_item": "Добавить нового провайдера",
+        "api_edit_item": "Изменить настройки провайдера",
+        "api_delete_item": "Удалить провайдера",
+        "api_add_title": "— Добавление нового провайдера —",
+        "api_cancel_hint": "(0 на любом шаге — отмена)",
+        "api_kind_prompt": "Тип провайдера:\n1) Локальный\n2) Онлайн\n> ",
+        "api_local": "Локальный",
+        "api_online": "Онлайн",
+        "api_name_prompt": "Отображаемое имя провайдера: ",
+        "api_base_prompt": "Base URL (Enter — {default}): ",
+        "api_keys_prompt": "API-ключи через запятую (Enter — пропустить): ",
+        "api_model_prompt": "Название модели: ",
+        "api_added": "✅ Провайдер '{name}' добавлен.",
+        "api_make_active": "Сделать его активным? (да/нет): ",
+        "api_pick": "Номер провайдера: ",
+        "api_edit_title": "— Изменение провайдера: {name} —",
+        "api_edit_name": "Имя",
+        "api_edit_base": "Base URL",
+        "api_edit_model": "Модель",
+        "api_edit_addkeys": "Добавить API-ключи",
+        "api_edit_delkey": "Удалить ключ",
+        "api_edit_active": "Сделать активным",
+        "api_keys_current": "Текущие ключи ({n}):",
+        "api_no_keys": "Ключей ещё нет.",
+        "api_deleted": "✅ Провайдер удалён.",
+        "api_canceled": "Отменено.",
+        "api_need_url": "❌ Для онлайн-провайдера нужен base URL.",
+        "api_enter_new": "Новое значение (Enter — оставить): ",
+        "api_added_keys": "✅ Добавлено ключей: {n}.",
+        "api_now_active": "✅ '{name}' теперь активный провайдер.",
+        "api_delete_confirm": "Удалить провайдера '{name}'? (да/нет): ",
+        "api_keys_count": "ключей: {n}",
         "back": "Назад",
         "name_saved": "✅ Договорились, {name}!",
         "languages_screen_title": "🌍 Языки перевода — {channel}",
@@ -806,11 +905,95 @@ def resolve_llm_provider(config):
     return "lmstudio"
 
 
-def translator_ready(config=None):
-    """True when a cloud translation key is available (LM Studio alone doesn't count)."""
+# ---------------------------------------------------------------------------
+# API provider registry
+# ---------------------------------------------------------------------------
+
+PROVIDERS_FILE = "api_providers.json"
+
+_openai_lock = threading.Lock()
+_openai_offsets = {}
+
+
+def _legacy_provider_entries():
+    """Seed the registry from the legacy key files and local_llm.json."""
+    llm = load_local_llm_config()
+    providers = []
     try:
-        config = config or load_local_llm_config()
-        return resolve_llm_provider(config) != "lmstudio"
+        providers.append({
+            "id": "codecraft", "name": "CodeCraft", "kind": "openai", "auth": True,
+            "base_url": llm.get("codecraft_base_url", DEFAULT_CODECRAFT_BASE_URL),
+            "api_keys": load_codecraft_api_keys(),
+            "model": llm.get("codecraft_model", DEFAULT_CODECRAFT_MODEL),
+        })
+    except (FileNotFoundError, ValueError):
+        pass
+    try:
+        providers.append({
+            "id": "gemini", "name": "Gemini", "kind": "gemini", "auth": True,
+            "base_url": "",
+            "api_keys": load_gemini_api_keys(),
+            "model": llm.get("gemini_model", DEFAULT_GEMINI_MODEL),
+        })
+    except (FileNotFoundError, ValueError):
+        pass
+    try:
+        providers.append({
+            "id": "ollama", "name": "Ollama", "kind": "openai", "auth": True,
+            "base_url": llm.get("ollama_base_url", DEFAULT_OLLAMA_BASE_URL),
+            "api_keys": load_ollama_api_keys(),
+            "model": llm.get("ollama_model", DEFAULT_OLLAMA_MODEL),
+        })
+    except (FileNotFoundError, ValueError):
+        pass
+    providers.append({
+        "id": "lmstudio", "name": "LM Studio", "kind": "openai", "auth": False,
+        "base_url": llm.get("base_url", "http://localhost:1234/v1"),
+        "api_keys": [], "model": llm.get("model", "auto"),
+    })
+    return providers
+
+
+def load_provider_registry():
+    try:
+        reg = load_json_file(PROVIDERS_FILE)
+        if isinstance(reg, dict) and isinstance(reg.get("providers"), list) and reg["providers"]:
+            return reg
+    except (FileNotFoundError, ValueError):
+        pass
+    providers = _legacy_provider_entries()
+    reg = {"active": providers[0]["id"], "providers": providers}
+    save_json_file(PROVIDERS_FILE, reg)
+    return reg
+
+
+def save_provider_registry(reg):
+    save_json_file(PROVIDERS_FILE, reg)
+
+
+def get_active_provider(reg=None):
+    reg = reg or load_provider_registry()
+    active_id = reg.get("active")
+    for provider in reg["providers"]:
+        if provider["id"] == active_id:
+            return provider
+    return reg["providers"][0] if reg["providers"] else None
+
+
+def suggested_parallelism(config=None):
+    """How many translations can safely run at once: one per cloud API key."""
+    provider = get_active_provider()
+    if provider and provider.get("api_keys"):
+        return max(1, len(provider["api_keys"]))
+    if provider and not provider.get("auth"):
+        return 2  # local single model barely benefits from more threads
+    return 1
+
+
+def translator_ready(config=None):
+    """True when the active provider is set up (keys present, or a local server)."""
+    try:
+        return get_active_provider() is not None
     except (FileNotFoundError, ValueError):
         return False
 
@@ -843,15 +1026,15 @@ def gemini_http_error(response):
     return f"Gemini HTTP {response.status_code}: {detail or response.text[:300]}"
 
 
-def request_gemini_completion(prompt, system_prompt, config):
+def request_gemini_completion(prompt, system_prompt, config, provider):
     """One generateContent call against the Gemini API; keys round-robin."""
     global _gemini_key_offset
-    all_keys = load_gemini_api_keys()
+    all_keys = provider.get("api_keys") or []
     keys = [key for key in all_keys if key not in _gemini_dead_keys] or all_keys
     with _gemini_key_lock:
         start = _gemini_key_offset % len(keys)
         _gemini_key_offset += 1
-    model = config.get("gemini_model", DEFAULT_GEMINI_MODEL)
+    model = provider.get("model", DEFAULT_GEMINI_MODEL)
     is_gemma = model.startswith("gemma")
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
     generation_config = {
@@ -919,15 +1102,22 @@ _ollama_key_lock = threading.Lock()
 _ollama_key_offset = 0
 
 
-def request_ollama_completion(prompt, system_prompt, config):
-    """Ollama cloud chat completion; keys round-robin, dead keys skipped."""
-    global _ollama_key_offset
-    keys = load_ollama_api_keys()
-    with _ollama_key_lock:
-        start = _ollama_key_offset % len(keys)
-        _ollama_key_offset += 1
-    endpoint = config.get("ollama_base_url", DEFAULT_OLLAMA_BASE_URL).rstrip("/")
-    model = config.get("ollama_model", DEFAULT_OLLAMA_MODEL)
+def request_openai_completion(provider, prompt, system_prompt, config):
+    """One chat completion against any OpenAI-compatible provider.
+
+    Covers online providers (Bearer key) and local ones (no auth).
+    Keys rotate round-robin; dead keys (401/403/404) are skipped when
+    other keys remain.
+    """
+    keys = provider.get("api_keys") or []
+    pid = provider["id"]
+    with _openai_lock:
+        start = _openai_offsets.get(pid, 0) % len(keys)
+        _openai_offsets[pid] = start + 1
+    endpoint = provider["base_url"].rstrip("/")
+    model = provider.get("model", "auto")
+    if model == "auto":
+        model = get_local_llm_model({"base_url": endpoint})
     payload = {
         "model": model,
         "messages": [
@@ -935,71 +1125,30 @@ def request_ollama_completion(prompt, system_prompt, config):
             {"role": "user", "content": prompt},
         ],
         "temperature": config.get("temperature", 0.25),
-        "max_tokens": config.get("max_tokens", 2400),
+        # Reasoning models spend tokens on thinking before the answer; a tight
+        # cap leaves content empty, so online providers get a generous budget.
+        "max_tokens": provider.get("max_tokens") or (8192 if provider.get("auth") else 2400),
         "stream": False,
         "response_format": {"type": "json_object"},
     }
+    headers = {}
     last_error = None
     for offset in range(len(keys)):
         key = keys[(start + offset) % len(keys)]
+        if key:
+            headers = {"Authorization": f"Bearer {key}"}
         response = requests.post(
             f"{endpoint}/chat/completions",
             json=payload,
-            headers={"Authorization": f"Bearer {key}"},
+            headers=headers,
             timeout=config.get("timeout_seconds", 180),
         )
         if response.status_code in (401, 403, 404) and offset < len(keys) - 1:
-            last_error = f"Ollama HTTP {response.status_code}: {response.text[:200]}"
+            last_error = f"HTTP {response.status_code}: {response.text[:200]}"
+            print(f"⚠️ Ключ #{start + offset + 1} не работает, пробую следующий.")
             continue
         if response.status_code != 200:
-            raise RuntimeError(f"Ollama HTTP {response.status_code}: {response.text[:300]}")
-        answer = response.json()
-        content = answer.get("choices", [{}])[0].get("message", {}).get("content")
-        if not content:
-            raise ValueError(f"Ollama empty answer: {str(answer)[:200]}")
-        return content
-    raise RuntimeError(f"{last_error} — none of {len(keys)} Ollama keys worked.")
-
-
-_codecraft_key_lock = threading.Lock()
-_codecraft_key_offset = 0
-
-
-def request_codecraft_completion(prompt, system_prompt, config):
-    """CodeCraft chat completion; keys round-robin, dead keys skipped."""
-    global _codecraft_key_offset
-    keys = load_codecraft_api_keys()
-    with _codecraft_key_lock:
-        start = _codecraft_key_offset % len(keys)
-        _codecraft_key_offset += 1
-    endpoint = config.get("codecraft_base_url", DEFAULT_CODECRAFT_BASE_URL).rstrip("/")
-    model = config.get("codecraft_model", DEFAULT_CODECRAFT_MODEL)
-    payload = {
-        "model": model,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": prompt},
-        ],
-        "temperature": config.get("temperature", 0.25),
-        # Reasoning tokens count toward max_tokens — a tight cap leaves content empty.
-        "max_tokens": config.get("codecraft_max_tokens", 8192),
-        "stream": False,
-        "response_format": {"type": "json_object"},
-    }
-    last_error = None
-    for offset in range(len(keys)):
-        key = keys[(start + offset) % len(keys)]
-        response = requests.post(
-            f"{endpoint}/chat/completions",
-            json=payload,
-            headers={"Authorization": f"Bearer {key}"},
-            timeout=config.get("timeout_seconds", 180),
-        )
-        if response.status_code in (401, 403) and offset < len(keys) - 1:
-            last_error = f"CodeCraft HTTP {response.status_code}: {response.text[:200]}"
-            continue
-        if response.status_code != 200:
-            message = f"CodeCraft HTTP {response.status_code}: {response.text[:300]}"
+            message = f"HTTP {response.status_code}: {response.text[:300]}"
             retry_after = response.headers.get("Retry-After", "")
             if response.status_code == 429 and retry_after:
                 message += f" (retry in {retry_after}s)"
@@ -1009,10 +1158,10 @@ def request_codecraft_completion(prompt, system_prompt, config):
         content = choice.get("message", {}).get("content")
         if not content:
             raise ValueError(
-                f"CodeCraft empty answer (finish_reason={choice.get('finish_reason')}): {str(answer)[:150]}"
+                f"Пустой ответ (finish_reason={choice.get('finish_reason')}): {str(answer)[:150]}"
             )
         return content
-    raise RuntimeError(f"{last_error} — none of {len(keys)} CodeCraft keys worked.")
+    raise RuntimeError(f"{last_error} — ни один из {len(keys)} ключей провайдера не сработал.")
 
 
 def get_local_llm_model(config):
@@ -1026,25 +1175,6 @@ def get_local_llm_model(config):
     if not models:
         raise RuntimeError("LM Studio is reachable, but no model is loaded.")
     return models[0]["id"]
-
-
-def request_lmstudio_completion(endpoint, model, prompt, system_prompt, config):
-    payload = {
-        "model": model,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": prompt},
-        ],
-        "temperature": config.get("temperature", 0.25),
-        "max_tokens": config.get("max_tokens", 2400),
-        "stream": False,
-    }
-    response = requests.post(
-        f"{endpoint}/chat/completions", json=payload,
-        timeout=config.get("timeout_seconds", 180),
-    )
-    response.raise_for_status()
-    return response.json()["choices"][0]["message"]["content"]
 
 
 def parse_llm_json(content):
@@ -1128,10 +1258,10 @@ def clean_existing_series_footers(localizations, source_description):
     return changed
 
 
-def localize_language_via_llm(provider, endpoint, model, config, language_code,
+def localize_language_via_llm(provider, config, language_code,
                               language_name, source_title, source_description):
     """Localize metadata for one language; raises after the final retry fails."""
-    max_attempts = max(1, config.get("retry_attempts", 6 if provider in ("gemini", "codecraft") else 3))
+    max_attempts = max(1, config.get("retry_attempts", 6 if provider.get("auth") else 3))
     system_prompt = "You are a precise multilingual YouTube metadata localizer."
     series_names = load_series_names()
     series_rule = ""
@@ -1157,14 +1287,10 @@ SOURCE DESCRIPTION:
 {source_description}"""
     for attempt in range(1, max_attempts + 1):
         try:
-            if provider == "gemini":
-                content = request_gemini_completion(prompt, system_prompt, config)
-            elif provider == "ollama":
-                content = request_ollama_completion(prompt, system_prompt, config)
-            elif provider == "codecraft":
-                content = request_codecraft_completion(prompt, system_prompt, config)
+            if provider["kind"] == "gemini":
+                content = request_gemini_completion(prompt, system_prompt, config, provider)
             else:
-                content = request_lmstudio_completion(endpoint, model, prompt, system_prompt, config)
+                content = request_openai_completion(provider, prompt, system_prompt, config)
             answer = parse_llm_json(content)
             title = answer["title"].strip()
             description = remove_unrequested_series_lines(
@@ -1194,20 +1320,11 @@ SOURCE DESCRIPTION:
 
 
 def localize_metadata_via_llm(metadata, target_languages=None):
-    """Create localized titles and descriptions via the resolved provider."""
+    """Create localized titles and descriptions via the active API provider."""
     config = load_local_llm_config()
-    provider = resolve_llm_provider(config)
-    endpoint = config.get("base_url", "http://localhost:1234/v1").rstrip("/")
-    if provider == "gemini":
-        model = config.get("gemini_model", DEFAULT_GEMINI_MODEL)
-    elif provider == "ollama":
-        endpoint = config.get("ollama_base_url", DEFAULT_OLLAMA_BASE_URL).rstrip("/")
-        model = config.get("ollama_model", DEFAULT_OLLAMA_MODEL)
-    elif provider == "codecraft":
-        endpoint = config.get("codecraft_base_url", DEFAULT_CODECRAFT_BASE_URL).rstrip("/")
-        model = config.get("codecraft_model", DEFAULT_CODECRAFT_MODEL)
-    else:
-        model = get_local_llm_model(config)
+    provider = get_active_provider()
+    if provider is None:
+        raise RuntimeError("No translation provider configured.")
     source_title = metadata.get("title", "").strip()
     source_description = metadata.get("description", "").strip()
     if not source_title or not source_description:
@@ -1235,7 +1352,7 @@ def localize_metadata_via_llm(metadata, target_languages=None):
                 # Stagger starts so all threads don't slam the model at once.
                 time.sleep(idx * 1.5)
                 return localize_language_via_llm(
-                    provider, endpoint, model, config,
+                    provider, config,
                     code, language_names.get(code, code), source_title, source_description,
                 )
             futures = {pool.submit(delayed, idx, code): code for idx, code in enumerate(queued)}
@@ -1354,7 +1471,8 @@ def available_language_catalog():
 
 
 def profile_slug(display_name, existing_ids):
-    base = re.sub(r"[^a-z0-9]+", "_", display_name.lower()).strip("_") or "channel"
+    # \w keeps unicode letters, so cyrillic profile/provider names stay readable.
+    base = re.sub(r"[^\w]+", "_", display_name.lower(), flags=re.UNICODE).strip("_") or "channel"
     candidate = base
     number = 2
     while candidate in existing_ids:
@@ -1641,23 +1759,6 @@ def choose_languages_from_catalog(selected):
     return [codes[index] for index in sorted(chosen)]
 
 
-def suggested_parallelism(config):
-    """How many translations can safely run at once: one per cloud API key."""
-    provider = resolve_llm_provider(config)
-    key_counts = {
-        "gemini": load_gemini_api_keys,
-        "ollama": load_ollama_api_keys,
-        "codecraft": load_codecraft_api_keys,
-    }
-    loader = key_counts.get(provider)
-    if loader:
-        try:
-            return max(1, len(loader()))
-        except (FileNotFoundError, ValueError):
-            return 1
-    return 2
-
-
 def resolve_parallelism(config):
     """'auto' (or anything unparsable) = one thread per cloud API key."""
     value = config.get("max_parallel_languages", "auto")
@@ -1725,6 +1826,7 @@ def translations_menu(profile, profiles):
         print(f"\n{t('settings_translations')}")
         print(f"1) {t('set_languages')}")
         print(f"2) {t('set_parallel')}")
+        print(f"3) {t('api_title')}")
         print(f"0) {t('back')}")
         choice = input(f"\n{t('menu_choice')}").strip()
         if choice == "0":
@@ -1733,6 +1835,8 @@ def translations_menu(profile, profiles):
             manage_profile_languages(profile, profiles)
         elif choice == "2":
             manage_parallelism_setting()
+        elif choice == "3":
+            api_providers_menu()
         else:
             print(t("invalid_choice"))
 
@@ -1863,6 +1967,188 @@ def schedule_menu(profile, profiles):
             publ_calendar[day] = [answer]
             save_json_file(profile["publ_calendar_file"], publ_calendar)
             print(t("schedule_saved").format(day=translate_day(day), time=answer))
+        else:
+            print(t("invalid_choice"))
+
+
+def _ask_or_cancel(prompt, default=None):
+    """Prompt where typing 0 cancels the whole flow (returns None)."""
+    answer = input(prompt).strip()
+    if answer == "0":
+        return None
+    return answer or default
+
+
+def _mask_key(key):
+    return key[:10] + "…" if len(key) > 12 else key
+
+
+def add_provider_wizard(reg):
+    clear_console()
+    print(t("api_add_title"))
+    print(t("api_cancel_hint"))
+    kind = input(t("api_kind_prompt")).strip()
+    if kind == "0":
+        print(t("api_canceled"))
+        return
+    if kind not in ("1", "2"):
+        print(t("invalid_choice"))
+        return
+    auth = kind == "2"
+    online = auth
+
+    name = _ask_or_cancel(t("api_name_prompt"))
+    if name is None:
+        print(t("api_canceled"))
+        return
+    if not name:
+        name = t("api_online") if online else t("api_local")
+
+    base_url = ""
+    while not base_url:
+        default_base = "" if online else "http://localhost:1234/v1"
+        base_url = _ask_or_cancel(t("api_base_prompt").format(default=default_base)) or default_base
+        if base_url is None:
+            print(t("api_canceled"))
+            return
+        if not base_url:
+            print(t("api_need_url"))
+
+    keys_raw = _ask_or_cancel(t("api_keys_prompt"), "") or ""
+    keys = [key.strip() for key in re.split(r"[,\s]+", keys_raw) if key.strip()]
+
+    model = _ask_or_cancel(t("api_model_prompt"), "auto" if not online else None)
+    if model is None:
+        print(t("api_canceled"))
+        return
+
+    provider = {
+        "id": profile_slug(name, [p["id"] for p in reg["providers"]]),
+        "name": name,
+        "kind": "openai",
+        "auth": auth,
+        "base_url": base_url,
+        "api_keys": keys,
+        "model": model or "auto",
+    }
+    reg["providers"].append(provider)
+    save_provider_registry(reg)
+    print(t("api_added").format(name=name))
+    if confirm(t("api_make_active")):
+        reg["active"] = provider["id"]
+        save_provider_registry(reg)
+
+
+def edit_provider_menu(reg, provider):
+    while True:
+        clear_console()
+        print(t("api_edit_title").format(name=provider["name"]))
+        print(f"base URL: {provider.get('base_url') or '—'}")
+        print(f"{t('api_edit_model')}: {provider.get('model', 'auto')}")
+        keys = provider.get("api_keys", [])
+        if keys:
+            print(t("api_keys_current").format(n=len(keys)))
+            for index, key in enumerate(keys, start=1):
+                print(f"  {index}) {_mask_key(key)}")
+        else:
+            print(t("api_no_keys"))
+        print(f"\n1) {t('api_edit_name')}")
+        print(f"2) {t('api_edit_base')}")
+        print(f"3) {t('api_edit_model')}")
+        print(f"4) {t('api_edit_addkeys')}")
+        print(f"5) {t('api_edit_delkey')}")
+        print(f"6) {t('api_edit_active')}")
+        print(f"0) {t('back')}")
+        choice = input(f"\n{t('menu_choice')}").strip()
+
+        if choice == "0":
+            return
+        if choice == "1":
+            answer = input(t("api_enter_new")).strip()
+            if answer:
+                provider["name"] = answer
+        elif choice == "2":
+            answer = input(t("api_enter_new")).strip()
+            if answer:
+                provider["base_url"] = answer
+        elif choice == "3":
+            answer = input(t("api_enter_new")).strip()
+            if answer:
+                provider["model"] = answer
+        elif choice == "4":
+            answer = input(t("api_keys_prompt")).strip()
+            new_keys = [key.strip() for key in re.split(r"[,\s]+", answer) if key.strip()]
+            if new_keys:
+                provider.setdefault("api_keys", []).extend(new_keys)
+                print(t("api_added_keys").format(n=len(new_keys)))
+        elif choice == "5":
+            if not keys:
+                print(t("api_no_keys"))
+                continue
+            answer = input(t("remove_prompt")).strip()
+            if answer.isdigit() and 1 <= int(answer) <= len(keys):
+                keys.pop(int(answer) - 1)
+        elif choice == "6":
+            reg["active"] = provider["id"]
+            print(t("api_now_active").format(name=provider["name"]))
+        else:
+            print(t("invalid_choice"))
+            continue
+        save_provider_registry(reg)
+
+
+def delete_provider_menu(reg):
+    active = get_active_provider(reg)
+    for index, provider in enumerate(reg["providers"], start=1):
+        mark = "●" if active and provider["id"] == active["id"] else " "
+        print(f"{mark} {index}) {provider['name']} — {provider.get('model', 'auto')}")
+    answer = input(t("api_pick")).strip()
+    if not answer.isdigit() or not 1 <= int(answer) <= len(reg["providers"]):
+        print(t("invalid_choice"))
+        return
+    provider = reg["providers"][int(answer) - 1]
+    if not confirm(t("api_delete_confirm").format(name=provider["name"])):
+        return
+    reg["providers"].remove(provider)
+    if reg.get("active") == provider["id"] and reg["providers"]:
+        reg["active"] = reg["providers"][0]["id"]
+    save_provider_registry(reg)
+    print(t("api_deleted"))
+
+
+def api_providers_menu():
+    while True:
+        clear_console()
+        reg = load_provider_registry()
+        active = get_active_provider(reg)
+        print(f"\n{t('api_title')}")
+        for index, provider in enumerate(reg["providers"], start=1):
+            mark = "●" if active and provider["id"] == active["id"] else " "
+            keys_n = len(provider.get("api_keys", []))
+            kind = t("api_online") if provider.get("auth") else t("api_local")
+            print(f"{mark} {index}) {provider['name']} [{kind}] — {provider.get('model', 'auto')} "
+                  f"({t('api_keys_count').format(n=keys_n)})")
+        print(f"\n1) {t('api_add_item')}")
+        print(f"2) {t('api_edit_item')}")
+        print(f"3) {t('api_delete_item')}")
+        print(f"0) {t('back')}")
+        choice = input(f"\n{t('menu_choice')}").strip()
+
+        if choice == "0":
+            return
+        if choice == "1":
+            add_provider_wizard(reg)
+        elif choice == "2":
+            print(t("api_pick"))
+            for index, provider in enumerate(reg["providers"], start=1):
+                print(f"  {index}) {provider['name']}")
+            answer = input(t("menu_choice")).strip()
+            if answer.isdigit() and 1 <= int(answer) <= len(reg["providers"]):
+                edit_provider_menu(reg, reg["providers"][int(answer) - 1])
+            else:
+                print(t("invalid_choice"))
+        elif choice == "3":
+            delete_provider_menu(reg)
         else:
             print(t("invalid_choice"))
 
