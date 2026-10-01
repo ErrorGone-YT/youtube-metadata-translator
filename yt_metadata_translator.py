@@ -70,6 +70,14 @@ STRINGS = {
         "menu_playlist": "Add to playlist",
         "menu_schedule": "Scheduled publishing",
         "menu_settings": "Settings",
+        "menu_switch_profile": "Switch profile",
+        "source_choice_prompt": "Where do the title and description come from?\n1) From the video\n2) Enter manually\n> ",
+        "source_title_prompt": "New title (Enter — keep the video's one): ",
+        "source_desc_prompt": "Paste a new description? (2 — open the editor, Enter — keep the video's one): ",
+        "parts_prompt": "What do we translate?\n1) Everything\n2) Titles only\n3) Descriptions only\n> ",
+        "engine_ok": "✅ {code}: title {t}, description {d}",
+        "engine_failed": "❌ {code}: {error}",
+        "engine_retry": "⏳ Retry {code} ({attempt}/{attempts}), waiting {wait}s: {message}",
         "no_auth_hint": "❗ YouTube authorization didn't complete — restart the script and sign in.",
         "translating": "🌐 Translating into {n} languages...",
         "localization_failed": "⚠️ Translation was not saved:",
@@ -257,6 +265,14 @@ STRINGS = {
         "menu_playlist": "Додати до плейлиста",
         "menu_schedule": "Відкладена публікація",
         "menu_settings": "Налаштування",
+        "menu_switch_profile": "Змінити профіль",
+        "source_choice_prompt": "Звідки взяти назву та опис?\n1) З відео\n2) Вписати самому\n> ",
+        "source_title_prompt": "Нова назва (Enter — залишити з відео): ",
+        "source_desc_prompt": "Вставити новий опис? (2 — відкрити редактор, Enter — залишити з відео): ",
+        "parts_prompt": "Що перекладаємо?\n1) Усе\n2) Тільки назви\n3) Тільки описи\n> ",
+        "engine_ok": "✅ {code}: назва {t}, опис {d}",
+        "engine_failed": "❌ {code}: {error}",
+        "engine_retry": "⏳ Повтор {code} ({attempt}/{attempts}) за {wait}с: {message}",
         "no_auth_hint": "❗ Авторизація YouTube не завершена — перезапусти скрипт і увійди в акаунт.",
         "translating": "🌐 Перекладаю {n} мовами...",
         "localization_failed": "⚠️ Переклад не збережено:",
@@ -444,6 +460,14 @@ STRINGS = {
         "menu_playlist": "Добавить в плейлист",
         "menu_schedule": "Отложенная публикация",
         "menu_settings": "Настройки",
+        "menu_switch_profile": "Сменить профиль",
+        "source_choice_prompt": "Откуда взять название и описание?\n1) Из видео\n2) Вписать самому\n> ",
+        "source_title_prompt": "Новое название (Enter — оставить с видео): ",
+        "source_desc_prompt": "Вставить новое описание? (2 — открыть редактор, Enter — оставить с видео): ",
+        "parts_prompt": "Что переводим?\n1) Всё\n2) Только названия\n3) Только описания\n> ",
+        "engine_ok": "✅ {code}: название {t}, описание {d}",
+        "engine_failed": "❌ {code}: {error}",
+        "engine_retry": "⏳ Повтор {code} ({attempt}/{attempts}) через {wait}с: {message}",
         "no_auth_hint": "❗ Авторизация YouTube не завершена — перезапусти скрипт и войди в аккаунт.",
         "translating": "🌐 Перевожу на {n} языков...",
         "localization_failed": "⚠️ Перевод не сохранён:",
@@ -1511,12 +1535,13 @@ SOURCE DESCRIPTION:
                     wait_seconds = 10
                 else:
                     wait_seconds = 2
-            print(f"RETRY {language_code} ({attempt}/{max_attempts - 1}), waiting {wait_seconds}s: "
-                  f"{message.splitlines()[0]}")
+            print(t("engine_retry").format(
+                code=language_code, attempt=attempt, attempts=max_attempts - 1,
+                wait=wait_seconds, message=message.splitlines()[0]))
             time.sleep(wait_seconds)
 
 
-def localize_metadata_via_llm(metadata, target_languages=None):
+def localize_metadata_via_llm(metadata, target_languages=None, parts=("title", "description")):
     """Create localized titles and descriptions via the active API provider."""
     config = load_local_llm_config()
     provider = get_active_provider()
@@ -1558,15 +1583,23 @@ def localize_metadata_via_llm(metadata, target_languages=None):
                 try:
                     translated[language_code] = future.result()
                     result = translated[language_code]
-                    print(f"OK {language_code}: title {len(result['title'])}, description {len(result['description'])}")
+                    print(t("engine_ok").format(
+                        code=language_code,
+                        t=len(result['title']), d=len(result['description'])))
                 except Exception as error:
                     errors.append(f"{language_code}: {error}")
-                    print(f"FAILED {language_code}: {error}")
+                    print(t("engine_failed").format(code=language_code, error=error))
 
     if errors:
         raise RuntimeError("Localization failed for some languages:\n" + "\n".join(errors))
 
     ordered = {code: translated[code] for code in target_languages if code in translated}
+    for texts in ordered.values():
+        # Parts outside the requested scope keep the source text untouched.
+        if "title" not in parts:
+            texts["title"] = source_title
+        if "description" not in parts:
+            texts["description"] = source_description
     save_json_file(LOCALIZATIONS_FILE, ordered)
     return ordered
 
@@ -2486,7 +2519,7 @@ def _is_quota(error):
     return "quotaExceeded" in str(error)
 
 
-def run_localization(metadata, profile):
+def run_localization(metadata, profile, parts=("title", "description")):
     """Translate metadata into the profile's languages and save localizations.json."""
     try:
         localizations = load_json_file(LOCALIZATIONS_FILE)
@@ -2500,7 +2533,7 @@ def run_localization(metadata, profile):
         return False
     print(t("translating").format(n=len(target_languages)))
     try:
-        localize_metadata_via_llm(metadata, target_languages)
+        localize_metadata_via_llm(metadata, target_languages, parts)
     except Exception as error:
         print(f"\n{t('localization_failed')}: {error}")
         return False
@@ -2568,8 +2601,33 @@ def _pick_translation_targets(videos, durations, mode):
     return []
 
 
-def _translate_one(youtube, profile, video_id):
-    """Fetch the video's actual metadata, localize it and apply it back."""
+def _ask_parts():
+    """Which parts to translate: both, titles only, or descriptions only."""
+    print(t("parts_prompt"))
+    choice = input(t("menu_choice")).strip()
+    return {"1": ("title", "description"),
+            "2": ("title",),
+            "3": ("description",)}.get(choice, ("title", "description"))
+
+
+def _ask_source_overrides(metadata):
+    """Offer manual title/description; Enter keeps the video's own text."""
+    if input(t("source_choice_prompt")).strip() != "2":
+        return
+    title = input(t("source_title_prompt")).strip()
+    if title:
+        metadata["title"] = title
+    if input(t("source_desc_prompt")).strip() == "2":
+        try:
+            desc = get_description_from_dialog()
+            if desc and desc.strip():
+                metadata["description"] = normalize_description(desc)
+        except Exception:
+            pass  # dialog cancelled — keep the video's description
+
+
+def _translate_one(youtube, profile, video_id, parts=("title", "description"), ask_source=True):
+    """Fetch the video's metadata (or take the manual override), localize, apply back."""
     try:
         metadata = fetch_video_source_metadata(youtube, video_id)
     except (ValueError, HttpError) as error:
@@ -2577,8 +2635,10 @@ def _translate_one(youtube, profile, video_id):
         return False
     print(t("metadata_fetched").format(
         title=metadata["title"], n=len(metadata["description"])))
+    if ask_source:
+        _ask_source_overrides(metadata)
     save_json_file(METADATA_FILE, metadata)
-    if not run_localization(metadata, profile):
+    if not run_localization(metadata, profile, parts):
         return False
     localizations = load_json_file(LOCALIZATIONS_FILE)
     apply_translations(youtube, profile, video_id, metadata, localizations)
@@ -2623,11 +2683,14 @@ def translation_menu(youtube, profile, profiles):
                 if not targets:
                     print(t("tr_no_matches"))
                     continue
-                _translate_one(youtube, profile, targets[0])
+                parts = _ask_parts()
+                if not _translate_one(youtube, profile, targets[0], parts):
+                    continue
                 input(t("press_enter"))
         elif choice == "2":
             clear_console()
             print(f"\n{t('tr_specific_title')}\n")
+            parts = _ask_parts()
             while True:
                 link = input(t("video_link_prompt")).strip()
                 if link in ("0", ""):
@@ -2636,7 +2699,7 @@ def translation_menu(youtube, profile, profiles):
                 if not video_id:
                     print(t("bad_video_link"))
                     continue
-                _translate_one(youtube, profile, video_id)
+                _translate_one(youtube, profile, video_id, parts)
         elif choice == "3":
             # All videos: longs or shorts in one batch
             while True:
@@ -2655,9 +2718,10 @@ def translation_menu(youtube, profile, profiles):
                     continue
                 if not confirm(t("tr_batch_confirm").format(n=len(targets))):
                     continue
+                parts = _ask_parts()
                 done = 0
                 for video_id in targets:
-                    if _translate_one(youtube, profile, video_id):
+                    if _translate_one(youtube, profile, video_id, parts, ask_source=False):
                         done += 1
                 print(t("tr_done").format(n=done))
                 input(t("press_enter"))
@@ -2733,6 +2797,7 @@ def profile_menu(profile, profiles, youtube=None):
         print(f"2) {t('menu_playlist')}")
         print(f"3) {t('menu_schedule')}")
         print(f"4) {t('menu_settings')}")
+        print(f"5) {t('menu_switch_profile')}")
         print(f"0) {t('menu_exit')}")
         choice = input(f"\n{t('menu_choice')}").strip()
         if choice == "0":
@@ -2757,8 +2822,25 @@ def profile_menu(profile, profiles, youtube=None):
                 scheduled_publish_menu(youtube, profile, profiles)
         elif choice == "4":
             settings_menu(profile, profiles, youtube)
+        elif choice == "5":
+            return "switch"
         else:
             print(t("invalid_choice"))
+
+
+def _authorize(profile, profiles):
+    """Authorize a profile; returns the youtube service or None on failure."""
+    try:
+        print(t("auth_opening_browser"))
+        youtube = authenticate(profile)
+        refresh_profile_identity(youtube, profile, profiles)
+        print(t("auth_success").format(channel=profile.get("channel_title")))
+        time.sleep(1.5)  # a beat to read the success line, then straight to the menu
+        return youtube
+    except Exception as error:
+        print(t("auth_failed").format(error=error))
+        input(t("press_enter"))
+        return None
 
 
 def main():
@@ -2770,25 +2852,22 @@ def main():
             save_channel_profiles(profiles)
     secrets_files = ensure_secrets()
 
-    profile = None
-    youtube = None
-    if profiles["profiles"]:
-        profile = select_profile(profiles)
-    elif secrets_files:
-        profile = create_profile_wizard(profiles, secrets_files)
+    while True:
+        profile = None
+        youtube = None
+        if profiles["profiles"]:
+            profile = select_profile(profiles)
+        elif secrets_files:
+            profile = create_profile_wizard(profiles, secrets_files)
 
-    if profile:
-        try:
-            print(t("auth_opening_browser"))
-            youtube = authenticate(profile)
-            refresh_profile_identity(youtube, profile, profiles)
-            print(t("auth_success").format(channel=profile.get("channel_title")))
-            time.sleep(1.5)  # a beat to read the success line, then straight to the menu
-        except Exception as error:
-            print(t("auth_failed").format(error=error))
-            input(t("press_enter"))
-            return
+        if profile is None:
+            # No profile yet (secrets skipped) — settings-only menu, may come back.
+            if profile_menu(None, profiles, None) != "switch":
+                return
+            secrets_files = ensure_secrets()
+            continue
 
+        youtube = _authorize(profile, profiles)
         if youtube is not None:
             for issue_kind, issue in setup_issues(profile):
                 print(f"\n⚡ {issue}")
@@ -2798,7 +2877,8 @@ def main():
                     else:
                         api_providers_menu()
 
-    profile_menu(profile, profiles, youtube)
+        if profile_menu(profile, profiles, youtube) != "switch":
+            return
 
 
 if __name__ == "__main__":

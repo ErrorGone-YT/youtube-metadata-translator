@@ -75,12 +75,13 @@ m.get_channel_videos_all = lambda yt: ([
 m.fetch_video_source_metadata = lambda yt, vid: {
     "title": "Fresh title", "description": "Fresh description with\n\nblank line"}
 captured = {}
-def fake_localize(metadata, langs):
-    captured.update(metadata=metadata, langs=langs)
-    json.dump({code: {"title": f"T {code}", "description": f"D {code}"} for code in langs},
+def fake_localize(metadata, langs, parts=("title", "description")):
+    captured.update(metadata=metadata, langs=langs, parts=parts)
+    json.dump({code: {"title": f"T {code}", "description": f"D {code}" if "description" in parts else metadata["description"]} for code in langs},
               open(os.path.join(TMP, "localizations.json"), "w", encoding="utf-8"),
               ensure_ascii=False)
 m.localize_metadata_via_llm = fake_localize
+_orig_translate_one = m._translate_one
 
 def run(answers):
     it = iter(answers)
@@ -98,7 +99,7 @@ def run(answers):
     return buf.getvalue()
 
 # 1) Translation: translate actual data -> update -> add to defaults -> no schedule
-out = run(["1", "1", "1", "д", "н", "0", "0", "0", "0"])
+out = run(["1", "1", "1", "1", "1", "д", "н", "0", "0", "0", "0"])
 assert "Последнее видео" in out and "Fresh title" in out
 assert captured["langs"] == ["de", "ja"]
 assert "Перевожу на 2 языков" in out
@@ -150,23 +151,53 @@ print("NO-DEFAULTS WARN OK")
 
 # 6) batch modes: all longs and all shorts, picked by duration
 fetched = []
-def fake_translate_one(yt, profile, vid):
+def fake_translate_one(yt, profile, vid, parts=("title", "description"), ask_source=True):
     fetched.append(vid)
     return True
 m._translate_one = fake_translate_one
 m.get_channel_videos = lambda yt: m.get_channel_videos_all(yt)
 
-out = run(["1", "3", "1", "д", "0", "0", "0", "0"])
+out = run(["1", "3", "1", "д", "1", "0", "0", "0", "0"])
 assert fetched == [VIDEO_ID], fetched
 fetched.clear()
-out = run(["1", "3", "2", "д", "0", "0", "0", "0"])
+out = run(["1", "3", "2", "д", "1", "0", "0", "0", "0"])
 assert fetched == [SHORT_ID], fetched
 print("BATCH LONG/SHORT OK")
 
 # 7) last short
-out = run(["1", "1", "2", "н", "н", "0", "0", "0", "0"])
+out = run(["1", "1", "2", "1", "1", "н", "н", "0", "0", "0", "0"])
 assert fetched[-1] == SHORT_ID
 print("LAST SHORT OK")
+
+# restore the real _translate_one after the batch mocks
+m._translate_one = _orig_translate_one
+
+
+# 8) titles-only: description stays the source text after merge
+captured.clear()
+out = run(["1", "1", "1", "2", "1", "н", "н", "0", "0", "0", "0"])
+print("CAPTURED:", captured)
+print(out)
+assert captured["parts"] == ("title",)
+locs = json.load(open(os.path.join(TMP, "localizations.json"), encoding="utf-8"))
+assert locs["de"]["title"] == "T de"
+assert locs["de"]["description"] == "Fresh description with\n\nblank line"
+print("TITLES-ONLY MERGE OK")
+
+# 9) switch profile returns "switch"
+it = iter(["5", "0"])
+builtins.input = lambda *a, **k: next(it)
+buf = io.StringIO()
+with contextlib.redirect_stdout(buf):
+    result = m.profile_menu({"profile_id": "test", "display_name": "Тест", "channel_title": "Тестовый канал",
+                             "token_file": "profiles/test/token.pickle",
+                             "client_secrets_file": "client_secrets_test.json",
+                             "playlists": [], "default_playlists": [], "languages": ["de"],
+                             "publ_calendar_file": "profiles/test/calendar.json"},
+                            {"profiles": []}, youtube)
+assert result == "switch", result
+assert "Сменить профиль" in buf.getvalue()
+print("SWITCH PROFILE OK")
 
 shutil.rmtree(TMP)
 print("ALL MENU TESTS PASSED")
