@@ -1838,13 +1838,14 @@ def select_profile(profiles):
     secrets_files = find_secrets_files()
     while True:
         clear_console()
-        print(t("profile_pick_title"))
+        lines = []
         for index, profile in enumerate(profiles["profiles"], start=1):
             name = profile.get("channel_title") or profile.get("display_name")
             token_exists = os.path.exists(data_file_path(profile["token_file"]))
             status = "✅" if token_exists else "🔑"
-            print(f"{index}) {name} ({status})")
-        print(t("profile_pick_add"))
+            lines.append(f"{index}) {name} ({status})")
+        lines.append(t("profile_pick_add"))
+        show_menu(t("profile_pick_title"), lines)
         choice = input(t("profile_pick_prompt")).strip().lower()
         if choice == "0":
             return None
@@ -2099,7 +2100,6 @@ def manage_parallelism_setting():
 def interface_menu():
     while True:
         clear_console()
-        print(f"\n{t('settings_interface')}")
         show_menu(t("settings_interface"), [
             f"1) {t('set_language')}",
             f"2) {t('set_name')}",
@@ -2121,7 +2121,6 @@ def interface_menu():
 def translations_menu(profile, profiles):
     while True:
         clear_console()
-        print(f"\n{t('settings_translations')}")
         ask_pl = "✓" if _ui.get("ask_playlists", True) else "✗"
         ask_sc = "✓" if _ui.get("ask_schedule", True) else "✗"
         show_menu(t("settings_translations"), [
@@ -2176,7 +2175,6 @@ def playlists_menu(profile, profiles, youtube=None):
     while True:
         clear_console()
         channel = profile.get("channel_title") or profile.get("display_name")
-        print(f"\n{t('playlists_title').format(channel=channel)}")
         playlists = profile.setdefault("playlists", [])
         defaults = profile.setdefault("default_playlists", [])
 
@@ -2188,7 +2186,7 @@ def playlists_menu(profile, profiles, youtube=None):
         else:
             print(t("playlist_none"))
 
-        show_menu("", [
+        show_menu(t("playlists_title").format(channel=channel), [
             f"1) {t('playlist_edit')}",
             *( [f"2) {t('playlists_defaults_item')}", f"3) {t('playlists_remove_item')}"]
                if playlists else [] ),
@@ -2252,10 +2250,9 @@ def schedule_menu(profile, profiles):
     while True:
         clear_console()
         channel = profile.get("channel_title") or profile.get("display_name")
-        print(f"\n{t('schedule_title').format(channel=channel)}")
-        print(t("schedule_note"))
-        publ_calendar = load_json_file(profile["publ_calendar_file"])
-        show_menu("", [
+        publ_calendar = load_calendar(profile)
+        show_menu(t("schedule_title").format(channel=channel),
+                  [t("schedule_note")] + [
             f"{index}) {translate_day(day)} — "
             f"{(publ_calendar.get(day) or [DEFAULT_PUBLISH_TIME])[0]}"
             for index, day in enumerate(ALLOWED_DAYS, start=1)
@@ -2551,16 +2548,16 @@ def settings_menu(profile, profiles, youtube=None):
         clear_console()
         if profile and (profile.get("channel_title") or profile.get("display_name")):
             channel = profile.get("channel_title") or profile.get("display_name")
-            print(f"\n{t('settings_title').format(channel=channel)}")
+            title = t("settings_title").format(channel=channel)
         else:
-            print(f"\n{t('settings_title_no_channel')}")
+            title = t("settings_title_no_channel")
         options = [f"1) {t('settings_interface')}"]
         if profile:
             options += [f"2) {t('settings_translations')}",
                         f"3) {t('settings_playlists')}",
                         f"4) {t('menu_schedule')}"]
         options.append(f"0) {t('back')}")
-        show_menu("", options)
+        show_menu(title, options)
         choice = input(t("menu_choice")).strip()
         if choice == "0":
             return
@@ -2598,6 +2595,14 @@ def setup_issues(profile):
 
 def _is_quota(error):
     return "quotaExceeded" in str(error)
+
+
+def load_calendar(profile):
+    """Per-profile publishing calendar; created empty when missing."""
+    calendar_rel = profile["publ_calendar_file"]
+    if not os.path.exists(data_file_path(calendar_rel)):
+        save_json_file(calendar_rel, {})
+    return load_json_file(calendar_rel)
 
 
 def run_localization(metadata, profile, parts=("title", "description")):
@@ -2647,7 +2652,7 @@ def apply_translations(youtube, profile, video_id, metadata, localizations):
         print(t("added_to_playlists").format(n=added))
     if _ui.get("ask_schedule", True) and confirm(t("schedule_q")):
         try:
-            publ_calendar = load_json_file(profile["publ_calendar_file"])
+            publ_calendar = load_calendar(profile)
             publish_datetime, publish_time = ask_publish_date(publ_calendar)
             if set_publishAt(youtube, video_id, publish_datetime):
                 print(t("schedule_done").format(
@@ -2927,7 +2932,7 @@ def scheduled_publish_menu(youtube, profile, profiles):
         if not video_id:
             print(t("bad_video_link"))
             continue
-        publ_calendar = load_json_file(profile["publ_calendar_file"])
+        publ_calendar = load_calendar(profile)
         publish_datetime, publish_time = ask_publish_date(publ_calendar)
         if set_publishAt(youtube, video_id, publish_datetime):
             print(t("schedule_done").format(
@@ -3099,15 +3104,15 @@ def add_to_playlist_menu(youtube, profile, profiles):
 def profile_menu(profile, profiles, youtube=None):
     while True:
         clear_console()
-        print(t("menu_greeting").format(name=_ui["user_name"]))
+        header = t("menu_greeting").format(name=_ui["user_name"])
         ready = profile_is_ready(profile)
         if youtube is None:
-            print(f"\n{t('no_auth_hint')}")
+            header += "\n\n" + t("no_auth_hint")
         else:
             for _, issue in setup_issues(profile):
-                print(f"\n⚡ {issue}")
+                header += f"\n\n⚡ {issue}"
 
-        show_menu("", [
+        show_menu(header, [
             f"1) {t('menu_translation')}",
             f"2) {t('menu_playlist')}",
             f"3) {t('menu_schedule')}",
