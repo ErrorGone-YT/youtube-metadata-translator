@@ -46,10 +46,12 @@ SERIES_NAMES_FILE = "series_names.json"
 ALLOWED_DAYS = ["Monday", "Wednesday", "Friday", "Sunday"]
 
 GITHUB_BASE = "https://github.com/ErrorGone-YT/youtube-metadata-translator"
+# READMEs live on the working branch until merged; switch to "main" after the merge.
+REPO_BRANCH = "Restructuring"
 GUIDE_LINKS = {
-    "en": f"{GITHUB_BASE}/blob/main/README.md",
-    "uk": f"{GITHUB_BASE}/blob/main/README.uk.md",
-    "ru": f"{GITHUB_BASE}/blob/main/README.ru.md",
+    "en": f"{GITHUB_BASE}/blob/{REPO_BRANCH}/README.md",
+    "uk": f"{GITHUB_BASE}/blob/{REPO_BRANCH}/README.uk.md",
+    "ru": f"{GITHUB_BASE}/blob/{REPO_BRANCH}/README.ru.md",
 }
 GOOGLE_CONSOLE_LINK = "https://console.cloud.google.com/apis/credentials"
 
@@ -362,6 +364,7 @@ def choose_ui_language():
             _ui["language"] = "ru"
         else:
             continue
+        clear_console()
         return _ui["language"]
 
 
@@ -370,6 +373,7 @@ def ask_user_name():
         name = input(t("ask_name") + " ").strip()
         if name:
             _ui["user_name"] = name
+            clear_console()
             print(t("name_saved").format(name=name))
             return name
 
@@ -1282,7 +1286,8 @@ def create_profile_wizard(profiles, secrets_files):
 def select_profile(profiles):
     secrets_files = find_secrets_files()
     while True:
-        print(f"\n{t('profile_pick_title')}")
+        clear_console()
+        print(t("profile_pick_title"))
         for index, profile in enumerate(profiles["profiles"], start=1):
             name = profile.get("channel_title") or profile.get("display_name")
             token_exists = os.path.exists(data_file_path(profile["token_file"]))
@@ -1310,7 +1315,8 @@ def ensure_secrets():
         secrets = find_secrets_files()
         if secrets:
             return secrets
-        print(f"\n{t('secrets_missing_title')}\n")
+        clear_console()
+        print(f"{t('secrets_missing_title')}\n")
         print(t("secrets_missing_steps"))
         print()
         print(t("secrets_link_guide").format(url=GUIDE_LINKS.get(_ui["language"], GUIDE_LINKS["en"])))
@@ -1325,7 +1331,8 @@ def manage_profile_languages(profile, profiles):
     while True:
         selected = get_profile_languages(profile)
         channel_name = profile.get("channel_title") or profile.get("display_name")
-        print(f"\n{t('languages_screen_title').format(channel=channel_name)}")
+        clear_console()
+        print(t("languages_screen_title").format(channel=channel_name))
         if selected:
             print(t("languages_selected").format(n=len(selected), list=", ".join(selected)))
         else:
@@ -1363,7 +1370,8 @@ def choose_languages_from_catalog(selected):
     codes = sorted(catalog) + [code for code in selected if code not in catalog]
     working = list(selected)
     while True:
-        print(f"\n{t('languages_list_title')}")
+        clear_console()
+        print(t("languages_list_title"))
         for index, code in enumerate(codes, start=1):
             mark = "x" if code in working else " "
             print(f"  [{mark}] {index}) {code} — {catalog.get(code, code)}")
@@ -1435,6 +1443,7 @@ def manage_parallelism_setting():
 
 def settings_menu(profile, profiles):
     while True:
+        clear_console()
         if profile and (profile.get("channel_title") or profile.get("display_name")):
             channel = profile.get("channel_title") or profile.get("display_name")
             print(f"\n{t('settings_title').format(channel=channel)}")
