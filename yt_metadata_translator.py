@@ -70,6 +70,30 @@ STRINGS = {
         "menu_playlist": "Add to playlist",
         "menu_schedule": "Scheduled publishing",
         "menu_settings": "Settings",
+        "no_auth_hint": "❗ YouTube authorization didn't complete — restart the script and sign in.",
+        "translating": "🌐 Translating into {n} languages...",
+        "localization_failed": "⚠️ Translation was not saved:",
+        "last_video": "🎬 Latest video: {id} — {title}",
+        "no_videos": "No videos available on the channel.",
+        "metadata_fetched": "Title: {title} ({n} characters of description)",
+        "translate_actual": "Translate the video's actual title/description",
+        "apply_local": "Apply the local translation (metadata.json + localizations.json)",
+        "localizations_missing": "❗ No saved translation yet — run a translation first (item 1).",
+        "video_updated": "✅ Video {id} updated.",
+        "add_to_defaults_q": "Add the video to the default playlists? (yes/no): ",
+        "added_to_playlists": "✅ Added to {n} playlist(s).",
+        "schedule_q": "Schedule deferred publishing? (yes/no): ",
+        "schedule_done": "✅ {id} goes live {date} UTC (local {time})",
+        "playlist_add_title": "▶️ Adding to the default playlists",
+        "defaults_missing": "❗ No default playlists selected — set them in Settings → Playlists.",
+        "video_link_prompt": "Video link or ID (0 — finish): ",
+        "bad_video_link": "❌ Couldn't extract a video ID.",
+        "more_videos": "Add more? (yes/no): ",
+        "schedule_flow_title": "⏰ Deferred publishing — paste a video link",
+        "schedule_date_prompt": "📅 Publishing date (ddmmyy): ",
+        "schedule_bad_date": "❌ Invalid date.",
+        "schedule_days_only": "❌ Publishing is allowed only on: {days}",
+        "quota_exceeded": "⚠️ The YouTube API daily quota is exhausted. Try again tomorrow.",
         "menu_exit": "Exit",
         "menu_choice": "Your choice: ",
         "coming_soon": "🚧 This feature is being polished and will appear soon.",
@@ -216,6 +240,30 @@ STRINGS = {
         "menu_playlist": "Додати до плейлиста",
         "menu_schedule": "Відкладена публікація",
         "menu_settings": "Налаштування",
+        "no_auth_hint": "❗ Авторизація YouTube не завершена — перезапусти скрипт і увійди в акаунт.",
+        "translating": "🌐 Перекладаю {n} мовами...",
+        "localization_failed": "⚠️ Переклад не збережено:",
+        "last_video": "🎬 Останнє відео: {id} — {title}",
+        "no_videos": "На каналі немає доступних відео.",
+        "metadata_fetched": "Назва: {title} ({n} символів опису)",
+        "translate_actual": "Перекласти актуальні дані з відео",
+        "apply_local": "Застосувати локальний переклад (metadata.json + localizations.json)",
+        "localizations_missing": "❗ Збереженого перекладу ще немає — спочатку зроби переклад (пункт 1).",
+        "video_updated": "✅ Відео {id} оновлено.",
+        "add_to_defaults_q": "Додати відео до плейлистів за замовчуванням? (так/ні): ",
+        "added_to_playlists": "✅ Додано до плейлистів: {n}",
+        "schedule_q": "Відкладена публікація? (так/ні): ",
+        "schedule_done": "✅ {id} вийде {date} UTC (локально {time})",
+        "playlist_add_title": "▶️ Додавання до плейлистів за замовчуванням",
+        "defaults_missing": "❗ Плейлисти за замовчуванням не вибрані — задай їх у Налаштування → Плейлисти.",
+        "video_link_prompt": "Посилання на відео або ID (0 — завершити): ",
+        "bad_video_link": "❌ Не вдалося витягти ID відео.",
+        "more_videos": "Додати ще? (так/ні): ",
+        "schedule_flow_title": "⏰ Відкладена публікація — встав посилання на відео",
+        "schedule_date_prompt": "📅 Дата публікації (ddmmyy): ",
+        "schedule_bad_date": "❌ Некоректна дата.",
+        "schedule_days_only": "❌ Публікація лише в: {days}",
+        "quota_exceeded": "⚠️ Денна квота YouTube API вичерпана. Спробуй завтра.",
         "menu_exit": "Вихід",
         "menu_choice": "Ваш вибір: ",
         "coming_soon": "🚧 Ця функція на підході — з'явиться незабаром.",
@@ -362,6 +410,30 @@ STRINGS = {
         "menu_playlist": "Добавить в плейлист",
         "menu_schedule": "Отложенная публикация",
         "menu_settings": "Настройки",
+        "no_auth_hint": "❗ Авторизация YouTube не завершена — перезапусти скрипт и войди в аккаунт.",
+        "translating": "🌐 Перевожу на {n} языков...",
+        "localization_failed": "⚠️ Перевод не сохранён:",
+        "last_video": "🎬 Последнее видео: {id} — {title}",
+        "no_videos": "На канале нет доступных видео.",
+        "metadata_fetched": "Название: {title} ({n} символов описания)",
+        "translate_actual": "Перевести актуальные данные с видео",
+        "apply_local": "Применить локальный перевод (metadata.json + localizations.json)",
+        "localizations_missing": "❗ Сохранённого перевода ещё нет — сначала сделай перевод (пункт 1).",
+        "video_updated": "✅ Видео {id} обновлено.",
+        "add_to_defaults_q": "Добавить видео в плейлисты по умолчанию? (да/нет): ",
+        "added_to_playlists": "✅ Добавлено в плейлистов: {n}",
+        "schedule_q": "Отложенная публикация? (да/нет): ",
+        "schedule_done": "✅ {id} выйдет {date} UTC (локально {time})",
+        "playlist_add_title": "▶️ Добавление в плейлисты по умолчанию",
+        "defaults_missing": "❗ Плейлисты по умолчанию не выбраны — задай их в Настройки → Плейлисты.",
+        "video_link_prompt": "Ссылка на видео или ID (0 — закончить): ",
+        "bad_video_link": "❌ Не удалось извлечь ID видео.",
+        "more_videos": "Добавить ещё? (да/нет): ",
+        "schedule_flow_title": "⏰ Отложенная публикация — вставь ссылку на видео",
+        "schedule_date_prompt": "📅 Дата публикации (ddmmyy): ",
+        "schedule_bad_date": "❌ Некорректная дата.",
+        "schedule_days_only": "❌ Публикация только в: {days}",
+        "quota_exceeded": "⚠️ Дневная квота YouTube API исчерпана. Попробуй завтра.",
         "menu_exit": "Выход",
         "menu_choice": "Ваш выбор: ",
         "coming_soon": "🚧 Эта функция в разработке и появится скоро.",
@@ -702,6 +774,22 @@ def next_allowed_date(start_date, days_ahead, allowed_days):
     while current_date.strftime("%A") not in allowed_days:
         current_date += timedelta(days=1)
     return current_date
+
+
+def ask_publish_date(publ_calendar):
+    """Prompt for a ddmmyy date on an allowed weekday; returns (utc datetime, local time)."""
+    while True:
+        user_date = input(t("schedule_date_prompt")).strip()
+        try:
+            publish_date = datetime.strptime(user_date, "%d%m%y")
+        except ValueError:
+            print(t("schedule_bad_date"))
+            continue
+        if publish_date.strftime("%A") not in ALLOWED_DAYS:
+            print(t("schedule_days_only").format(
+                days=", ".join(translate_day(d) for d in ALLOWED_DAYS)))
+            continue
+        return to_publish_datetime(publish_date, publ_calendar)
 
 
 def get_channel_videos(youtube):
@@ -2333,23 +2421,175 @@ def profile_is_ready(profile):
     return bool(profile) and bool(get_profile_languages(profile)) and translator_ready()
 
 
+def _is_quota(error):
+    return "quotaExceeded" in str(error)
+
+
+def run_localization(metadata, profile):
+    """Translate metadata into the profile's languages and save localizations.json."""
+    try:
+        localizations = load_json_file(LOCALIZATIONS_FILE)
+    except FileNotFoundError:
+        localizations = {}
+    if clean_existing_series_footers(localizations, metadata["description"]):
+        save_json_file(LOCALIZATIONS_FILE, localizations)
+    target_languages = get_profile_languages(profile)
+    if not target_languages:
+        print(t("languages_none"))
+        return False
+    print(t("translating").format(n=len(target_languages)))
+    try:
+        localize_metadata_via_llm(metadata, target_languages)
+    except Exception as error:
+        print(f"\n{t('localization_failed')}: {error}")
+        return False
+    return True
+
+
+def apply_translations(youtube, profile, video_id, metadata, localizations):
+    """Update the video, offer the default playlists and deferred publishing."""
+    try:
+        updated = update_video_metadata(
+            youtube, video_id,
+            metadata.get("title"), metadata.get("description"), localizations,
+        )
+    except HttpError as error:
+        print(t("quota_exceeded") if _is_quota(error) else f"❌ {error}")
+        return
+    if not updated:
+        return
+    print(t("video_updated").format(id=video_id))
+    defaults = profile.get("default_playlists", [])
+    if defaults and confirm(t("add_to_defaults_q")):
+        added = 0
+        for pl_id in defaults:
+            try:
+                add_video_to_playlist(youtube, video_id, pl_id)
+                added += 1
+            except HttpError as error:
+                print(t("quota_exceeded") if _is_quota(error) else f"❌ {error}")
+                break
+        print(t("added_to_playlists").format(n=added))
+    if confirm(t("schedule_q")):
+        try:
+            publ_calendar = load_json_file(profile["publ_calendar_file"])
+            publish_datetime, publish_time = ask_publish_date(publ_calendar)
+            if set_publishAt(youtube, video_id, publish_datetime):
+                print(t("schedule_done").format(
+                    id=video_id,
+                    date=publish_datetime.strftime("%d.%m.%Y %H:%M"),
+                    time=publish_time))
+        except HttpError as error:
+            print(t("quota_exceeded") if _is_quota(error) else f"❌ {error}")
+
+
+def translation_menu(youtube, profile, profiles):
+    try:
+        videos, _ = get_channel_videos(youtube)
+    except HttpError as error:
+        print(t("quota_exceeded") if _is_quota(error) else f"❌ {error}")
+        return
+    if not videos:
+        print(t("no_videos"))
+        return
+    videos.sort(key=lambda x: x["snippet"]["publishedAt"], reverse=True)
+    last = videos[0]
+    video_id = last["snippet"]["resourceId"]["videoId"]
+    print(t("last_video").format(id=video_id, title=last["snippet"]["title"]))
+    while True:
+        print(f"\n1) {t('translate_actual')}")
+        print(f"2) {t('apply_local')}")
+        print(f"0) {t('back')}")
+        choice = input(f"\n{t('menu_choice')}").strip()
+        if choice == "0":
+            return
+        if choice == "1":
+            try:
+                metadata = fetch_video_source_metadata(youtube, video_id)
+            except (ValueError, HttpError) as error:
+                print(t("quota_exceeded") if _is_quota(error) else f"❌ {error}")
+                continue
+            print(t("metadata_fetched").format(
+                title=metadata["title"], n=len(metadata["description"])))
+            save_json_file(METADATA_FILE, metadata)
+            if not run_localization(metadata, profile):
+                continue
+            localizations = load_json_file(LOCALIZATIONS_FILE)
+            apply_translations(youtube, profile, video_id, metadata, localizations)
+        elif choice == "2":
+            try:
+                metadata = load_json_file(METADATA_FILE)
+                localizations = load_json_file(LOCALIZATIONS_FILE)
+            except FileNotFoundError:
+                print(t("localizations_missing"))
+                continue
+            apply_translations(youtube, profile, video_id, metadata, localizations)
+        else:
+            print(t("invalid_choice"))
+
+
+def add_to_playlist_menu(youtube, profile, profiles):
+    defaults = profile.get("default_playlists", [])
+    if not defaults:
+        print(t("defaults_missing"))
+        return
+    names = {pl["id"]: pl["name"] for pl in profile.get("playlists", [])}
+    clear_console()
+    print(t("playlist_add_title"))
+    for pl_id in defaults:
+        print(f"  ★ {names.get(pl_id, pl_id)} — {pl_id}")
+    while True:
+        link = input(t("video_link_prompt")).strip()
+        if link in ("0", ""):
+            return
+        video_id = extract_video_id(link)
+        if not video_id:
+            print(t("bad_video_link"))
+            continue
+        added = 0
+        for pl_id in defaults:
+            try:
+                add_video_to_playlist(youtube, video_id, pl_id)
+                added += 1
+            except HttpError as error:
+                print(t("quota_exceeded") if _is_quota(error) else f"❌ {error}")
+                return
+        print(t("added_to_playlists").format(n=added))
+        if not confirm(t("more_videos")):
+            return
+
+
+def scheduled_publish_menu(youtube, profile, profiles):
+    clear_console()
+    print(t("schedule_flow_title"))
+    while True:
+        link = input(t("video_link_prompt")).strip()
+        if link in ("0", ""):
+            return
+        video_id = extract_video_id(link)
+        if not video_id:
+            print(t("bad_video_link"))
+            continue
+        publ_calendar = load_json_file(profile["publ_calendar_file"])
+        publish_datetime, publish_time = ask_publish_date(publ_calendar)
+        if set_publishAt(youtube, video_id, publish_datetime):
+            print(t("schedule_done").format(
+                id=video_id,
+                date=publish_datetime.strftime("%d.%m.%Y %H:%M"),
+                time=publish_time))
+        if not confirm(t("more_videos")):
+            return
+
+
 def profile_menu(profile, profiles, youtube=None):
     while True:
         clear_console()
         print(t("menu_greeting").format(name=_ui["user_name"]))
         ready = profile_is_ready(profile)
-        if not ready:
-            print(f"\n{t('setup_not_finished')}\n")
-            print(f"1) {t('menu_settings')}")
-            print(f"0) {t('menu_exit')}")
-            choice = input(f"\n{t('menu_choice')}").strip()
-            if choice == "0":
-                return
-            if choice == "1":
-                settings_menu(profile, profiles)
-            else:
-                print(t("invalid_choice"))
-            continue
+        if youtube is None:
+            print(f"\n{t('no_auth_hint')}")
+        elif not ready:
+            print(f"\n{t('setup_not_finished')}")
 
         print(f"\n1) {t('menu_translation')}")
         print(f"2) {t('menu_playlist')}")
@@ -2359,10 +2599,23 @@ def profile_menu(profile, profiles, youtube=None):
         choice = input(f"\n{t('menu_choice')}").strip()
         if choice == "0":
             return
-        if choice in ("1", "2", "3"):
-            # Engine is committed but the wiring lands in the next phases.
-            print(f"\n{t('coming_soon')}")
-            input(t("press_enter"))
+        if choice == "1":
+            if youtube is None:
+                print(t("no_auth_hint"))
+            elif not ready:
+                print(t("setup_not_finished"))
+            else:
+                translation_menu(youtube, profile, profiles)
+        elif choice == "2":
+            if youtube is None:
+                print(t("no_auth_hint"))
+            else:
+                add_to_playlist_menu(youtube, profile, profiles)
+        elif choice == "3":
+            if youtube is None:
+                print(t("no_auth_hint"))
+            else:
+                scheduled_publish_menu(youtube, profile, profiles)
         elif choice == "4":
             settings_menu(profile, profiles, youtube)
         else:

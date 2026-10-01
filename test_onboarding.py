@@ -39,13 +39,14 @@ def run(answers):
 
 # TEST 1: uk first run, no secrets -> skip -> restricted menu -> settings -> exit
 clean()
-out = run(["2", "Майстро", "0", "1", "1", "0", "0", "0", "0"])
+out = run(["2", "Майстро", "0", "4", "0", "0", "0"])
 assert "Виберіть мову інтерфейсу" in out
 assert "Не знайдено файл client_secrets" in out
 assert "README.uk.md" in out and "console.cloud.google.com" in out
 assert "Вітаю, Майстро! Що робитимемо?" in out
-assert "Налаштування ще не завершено" in out
-assert "Мова інтерфейсу" in out  # settings opened
+assert "Авторизація YouTube не завершена" in out  # no auth -> hint instead of setup
+assert "1) Переклад" in out and "2) Додати до плейлиста" in out and "3) Відкладена публікація" in out
+assert "1) Інтерфейс" in out  # settings opened (language inside the submenu)
 assert json.load(open(os.path.join(TMP, "ui_settings.json"), encoding="utf-8")) == {
     "ui_language": "uk", "user_name": "Майстро"}
 print("TEST 1 OK: uk onboarding, secrets screen with links, restricted menu")
