@@ -61,10 +61,17 @@ json.dump({"profiles": [{"profile_id": "test", "display_name": "Тест", "chan
     open(os.path.join(TMP, "channel_profiles.json"), "w", encoding="utf-8"))
 
 VIDEO_ID = "abc12345678"
+SHORT_ID = "shortvid001"
 m.get_channel_videos = lambda yt: ([
     {"snippet": {"resourceId": {"videoId": VIDEO_ID}, "publishedAt": "2026-10-01T10:00:00Z",
-                 "title": "My latest video"}}
+                 "title": "My latest long"}}
 ], {VIDEO_ID: 120.0})
+m.get_channel_videos_all = lambda yt: ([
+    {"snippet": {"resourceId": {"videoId": VIDEO_ID}, "publishedAt": "2026-10-01T10:00:00Z",
+                 "title": "My latest long"}},
+    {"snippet": {"resourceId": {"videoId": SHORT_ID}, "publishedAt": "2026-10-02T10:00:00Z",
+                 "title": "My short"}}
+], {VIDEO_ID: 120.0, SHORT_ID: 30.0})
 m.fetch_video_source_metadata = lambda yt, vid: {
     "title": "Fresh title", "description": "Fresh description with\n\nblank line"}
 captured = {}
@@ -91,7 +98,7 @@ def run(answers):
     return buf.getvalue()
 
 # 1) Translation: translate actual data -> update -> add to defaults -> no schedule
-out = run(["1", "1", "д", "н", "0", "0"])
+out = run(["1", "1.1", "д", "н", "0", "0"])
 assert "Последнее видео" in out and "Fresh title" in out
 assert captured["langs"] == ["de", "ja"]
 assert "Перевожу на 2 языков" in out
@@ -139,6 +146,27 @@ with contextlib.redirect_stdout(buf):
 out = buf.getvalue()
 assert "Плейлисты по умолчанию не выбраны" in out
 print("NO-DEFAULTS WARN OK")
+
+
+# 6) batch modes: all longs and all shorts, picked by duration
+fetched = []
+def fake_translate_one(yt, profile, vid):
+    fetched.append(vid)
+    return True
+m._translate_one = fake_translate_one
+m.get_channel_videos = lambda yt: m.get_channel_videos_all(yt)
+
+out = run(["1", "3.1", "д", "0", "0"])
+assert fetched == [VIDEO_ID], fetched
+fetched.clear()
+out = run(["1", "3.2", "д", "0", "0"])
+assert fetched == [SHORT_ID], fetched
+print("BATCH LONG/SHORT OK")
+
+# 7) last short
+out = run(["1", "1.2", "0", "0"])
+assert fetched[-1] == SHORT_ID
+print("LAST SHORT OK")
 
 shutil.rmtree(TMP)
 print("ALL MENU TESTS PASSED")

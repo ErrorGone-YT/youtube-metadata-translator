@@ -77,6 +77,15 @@ STRINGS = {
         "no_videos": "No videos available on the channel.",
         "metadata_fetched": "Title: {title} ({n} characters of description)",
         "translate_actual": "Translate the video's actual title/description",
+        "tr_menu_title": "What do we translate?",
+        "tr_last": "Latest video",
+        "tr_long": "Long",
+        "tr_short": "Short",
+        "tr_specific": "Specific videos",
+        "tr_all": "All videos",
+        "tr_no_matches": "No matching videos found.",
+        "tr_batch_confirm": "Found {n} videos. Translate them all? (yes/no): ",
+        "tr_done": "✅ Done: {n} video(s) processed.",
         "apply_local": "Apply the local translation (metadata.json + localizations.json)",
         "localizations_missing": "❗ No saved translation yet — run a translation first (item 1).",
         "video_updated": "✅ Video {id} updated.",
@@ -250,6 +259,15 @@ STRINGS = {
         "no_videos": "На каналі немає доступних відео.",
         "metadata_fetched": "Назва: {title} ({n} символів опису)",
         "translate_actual": "Перекласти актуальні дані з відео",
+        "tr_menu_title": "Що перекладаємо?",
+        "tr_last": "Останнє відео",
+        "tr_long": "Лонг",
+        "tr_short": "Шортс",
+        "tr_specific": "Конкретні відео",
+        "tr_all": "Усі відео",
+        "tr_no_matches": "Підходящих відео не знайдено.",
+        "tr_batch_confirm": "Знайдено {n} відео. Перекласти всі? (так/ні): ",
+        "tr_done": "✅ Готово: оброблено {n} відео.",
         "apply_local": "Застосувати локальний переклад (metadata.json + localizations.json)",
         "localizations_missing": "❗ Збереженого перекладу ще немає — спочатку зроби переклад (пункт 1).",
         "video_updated": "✅ Відео {id} оновлено.",
@@ -423,6 +441,15 @@ STRINGS = {
         "no_videos": "На канале нет доступных видео.",
         "metadata_fetched": "Название: {title} ({n} символов описания)",
         "translate_actual": "Перевести актуальные данные с видео",
+        "tr_menu_title": "Что переводим?",
+        "tr_last": "Последнее видео",
+        "tr_long": "Лонг",
+        "tr_short": "Шортс",
+        "tr_specific": "Конкретные видео",
+        "tr_all": "Все видео",
+        "tr_no_matches": "Подходящих видео не найдено.",
+        "tr_batch_confirm": "Найдено {n} видео. Переводим все? (да/нет): ",
+        "tr_done": "✅ Готово: обработано {n} видео.",
         "apply_local": "Применить локальный перевод (metadata.json + localizations.json)",
         "localizations_missing": "❗ Сохранённого перевода ещё нет — сначала сделай перевод (пункт 1).",
         "video_updated": "✅ Видео {id} обновлено.",
@@ -2502,9 +2529,50 @@ def apply_translations(youtube, profile, video_id, metadata, localizations):
             print(t("quota_exceeded") if _is_quota(error) else f"❌ {error}")
 
 
+def _pick_translation_targets(videos, durations, mode):
+    """Video ids for a translation mode: (last|all) x (long|short|specific)."""
+    if mode == "last_long":
+        for item in videos:
+            video_id = item["snippet"]["resourceId"]["videoId"]
+            if durations.get(video_id, 0) > 60:
+                return [video_id]
+        return []
+    if mode == "last_short":
+        for item in videos:
+            video_id = item["snippet"]["resourceId"]["videoId"]
+            if 0 < durations.get(video_id, 0) <= 60:
+                return [video_id]
+        return []
+    if mode in ("all_long", "all_short"):
+        want_short = mode == "all_short"
+        return [
+            item["snippet"]["resourceId"]["videoId"]
+            for item in videos
+            if (durations.get(item["snippet"]["resourceId"]["videoId"], 0) <= 60) == want_short
+        ]
+    return []
+
+
+def _translate_one(youtube, profile, video_id):
+    """Fetch the video's actual metadata, localize it and apply it back."""
+    try:
+        metadata = fetch_video_source_metadata(youtube, video_id)
+    except (ValueError, HttpError) as error:
+        print(t("quota_exceeded") if _is_quota(error) else f"❌ {error}")
+        return False
+    print(t("metadata_fetched").format(
+        title=metadata["title"], n=len(metadata["description"])))
+    save_json_file(METADATA_FILE, metadata)
+    if not run_localization(metadata, profile):
+        return False
+    localizations = load_json_file(LOCALIZATIONS_FILE)
+    apply_translations(youtube, profile, video_id, metadata, localizations)
+    return True
+
+
 def translation_menu(youtube, profile, profiles):
     try:
-        videos, _ = get_channel_videos(youtube)
+        videos, durations = get_channel_videos(youtube)
     except HttpError as error:
         print(t("quota_exceeded") if _is_quota(error) else f"❌ {error}")
         return
@@ -2512,37 +2580,52 @@ def translation_menu(youtube, profile, profiles):
         print(t("no_videos"))
         return
     videos.sort(key=lambda x: x["snippet"]["publishedAt"], reverse=True)
-    last = videos[0]
-    video_id = last["snippet"]["resourceId"]["videoId"]
-    print(t("last_video").format(id=video_id, title=last["snippet"]["title"]))
+
     while True:
-        print(f"\n1) {t('translate_actual')}")
-        print(f"2) {t('apply_local')}")
-        print(f"0) {t('back')}")
-        choice = input(f"\n{t('menu_choice')}").strip()
-        if choice == "0":
+        clear_console()
+        print(f"\n{t('tr_menu_title')}\n")
+        print(f"1. {t('tr_last')}")
+        print(f"   1.1. {t('tr_long')}")
+        print(f"   1.2. {t('tr_short')}")
+        print(f"2. {t('tr_specific')}")
+        print(f"3. {t('tr_all')}")
+        print(f"   3.1. {t('tr_long')}")
+        print(f"   3.2. {t('tr_short')}")
+        print(f"0. {t('back')}")
+        choice = input(f"\n{t('menu_choice')}").strip().lower().replace(" ", ".")
+
+        if choice in ("0", "q", "back"):
             return
-        if choice == "1":
-            try:
-                metadata = fetch_video_source_metadata(youtube, video_id)
-            except (ValueError, HttpError) as error:
-                print(t("quota_exceeded") if _is_quota(error) else f"❌ {error}")
+        if choice in ("1.1", "1.2"):
+            mode = "last_long" if choice == "1.1" else "last_short"
+            targets = _pick_translation_targets(videos, durations, mode)
+            if not targets:
+                print(t("tr_no_matches"))
                 continue
-            print(t("metadata_fetched").format(
-                title=metadata["title"], n=len(metadata["description"])))
-            save_json_file(METADATA_FILE, metadata)
-            if not run_localization(metadata, profile):
-                continue
-            localizations = load_json_file(LOCALIZATIONS_FILE)
-            apply_translations(youtube, profile, video_id, metadata, localizations)
+            _translate_one(youtube, profile, targets[0])
         elif choice == "2":
-            try:
-                metadata = load_json_file(METADATA_FILE)
-                localizations = load_json_file(LOCALIZATIONS_FILE)
-            except FileNotFoundError:
-                print(t("localizations_missing"))
+            while True:
+                link = input(t("video_link_prompt")).strip()
+                if link in ("0", ""):
+                    break
+                video_id = extract_video_id(link)
+                if not video_id:
+                    print(t("bad_video_link"))
+                    continue
+                _translate_one(youtube, profile, video_id)
+        elif choice in ("3.1", "3.2"):
+            mode = "all_long" if choice == "3.1" else "all_short"
+            targets = _pick_translation_targets(videos, durations, mode)
+            if not targets:
+                print(t("tr_no_matches"))
                 continue
-            apply_translations(youtube, profile, video_id, metadata, localizations)
+            if not confirm(t("tr_batch_confirm").format(n=len(targets))):
+                continue
+            done = 0
+            for video_id in targets:
+                if _translate_one(youtube, profile, video_id):
+                    done += 1
+            print(t("tr_done").format(n=done))
         else:
             print(t("invalid_choice"))
 
