@@ -76,6 +76,8 @@ GUI_STRINGS = {
         "api_no_models": "Couldn't fetch the model list — type the name manually.",
         "api_need_url": "A base URL is required for an online provider.",
         "provider_new_title": "— Adding a provider —",
+        "lang_search": "Search language…",
+        "tr_targets": "Translating into: {names}",
         "provider_edit_title": "— Editing provider: {name} —",
     },
     "uk": {
@@ -130,6 +132,8 @@ GUI_STRINGS = {
         "api_no_models": "Не вдалося отримати список моделей — введіть назву вручну.",
         "api_need_url": "Для онлайн-провайдера потрібен base URL.",
         "provider_new_title": "— Додавання провайдера —",
+        "lang_search": "Пошук мови…",
+        "tr_targets": "Перекладаємо на: {names}",
         "provider_edit_title": "— Зміна провайдера: {name} —",
     },
     "ru": {
@@ -184,6 +188,8 @@ GUI_STRINGS = {
         "api_no_models": "Не удалось получить список моделей — введи название вручную.",
         "api_need_url": "Для онлайн-провайдера нужен base URL.",
         "provider_new_title": "— Добавление провайдера —",
+        "lang_search": "Поиск языка…",
+        "tr_targets": "Переводим на: {names}",
         "provider_edit_title": "— Изменение провайдера: {name} —",
     },
 }
@@ -195,8 +201,72 @@ def g(key, **kwargs):
     return text.format(**kwargs) if kwargs else text
 
 
+# Localized language names for the UI (native names come from the engine catalog).
+LANG_NAME_LOCALIZATION = {
+    "uk": {
+        "af": "Африкаанс", "az": "Азербайджанська", "id": "Індонезійська",
+        "ms": "Малайська", "bs": "Боснійська", "ca": "Каталонська", "cs": "Чеська",
+        "cy": "Валлійська", "da": "Данська", "de": "Німецька", "et": "Естонська",
+        "en": "Англійська", "en-CA": "Англійська (Канада)", "en-GB": "Англійська (Велика Британія)",
+        "en-IN": "Англійська (Індія)", "en-US": "Англійська (США)", "es": "Іспанська",
+        "es-419": "Іспанська (Латинська Америка)", "es-US": "Іспанська (США)",
+        "eu": "Баскська", "fil": "Філіппінська", "fr": "Французька",
+        "fr-CA": "Французька (Канада)", "gl": "Галісійська", "gu": "Гуджараті",
+        "hr": "Хорватська", "is": "Ісландська", "it": "Італійська", "jv": "Яванська",
+        "kn": "Каннада", "la": "Латина", "lv": "Латиська", "lt": "Литовська",
+        "hu": "Угорська", "nl": "Нідерландська", "ne": "Непальська", "no": "Норвезька",
+        "or": "Орія", "pa": "Пенджабська", "pl": "Польська", "pt": "Португальська (Бразилія)",
+        "pt-PT": "Португальська (Португалія)", "ro": "Румунська", "rm": "Ретороманська",
+        "si": "Сингальська", "sk": "Словацька", "sl": "Словенська", "fi": "Фінська",
+        "sv": "Шведська", "sw": "Суахілі", "tl": "Тагальська", "ta": "Тамільська",
+        "te": "Телугу", "th": "Тайська", "vi": "В'єтнамська", "tr": "Турецька",
+        "uk": "Українська", "ur": "Урду", "zh-Hans": "Китайська (спрощена)",
+        "zh-Hant": "Китайська (традиційна)", "zh-TW": "Китайська (Тайвань)",
+        "zu": "Зулу", "el": "Грецька", "bg": "Болгарська", "ru": "Російська",
+        "sr": "Сербська", "mk": "Македонська", "kk": "Казахська", "ky": "Киргизька",
+        "hy": "Вірменська", "ka": "Грузинська", "mn": "Монгольська", "my": "Бірманська",
+        "km": "Кхмерська", "lo": "Лаоська", "he": "Іврит", "ar": "Арабська",
+        "fa": "Перська", "sd": "Сіндхі", "am": "Амхарська", "yo": "Йоруба",
+        "ha": "Хауса", "ig": "Ігбо", "qu": "Кечуа", "nso": "Педі",
+        "bn": "Бенгальська", "hi": "Гінді", "ja": "Японська", "ko": "Корейська",
+        "so": "Сомалійська", "sq": "Албанська",
+    },
+    "ru": {
+        "af": "Африкаанс", "az": "Азербайджанский", "id": "Индонезийский",
+        "ms": "Малайский", "bs": "Боснийский", "ca": "Каталанский", "cs": "Чешский",
+        "cy": "Валлийский", "da": "Датский", "de": "Немецкий", "et": "Эстонский",
+        "en": "Английский", "en-CA": "Английский (Канада)", "en-GB": "Английский (Великобритания)",
+        "en-IN": "Английский (Индия)", "en-US": "Английский (США)", "es": "Испанский",
+        "es-419": "Испанский (Латинская Америка)", "es-US": "Испанский (США)",
+        "eu": "Баскский", "fil": "Филиппинский", "fr": "Французский",
+        "fr-CA": "Французский (Канада)", "gl": "Галисийский", "gu": "Гуджарати",
+        "hr": "Хорватский", "is": "Исландский", "it": "Итальянский", "jv": "Яванский",
+        "kn": "Каннада", "la": "Латынь", "lv": "Латышский", "lt": "Литовский",
+        "hu": "Венгерский", "nl": "Нидерландский", "ne": "Непальский", "no": "Норвежский",
+        "or": "Ория", "pa": "Панджаби", "pl": "Польский", "pt": "Португальский (Бразилия)",
+        "pt-PT": "Португальский (Португалия)", "ro": "Румынский", "rm": "Ретороманский",
+        "si": "Сингальский", "sk": "Словацкий", "sl": "Словенский", "fi": "Финский",
+        "sv": "Шведский", "sw": "Суахили", "tl": "Тагальский", "ta": "Тамильский",
+        "te": "Телугу", "th": "Тайский", "vi": "Вьетнамский", "tr": "Турецкий",
+        "uk": "Украинский", "ur": "Урду", "zh-Hans": "Китайский (упрощённый)",
+        "zh-Hant": "Китайский (традиционный)", "zh-TW": "Китайский (Тайвань)",
+        "zu": "Зулу", "el": "Греческий", "bg": "Болгарский", "ru": "Русский",
+        "sr": "Сербский", "mk": "Македонский", "kk": "Казахский", "ky": "Киргизский",
+        "hy": "Армянский", "ka": "Грузинский", "mn": "Монгольский", "my": "Бирманский",
+        "km": "Кхмерский", "lo": "Лаосский", "he": "Иврит", "ar": "Арабский",
+        "fa": "Персидский", "sd": "Синдхи", "am": "Амхарский", "yo": "Йоруба",
+        "ha": "Хауса", "ig": "Игбо", "qu": "Кечуа", "nso": "Педи",
+        "bn": "Бенгальский", "hi": "Хинди", "ja": "Японский", "ko": "Корейский",
+        "so": "Сомалийский", "sq": "Албанский",
+    },
+}
+
+
 def lang_display(code):
-    """Native name for a language code; the code itself when unknown."""
+    """Localized name for the UI language; native name as fallback."""
+    localized = LANG_NAME_LOCALIZATION.get(eng._ui.get("language"), {}).get(code)
+    if localized:
+        return localized
     return eng.available_language_catalog().get(code, code)
 
 
@@ -466,14 +536,23 @@ class App(ctk.CTk):
                                 height=44, command=lambda n=name: self.open_tab(n))
             btn.pack(pady=6, padx=10, fill="x")
             self.sidebar_buttons[name] = (btn, label_key)
-        self.open_tab("translate")
+        self.open_tab("translate", rebuild=True)
 
-    def open_tab(self, name):
+    def open_tab(self, name, rebuild=False):
+        tab, builder = self.tab_frames[name]
+        if rebuild or not tab.winfo_children():
+            for widget in tab.winfo_children():
+                widget.destroy()
+            builder(tab)
+        tab.tkraise()
+        self.current_tab = name
+
+    def rebuild_tab(self, name):
+        """Rebuild a single tab's content without touching the others."""
         tab, builder = self.tab_frames[name]
         for widget in tab.winfo_children():
             widget.destroy()
         builder(tab)
-        tab.tkraise()
 
     def update_texts(self):
         """Refresh sidebar labels (called on language change)."""
@@ -485,11 +564,10 @@ class App(ctk.CTk):
 
     def rebuild_tabs(self):
         """Rebuild every tab's content (after a language or data change)."""
-        for name, (tab, builder) in self.tab_frames.items():
-            for widget in tab.winfo_children():
-                widget.destroy()
-            builder(tab)
-        self.open_tab("translate")
+        current = getattr(self, "current_tab", None) or "translate"
+        for name in self.tab_frames:
+            self.rebuild_tab(name)
+        self.open_tab(current)
 
     def refresh_after_language_change(self):
         self.update_texts()
@@ -514,13 +592,14 @@ class App(ctk.CTk):
                 links_label.pack_forget()
                 links_box.pack_forget()
         ctk.CTkSegmentedButton(frame, values=[g("tr_last"), g("tr_specific"), g("tr_all")],
-                               command=on_mode, variable=mode,
-                               font=FONT_SMALL).pack(fill="x", pady=(0, 12))
+                               command=lambda v: (on_mode(v), save_state()),
+                               variable=mode, font=FONT_SMALL).pack(fill="x", pady=(0, 12))
 
         ctk.CTkLabel(frame, text=g("tr_type"), font=FONT_SMALL).pack(anchor="w")
         vtype = ctk.StringVar(value=g("tr_long"))
         ctk.CTkSegmentedButton(frame, values=[g("tr_long"), g("tr_short")],
-                               variable=vtype, font=FONT_SMALL).pack(fill="x", pady=(0, 12))
+                               variable=vtype, command=lambda v: save_state(),
+                               font=FONT_SMALL).pack(fill="x", pady=(0, 12))
 
         ctk.CTkLabel(frame, text=g("tr_source"), font=FONT_SMALL).pack(anchor="w")
         source = ctk.StringVar(value=g("tr_source_video"))
@@ -539,23 +618,67 @@ class App(ctk.CTk):
             else:
                 manual.pack_forget()
         ctk.CTkOptionMenu(frame, values=[g("tr_source_video"), g("tr_source_manual")],
-                          command=on_source, variable=source,
-                          font=FONT_SMALL).pack(fill="x", pady=(0, 12))
+                          command=lambda v: (on_source(v), save_state()),
+                          variable=source, font=FONT_SMALL).pack(fill="x", pady=(0, 12))
 
         ctk.CTkLabel(frame, text=g("tr_parts"), font=FONT_SMALL).pack(anchor="w")
         parts = ctk.StringVar(value=g("parts_all"))
         ctk.CTkSegmentedButton(frame, values=[g("parts_all"), g("parts_titles"), g("parts_descs")],
-                               variable=parts, font=FONT_SMALL).pack(fill="x", pady=(0, 12))
+                               variable=parts, command=lambda v: save_state(),
+                               font=FONT_SMALL).pack(fill="x", pady=(0, 12))
+
+        targets_label = ctk.CTkLabel(
+            frame, text=g("tr_targets").format(
+                names=", ".join(lang_display(c) for c in eng.get_profile_languages(self.profile)
+                                if c != "en") or "—"),
+            font=FONT_SMALL, justify="left", wraplength=900)
+        targets_label.pack(anchor="w", pady=(0, 10))
+
+        def save_state():
+            eng._ui["ui_tr_mode"] = mode.get()
+            eng._ui["ui_tr_type"] = vtype.get()
+            eng._ui["ui_tr_source"] = source.get()
+            eng._ui["ui_tr_parts"] = parts.get()
+            eng._ui["ui_add_defaults"] = bool(add_pl.get())
+            eng._ui["ui_sched"] = bool(sched_flag.get())
+            eng._ui["ui_sched_date"] = date_entry.get()
+            eng.save_ui_settings()
+
+        def restore_state():
+            saved_mode = eng._ui.get("ui_tr_mode")
+            if saved_mode in (g("tr_last"), g("tr_specific"), g("tr_all")):
+                mode.set(saved_mode)
+                on_mode(saved_mode)
+            saved_type = eng._ui.get("ui_tr_type")
+            if saved_type in (g("tr_long"), g("tr_short")):
+                vtype.set(saved_type)
+            saved_source = eng._ui.get("ui_tr_source")
+            if saved_source in (g("tr_source_video"), g("tr_source_manual")):
+                source.set(saved_source)
+                on_source(saved_source)
+            saved_parts = eng._ui.get("ui_tr_parts")
+            if saved_parts in (g("parts_all"), g("parts_titles"), g("parts_descs")):
+                parts.set(saved_parts)
+            if eng._ui.get("ui_add_defaults"):
+                add_pl.select()
+            if eng._ui.get("ui_sched"):
+                sched_flag.select()
+            saved_date = eng._ui.get("ui_sched_date")
+            if saved_date:
+                date_entry.insert(0, saved_date)
 
         opts = ctk.CTkFrame(frame, fg_color="transparent")
         opts.pack(fill="x")
-        add_pl = ctk.CTkCheckBox(opts, text=g("pl_defaults"), font=FONT_SMALL)
+        add_pl = ctk.CTkCheckBox(opts, text=g("pl_defaults"), font=FONT_SMALL,
+                                 command=save_state)
         add_pl.pack(side="left", padx=(0, 24))
-        sched_flag = ctk.CTkCheckBox(opts, text=g("set_ask_schedule"), font=FONT_SMALL)
+        sched_flag = ctk.CTkCheckBox(opts, text=g("set_ask_schedule"), font=FONT_SMALL,
+                                   command=save_state)
         sched_flag.pack(side="left")
         date_entry = ctk.CTkEntry(opts, width=120, placeholder_text=g("sched_date"),
                                   font=FONT_SMALL)
         date_entry.pack(side="left", padx=12)
+        date_entry.bind("<KeyRelease>", lambda e: save_state())
 
         start_btn = ctk.CTkButton(frame, text=g("tr_start"), font=FONT_BOLD, height=46,
                                   command=lambda: self.start_translation(
@@ -814,8 +937,11 @@ class App(ctk.CTk):
     # ---------- settings tab ----------
 
     def build_settings(self, tab):
-        frame = ctk.CTkScrollableFrame(tab, fg_color="transparent")
+        frame = ctk.CTkFrame(tab, fg_color="transparent")
         frame.pack(expand=True, fill="both")
+
+        def rerender():
+            self.open_tab("settings", rebuild=True)
 
         ctk.CTkLabel(frame, text=g("set_language"), font=FONT_SMALL).pack(anchor="w")
         names = [GUI_STRINGS[c]["lang_name"] for c in LANG_CODES]
@@ -857,116 +983,12 @@ class App(ctk.CTk):
             eng.save_json_file("local_llm.json", llm)
             eng.save_ui_settings()
             self.update_texts()
+            rerender()
         ctk.CTkButton(frame, text=g("save"), font=FONT, command=save_common).pack(anchor="w")
-
-        # --- translation languages (scrollable grid) ---
-        ctk.CTkLabel(frame, text=g("set_languages"),
-                     font=("Segoe UI", 18, "bold")).pack(anchor="w", pady=(26, 6))
-        catalog = eng.available_language_catalog()
-        current_langs = set(eng.get_profile_languages(self.profile))
-        grid = ctk.CTkScrollableFrame(frame, height=220, fg_color="transparent")
-        grid.pack(fill="x", pady=(0, 8))
-
-        def toggle_lang(c, v):
-            langs = set(eng.get_profile_languages(self.profile))
-            if v.get():
-                langs.add(c)
-            else:
-                langs.discard(c)
-            self.profile["languages"] = sorted(langs)
-            eng.save_channel_profiles(eng.load_channel_profiles())
-        for index, code in enumerate(sorted(catalog)):
-            var = ctk.BooleanVar(value=code in current_langs)
-            cb = ctk.CTkCheckBox(grid, text=f"{code} — {catalog[code]}", variable=var,
-                                 command=lambda c=code, v=var: toggle_lang(c, v),
-                                 font=FONT_SMALL)
-            cb.grid(row=index // 3, column=index % 3, sticky="w", padx=4, pady=2)
-        for column in range(3):
-            grid.grid_columnconfigure(column, weight=1)
-
-        custom_row = ctk.CTkFrame(frame, fg_color="transparent")
-        custom_row.pack(fill="x", pady=(0, 6))
-        code_entry = ctk.CTkEntry(custom_row, placeholder_text=g("lang_custom_code"),
-                                  width=200, font=FONT_SMALL)
-        code_entry.pack(side="left", padx=(0, 8))
-        name_entry = ctk.CTkEntry(custom_row, placeholder_text=g("lang_custom_name"),
-                                  font=FONT_SMALL)
-        name_entry.pack(side="left", expand=True, fill="x", padx=(0, 8))
-        status = ctk.CTkLabel(frame, text="", font=FONT_SMALL)
-
-        def add_custom():
-            code = code_entry.get().strip()
-            if not re.fullmatch(r"[a-zA-Z]{2,3}(?:-[A-Za-z0-9]{2,8})?", code):
-                status.configure(text=g("lang_custom_code"), text_color=COLOR_RETRY)
-                return
-            name = name_entry.get().strip() or code
-            llm = eng.load_local_llm_config()
-            llm.setdefault("language_names", {})[code] = name
-            eng.save_json_file("local_llm.json", llm)
-            langs = set(eng.get_profile_languages(self.profile))
-            langs.add(code)
-            self.profile["languages"] = sorted(langs)
-            eng.save_channel_profiles(eng.load_channel_profiles())
-            self.rebuild_tabs()
-        ctk.CTkButton(custom_row, text=g("lang_add"), font=FONT_SMALL,
-                      command=add_custom).pack(side="left")
-        status.pack(anchor="w")
-
-        # --- language presets ---
-        ctk.CTkLabel(frame, text=g("presets_title"),
-                     font=("Segoe UI", 18, "bold")).pack(anchor="w", pady=(26, 6))
-        preset_row = ctk.CTkFrame(frame, fg_color="transparent")
-        preset_row.pack(fill="x")
-        presets = eng._ui.setdefault("language_presets", {})
-
-        def apply_preset(value):
-            codes = presets.get(value, [])
-            if codes:
-                self.profile["languages"] = sorted(codes)
-                eng.save_channel_profiles(eng.load_channel_profiles())
-                self.rebuild_tabs()
-        preset_menu = ctk.CTkOptionMenu(preset_row, values=list(presets) or ["—"],
-                                        command=apply_preset, font=FONT_SMALL, width=220)
-        preset_menu.set(list(presets)[0] if presets else "—")
-        preset_menu.pack(side="left", padx=(0, 8))
-
-        def save_preset():
-            top = ctk.CTkToplevel(self)
-            top.title(g("preset_name_prompt"))
-            top.geometry("420x200")
-            top.grab_set()
-            ctk.CTkLabel(top, text=g("preset_name_prompt"), font=FONT).pack(pady=(24, 4))
-            entry = ctk.CTkEntry(top, width=280, font=FONT)
-            entry.pack(pady=8)
-            entry.focus_set()
-
-            def apply_name():
-                name = entry.get().strip()
-                if not name:
-                    return
-                presets[name] = list(eng.get_profile_languages(self.profile))
-                eng.save_ui_settings()
-                top.destroy()
-                self.rebuild_tabs()
-            ctk.CTkButton(top, text=g("save"), font=FONT, command=apply_name).pack()
-            entry.bind("<Return>", lambda e: apply_name())
-        ctk.CTkButton(preset_row, text=g("preset_save"), font=FONT_SMALL,
-                      command=save_preset).pack(side="left", padx=(0, 8))
-
-        def delete_preset():
-            value = preset_menu.get()
-            if value in presets:
-                del presets[value]
-                eng.save_ui_settings()
-                self.rebuild_tabs()
-        ctk.CTkButton(preset_row, text=g("preset_delete"), font=FONT_SMALL, width=40,
-                      fg_color="#7f1d1d", command=delete_preset).pack(side="left")
-        if not presets:
-            ctk.CTkLabel(frame, text=g("preset_none"), font=FONT_SMALL).pack(anchor="w")
 
         # --- API providers ---
         ctk.CTkLabel(frame, text=g("api_title"),
-                     font=("Segoe UI", 18, "bold")).pack(anchor="w", pady=(26, 8))
+                     font=("Segoe UI", 18, "bold")).pack(anchor="w", pady=(20, 8))
         reg = eng.load_provider_registry()
         rows = ctk.CTkFrame(frame, fg_color="transparent")
         rows.pack(fill="x")
@@ -991,7 +1013,7 @@ class App(ctk.CTk):
             def activate(p=provider):
                 reg["active"] = p["id"]
                 eng.save_provider_registry(reg)
-                self.rebuild_tabs()
+                rerender()
             ctk.CTkButton(row, text="●", width=40, command=activate).pack(side="right", padx=2)
 
             def remove(p=provider):
@@ -1001,7 +1023,7 @@ class App(ctk.CTk):
                 if reg.get("backup") == p["id"]:
                     reg["backup"] = None
                 eng.save_provider_registry(reg)
-                self.rebuild_tabs()
+                rerender()
             ctk.CTkButton(row, text="✕", width=40, fg_color="#7f1d1d",
                           command=remove).pack(side="right", padx=2)
 
@@ -1010,6 +1032,104 @@ class App(ctk.CTk):
         ctk.CTkButton(frame, text="＋ " + g("api_add"), font=FONT,
                       command=add_provider).pack(anchor="w", pady=(8, 0))
 
+        # --- language presets ---
+        ctk.CTkLabel(frame, text=g("presets_title"),
+                     font=("Segoe UI", 18, "bold")).pack(anchor="w", pady=(20, 6))
+        preset_row = ctk.CTkFrame(frame, fg_color="transparent")
+        preset_row.pack(fill="x")
+        presets = eng._ui.setdefault("language_presets", {})
+
+        def apply_preset(value):
+            codes = presets.get(value, [])
+            if codes:
+                self.profile["languages"] = sorted(codes)
+                eng.save_channel_profiles(eng.load_channel_profiles())
+                self.rebuild_tab("translate")
+        preset_menu = ctk.CTkOptionMenu(preset_row, values=list(presets) or ["—"],
+                                        command=apply_preset, font=FONT_SMALL, width=220)
+        preset_menu.set(list(presets)[0] if presets else "—")
+        preset_menu.pack(side="left", padx=(0, 8))
+
+        def save_preset():
+            top = ctk.CTkToplevel(self)
+            top.title(g("preset_name_prompt"))
+            top.geometry("420x200")
+            top.grab_set()
+            ctk.CTkLabel(top, text=g("preset_name_prompt"), font=FONT).pack(pady=(24, 4))
+            entry = ctk.CTkEntry(top, width=280, font=FONT)
+            entry.pack(pady=8)
+            entry.focus_set()
+
+            def apply_name():
+                name = entry.get().strip()
+                if not name:
+                    return
+                presets[name] = list(eng.get_profile_languages(self.profile))
+                eng.save_ui_settings()
+                top.destroy()
+                self.rebuild_tab("settings")
+            ctk.CTkButton(top, text=g("save"), font=FONT, command=apply_name).pack()
+            entry.bind("<Return>", lambda e: apply_name())
+        ctk.CTkButton(preset_row, text=g("preset_save"), font=FONT_SMALL,
+                      command=save_preset).pack(side="left", padx=(0, 8))
+
+        def delete_preset():
+            value = preset_menu.get()
+            if value in presets:
+                del presets[value]
+                eng.save_ui_settings()
+                self.rebuild_tab("settings")
+        ctk.CTkButton(preset_row, text=g("preset_delete"), font=FONT_SMALL, width=40,
+                      fg_color="#7f1d1d", command=delete_preset).pack(side="left")
+        if not presets:
+            ctk.CTkLabel(frame, text=g("preset_none"), font=FONT_SMALL).pack(anchor="w")
+
+        # --- translation languages (searchable, grows with the window) ---
+        ctk.CTkLabel(frame, text=g("set_languages"),
+                     font=FONT_TITLE).pack(anchor="w", pady=(20, 6))
+        search_var = ctk.StringVar()
+        search_entry = ctk.CTkEntry(frame, placeholder_text=g("lang_search"), font=FONT_SMALL)
+        search_entry.pack(fill="x", pady=(0, 6))
+        langs_frame = ctk.CTkFrame(frame, fg_color="transparent")
+        langs_frame.pack(expand=True, fill="both", pady=(0, 8))
+
+        def toggle_lang(c, v):
+            langs = set(eng.get_profile_languages(self.profile))
+            if v.get():
+                langs.add(c)
+            else:
+                langs.discard(c)
+            self.profile["languages"] = sorted(langs)
+            eng.save_channel_profiles(eng.load_channel_profiles())
+            self.rebuild_tab("translate")
+
+        def build_languages_grid(query=""):
+            catalog = eng.available_language_catalog()
+            current_langs = set(eng.get_profile_languages(self.profile))
+            query_l = query.strip().lower()
+            codes = [c for c in sorted(catalog)
+                     if not query_l
+                     or query_l in c.lower()
+                     or query_l in catalog[c].lower()
+                     or query_l in lang_display(c).lower()]
+            grid = ctk.CTkScrollableFrame(langs_frame, fg_color="transparent")
+            grid.pack(expand=True, fill="both")
+            for index, code in enumerate(codes):
+                var = ctk.BooleanVar(value=code in current_langs)
+                cb = ctk.CTkCheckBox(grid, text=f"{code} — {lang_display(code)}",
+                                     variable=var,
+                                     command=lambda c=code, v=var: toggle_lang(c, v),
+                                     font=FONT_SMALL)
+                cb.grid(row=index // 3, column=index % 3, sticky="w", padx=4, pady=2)
+            for column in range(3):
+                grid.grid_columnconfigure(column, weight=1)
+
+        def on_search(*_):
+            build_languages_grid(search_var.get())
+        search_entry.bind("<KeyRelease>", on_search)
+        build_languages_grid()
+
+
     def _provider_editor(self, tab, reg, provider):
         """Inline add/edit form for one API provider (replaces the provider list)."""
         for widget in tab.winfo_children():
@@ -1017,7 +1137,7 @@ class App(ctk.CTk):
         is_new = provider is None
 
         def rerender():
-            self.rebuild_tabs()
+            self.open_tab("settings")
 
         ctk.CTkLabel(tab, text=g("provider_new_title") if is_new
                      else g("provider_edit_title").format(name=provider.get("name", "")),
@@ -1117,6 +1237,10 @@ def main():
         eng._ui["ask_playlists"] = bool(saved.get("ask_playlists", True))
         eng._ui["ask_schedule"] = bool(saved.get("ask_schedule", True))
         eng._ui["language_presets"] = saved.get("language_presets", {})
+        for key in ("ui_tr_mode", "ui_tr_type", "ui_tr_source", "ui_tr_parts",
+                    "ui_add_defaults", "ui_sched", "ui_sched_date"):
+            if key in saved:
+                eng._ui[key] = saved[key]
     except (FileNotFoundError, ValueError):
         pass
     if not eng._ui["language"] or not eng._ui["user_name"]:
