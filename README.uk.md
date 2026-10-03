@@ -4,8 +4,8 @@
 
 Працює на Windows і macOS. Усе, що потрібно — безкоштовне або майже безкоштовне.
 
-> 🇬🇧 English guide: [README.md](README.md)
-> 🇷🇺 Інструкція російською: [README.ru.md](README.ru.md)
+> 🇷🇺 Инструкция на русском: [README.md](README.md)
+> 🇬🇧 English guide: [README.en.md](README.en.md)
 
 ---
 

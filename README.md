@@ -1,40 +1,46 @@
-# YouTube Metadata Translator
+# YouTube Metadata Translator — гайд по установке и запуску
 
-A tool for YouTube creators: it localizes video titles and descriptions into 90+ languages with an AI model, updates video metadata, adds videos to playlists and schedules deferred publishing. Managed from a **web interface** that runs locally on your machine and opens in your browser.
+Инструмент для YouTube-каналов: переводит название и описание видео на 90+ языков через нейросеть, обновляет метаданные, добавляет видео в плейлисты и ставит отложенную публикацию. Управляется через **веб-интерфейс**, который работает локально на твоей машине и открывается в браузере.
 
-Works on Windows and macOS. Everything it needs is free or nearly free.
+Работает на Windows и macOS. Всё, что нужно — бесплатное или почти бесплатное.
 
+> 🇬🇧 English guide: [README.en.md](README.en.md)
 > 🇺🇦 Інструкція українською: [README.uk.md](README.uk.md)
-> 🇷🇸 Инструкция на русском: [README.ru.md](README.ru.md)
 
-## What you need (~30 minutes of one-time setup)
+---
 
-1. **Python 3.10 or newer** — the language the tool is written in.
-2. A **Google account** that owns the YouTube channel.
-3. A **translation provider** — any one of:
-   - a local app: **LM Studio** or **Ollama** (free, runs on your machine);
-   - an **online OpenAI-compatible API** with keys (e.g. OpenRouter or any aggregator);
-   - Google **Gemini** keys from AI Studio (free, used by the console version).
-4. A browser (Chrome, Edge, Firefox, Safari).
+## Что понадобится (~30 минут настройки, один раз)
 
-## Step 1. Install Python
+1. **Python 3.10 или новее** — сам язык, на котором написан инструмент.
+2. **Google-аккаунт**, которому принадлежит YouTube-канал.
+3. **Переводчик** — любой из вариантов:
+   - локальное приложение: **LM Studio** или **Ollama** (бесплатно, работает на твоей машине);
+   - **онлайн-API, совместимый с OpenAI**, с ключами (например OpenRouter или любой агрегатор);
+   - ключи Gemini от Google (AI Studio) — используются консольной версией.
+4. Браузер (Chrome, Edge, Firefox, Safari).
+
+---
+
+## Шаг 1. Установи Python
 
 ### Windows
 
-1. Go to https://www.python.org/downloads/ and press the yellow **Download Python 3.x.x** button.
-2. Run the installer.
-3. **MOST IMPORTANT:** on the first screen check **"Add python.exe to PATH"** (at the bottom).
-4. Press **Install Now**.
-5. Check: press `Win + R`, type `cmd`, press Enter, then type `python --version`. It should print something like `Python 3.13.1`.
+1. Зайди на https://www.python.org/downloads/ и нажми жёлтую кнопку **Download Python 3.x.x**.
+2. Запусти установщик.
+3. **САМОЕ ВАЖНОЕ:** на первом экране поставь галочку **«Add python.exe to PATH»** (внизу окна).
+4. Нажми **Install Now**.
+5. Проверка: `Win + R` → `cmd` → Enter → `python --version`. Должно показать что-то вроде `Python 3.13.1`.
 
 ### macOS
 
-1. Go to https://www.python.org/downloads/ — the site offers the right version for Mac. Install it like a normal app.
-2. Check: open **Terminal** (Cmd + Space, type "Terminal"), type `python3 --version`.
+1. Зайди на https://www.python.org/downloads/ — сайт сам предложит версию для Mac. Установи как обычную программу.
+2. Проверка: в **Терминале** набери `python3 --version`.
 
-## Step 2. Install the libraries
+---
 
-Open a terminal in the project folder and run:
+## Шаг 2. Установи библиотеки
+
+Открой терминал в папке проекта и выполни:
 
 ```
 pip install -r requirements.txt
@@ -42,116 +48,126 @@ pip install -r requirements.txt
 
 (macOS: `pip3 install -r requirements.txt`)
 
-## Step 3. Create your Google keys (client_secrets) — the longest step
+---
 
-These keys let the tool manage **your** YouTube channel. Done once.
+## Шаг 3. Создай ключи Google (client_secrets) — самый длинный шаг
 
-### 3.1. Create a Google Cloud project
+Это ключи, которые разрешают инструменту управлять **твоим** YouTube-каналом. Делается один раз.
 
-1. Go to https://console.cloud.google.com with the Google account of your channel.
-2. Top bar → project selector → **New Project**.
-3. Name it anything, e.g. `youtube-translator` → **Create**.
+### 3.1. Создай проект в Google Cloud
 
-### 3.2. Enable the YouTube Data API
+1. Зайди на https://console.cloud.google.com под Google-аккаунтом твоего канала.
+2. Сверху — селектор проектов → **New Project**. Название любое → **Create**.
 
-1. Menu (☰) → **APIs & Services** → **Library**.
-2. Search for `YouTube Data API v3` → open it → press **Enable**.
+### 3.2. Включи YouTube Data API
 
-### 3.3. Configure the OAuth consent screen
+1. Меню (☰) → **APIs & Services** → **Library**.
+2. Найди `YouTube Data API v3` → **Enable**.
 
-1. Menu → **APIs & Services** → **OAuth consent screen** (may be called **Google Auth Platform**).
+### 3.3. Настрой экран согласования (OAuth consent screen)
+
+1. Меню → **APIs & Services** → **OAuth consent screen** (может называться **Google Auth Platform**).
 2. **User Type**: **External** → **Create**.
-3. Fill in the minimum: **App name** (anything), **User support email** (your email), **Developer contact email**.
-4. Press **Save and Continue** on every step (Scopes can be skipped).
+3. Заполни минимум: **App name**, **User support email**, **Developer contact email**.
+4. Жми **Save and Continue** на каждом шаге (Scopes можно пропустить).
 
-### 3.4. Add emails to Test users — REQUIRED
+### 3.4. Добавь почты в Test users — ОБЯЗАТЕЛЬНО
 
-While the app is in **Testing** mode, Google only lets in **users whose emails you explicitly added**. Otherwise you'll get `Access blocked: access_denied`.
+Пока приложение в режиме **Testing**, Google пускает только тех, чьи почты ты явно добавил. Иначе будет ошибка `Access blocked: access_denied`.
 
-1. In **OAuth consent screen** (or **Google Auth Platform → Audience**) find **Test users**.
-2. Press **+ Add Users**.
-3. Enter **the email of your channel's Google account** (and the email of anyone else who will use the tool).
-4. **Save**.
+1. В **OAuth consent screen** (или **Google Auth Platform → Audience**) найди **Test users**.
+2. **+ Add Users** → введи **почту аккаунта канала** (и всех, кто будет пользоваться).
+3. **Save**.
 
-> ⚠️ In Testing mode the access token lives **7 days**, then you'll be asked to sign in again. Tired of that? Press **Publish App** on the consent screen — sign-in then works indefinitely (Google may show an "unverified app" warning; for personal use just press Advanced → Go to the app).
+> ⚠️ В режиме Testing токен живёт **7 дней**. Надоело переавторизовываться — нажми **Publish App**: вход будет работать без ограничений (Google может показать предупреждение о непроверенном приложении — для личного использования жми «Advanced» → «Go to приложение»).
 
-### 3.5. Download client_secrets
+### 3.5. Скачай client_secrets
 
-1. Menu → **APIs & Services** → **Credentials**.
+1. Меню → **APIs & Services** → **Credentials**.
 2. **+ Create Credentials** → **OAuth client ID**.
-3. **Application type**: **Desktop app** (not Web, not Android!).
-4. Name it anything → **Create** → **Download JSON**.
-5. Keep the downloaded file — you will pick it in the web interface when adding a channel. No need to rename or move it anywhere.
+3. **Application type**: **Desktop app** (не Web и не Android!).
+4. **Create** → **Download JSON**.
+5. Скачанный файл просто сохрани — ты выберешь его в веб-интерфейсе при добавлении канала. Переименовывать и никуда перемещать не нужно.
 
-> 💡 Managing **several channels**? Each channel needs its own client_secrets file (from that channel's Google account) and its own profile in the tool. Add them one by one on the **Channels** screen.
+> 💡 Нужно управлять **несколькими каналами**? Для каждого — свой client_secrets (от его Google-аккаунта) и свой профиль. Добавляй их по очереди на экране **«Каналы»**.
 
-## Step 4. First run
+---
+
+## Шаг 4. Первый запуск
 
 ### Windows
 
-Double-click **Запустить веб-интерфейс (Windows).cmd** — the server starts and your browser opens the interface.
+Дважды кликни **«Запустить веб-интерфейс (Windows).cmd»** — сервер запустится, и браузер откроет интерфейс.
 
 ### macOS
 
-1. Open Terminal, type `chmod +x ` (with a trailing space), drag **Запустить веб-интерфейс (Mac).command** into the window, press Enter. One-time only.
-2. After that just double-click the file.
+1. В Терминале набери `chmod +x ` (с пробелом), перетащи файл **«Запустить веб-интерфейс (Mac).command»**, нажми Enter. Один раз.
+2. Дальше просто дважды кликай по файлу.
 
-### First-launch wizard
+### Первый запуск
 
-1. **Interface language** — Русский / Українська / English.
-2. **Your name** — how the tool greets you.
-3. On the **Channels** screen press **Add a channel**: enter a name and pick the client_secrets JSON file downloaded in step 3.5.
-4. A Google window opens — **sign in to the channel's account**. If Google warns about an unverified app: Advanced → Go to the app.
-5. Done — the token is saved in `data/profiles/<channel>/`, no repeated sign-ins.
+1. **Язык интерфейса** — Русский / Українська / English.
+2. **Твоё имя** — как к тебе обращаться.
+3. На экране **«Каналы»** нажми **«Добавить канал»**: введи имя и выбери client_secrets JSON, скачанный в шаге 3.5.
+4. Откроется окно Google — **войди в аккаунт канала**. Предупреждение о непроверенном приложении: «Advanced» → «Перейти на приложение».
+5. Готово — токен сохранится в `data/profiles/<канал>/`, повторных входов не будет.
 
-## Step 5. Connect a translation provider
+---
 
-Open **Settings → API providers → Add provider**.
+## Шаг 5. Подключи переводчика
 
-- **Local** — pick the app preset (**LM Studio** or **Ollama**): the address fills in automatically and the model list is fetched from the running app. No keys needed.
-- **Online** — enter the base URL (e.g. `https://openrouter.ai/api/v1`), paste your keys (one per line) and choose a model. Keys are stored masked, and the **Check keys** button shows which ones are alive, rate-limited or rejected.
+Открой **Настройки → API-провайдеры → Добавить провайдера**.
 
-Translations run in parallel across languages; the number of simultaneous translations is set in Settings (Auto works for most cases).
+- **Локальний** — выбери пресет (**LM Studio** или **Ollama**): адрес подставится сам, список моделей подтянется из запущенного приложения. Ключи не нужны.
+- **Онлайн** — введи base URL (например `https://openrouter.ai/api/v1`), вставь ключи (по одному в строке) и выбери модель. Ключи хранятся замаскированными, кнопка **«Проверить ключи»** покажет, какие живые, а какие упёрлись в лимит или отвергнуты.
 
-## The screens
+Языки переводятся параллельно; количество одновременных переводов задаётся в настройках (обычно хватает «Авто»).
 
-| Screen | What it does |
+---
+
+## Экраны
+
+| Экран | Что делает |
 |---|---|
-| **Translate** | Takes the actual title/description of a video (latest, specific or all), localizes them into the selected languages with a live progress bar and log, and applies them back. |
-| **Playlists** | Manage the channel's playlists and default playlists; add a video to several playlists at once. |
-| **Publishing** | Deferred publishing with date and time; edit the per-weekday publishing schedule below. |
-| **Channels** | Add channels (with client_secrets upload), sign in, switch the active channel, delete profiles. |
-| **Settings** | Interface language, your name, parallel translations, language presets, API providers, translation languages (searchable, localized like on YouTube). |
+| **Перевод** | Берёт актуальные название/описание видео (последнее, конкретные или все), переводит на выбранные языки с живым прогресс-баром и логом и применяет обратно. |
+| **Плейлисты** | Управление плейлистами канала и плейлистами по умолчанию; добавление видео в несколько плейлистов сразу. |
+| **Публикация** | Отложенная публикация с выбором даты и времени; ниже — редактор графика публикаций по дням недели. |
+| **Каналы** | Добавление каналов (с загрузкой client_secrets), вход, выбор активного канала, удаление профилей. |
+| **Настройки** | Язык интерфейса, твоё имя, одновременные переводы, пресеты языков, API-провайдеры, языки перевода (с поиском и локализацией, как на YouTube). |
 
-A translation can be cancelled — already finished languages are kept, nothing further is applied.
+Перевод можно отменить — уже готовые языки сохранятся, остальное не применится.
 
-## Console version
+---
 
-Prefer the terminal? **Запустить (Windows).cmd** / **Запустить (Mac).command** run the classic console version with the same engine and the same data.
+## Консольная версия
 
-## Files and folders
+Любишь терминал? **«Запустить (Windows).cmd»** / **«Запустить (Mac).command»** запускают классическую консольную версию — тот же движок и те же данные.
+
+---
+
+## Файлы и папки
 
 ```
 youtube-metadata-translator/
-├── yt_metadata_translator.py        ← the engine (console version)
-├── webui.py                         ← web interface server
-├── webui_static/                    ← web interface files
-├── Запустить веб-интерфейс (Windows).cmd  ← launch the web interface (Windows)
-├── Запустить веб-интерфейс (Mac).command  ← launch the web interface (macOS)
-├── Запустить (Windows).cmd          ← launch the console version (Windows)
-├── Запустить (Mac).command          ← launch the console version (macOS)
-├── requirements.txt                 ← library list
-├── README.md                        ← this guide
-└── data/                            ← all data (auto-created)
-    ├── local_llm.json               ← translator settings
-    ├── api_providers.json           ← translation providers and keys (masked in the UI)
-    ├── api_key_status.json          ← key liveness results
-    ├── channel_profiles.json        ← channel profiles
-    ├── client_secrets*.json         ← Google keys (step 3.5)
-    ├── metadata.json                ← last translated title/description
-    ├── localizations.json           ← last set of translations
-    ├── ui_settings.json             ← interface language, your name, presets
-    └── profiles/<channel>/          ← Google token and publishing calendar per channel
+├── yt_metadata_translator.py        ← движок (консольная версия)
+├── webui.py                         ← сервер веб-интерфейса
+├── webui_static/                    ← файлы веб-интерфейса
+├── Запустить веб-интерфейс (Windows).cmd  ← запуск веб-интерфейса (Windows)
+├── Запустить веб-интерфейс (Mac).command  ← запуск веб-интерфейса (macOS)
+├── Запустить (Windows).cmd          ← запуск консольной версии (Windows)
+├── Запустить (Mac).command          ← запуск консольной версии (macOS)
+├── requirements.txt                 ← список библиотек
+├── README.md                        ← этот гайд
+└── data/                            ← все данные (создаются сами)
+    ├── local_llm.json               ← настройки переводчика
+    ├── api_providers.json           ← провайдеры перевода и ключи (в UI замаскированы)
+    ├── api_key_status.json          ← результаты проверки ключей
+    ├── channel_profiles.json        ← профили каналов
+    ├── client_secrets*.json         ← ключи Google (шаг 3.5)
+    ├── metadata.json                ← последнее переведённое название/описание
+    ├── localizations.json           ← последний набор переводов
+    ├── ui_settings.json             ← язык интерфейса, твоё имя, пресеты
+    └── profiles/<канал>/            ← токен Google и календарь публикаций канала
 ```
 
-Enjoy! 🧙
+Приятного использования! 🧙
