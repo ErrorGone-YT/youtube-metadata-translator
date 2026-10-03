@@ -4,6 +4,7 @@ Local stdlib-only server (no new dependencies): serves the SPA from
 webui_static/ and exposes a JSON API over yt_metadata_translator.
 Run:  python webui.py   (opens the browser automatically)
 """
+import hashlib
 import json
 import os
 import re
@@ -11,7 +12,10 @@ import shutil
 import threading
 import time
 import webbrowser
+from concurrent.futures import ThreadPoolExecutor
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+import requests
 
 import yt_metadata_translator as eng
 
@@ -37,7 +41,7 @@ def new_job(kind):
         JOB_SEQ += 1
         job = {"id": JOB_SEQ, "kind": kind, "running": True, "done": False,
                "error": "", "log": [], "videos_total": 0, "videos_done": 0,
-               "video_title": "", "langs": {}, "started": time.time()}
+               "video_title": "", "langs": {}, "cancel": False, "started": time.time()}
         JOBS[JOB_SEQ] = job
         return job
 
@@ -91,10 +95,63 @@ def get_client(profile):
     return client
 
 
+KEY_STATUS_FILE = "api_key_status.json"
+
+
+def _key_hash(key):
+    return hashlib.sha256(key.encode("utf-8")).hexdigest()[:12]
+
+
+def _mask_key(key):
+    return (key[:3] + "…" + key[-4:]) if len(key) > 9 else "…" + key[-4:]
+
+
+def _load_key_status():
+    try:
+        return eng.load_json_file(KEY_STATUS_FILE)
+    except (FileNotFoundError, ValueError):
+        return {}
+
+
+def _save_key_status(status):
+    eng.save_json_file(KEY_STATUS_FILE, status)
+
+
+def _live_status(entry):
+    """Stored status, with an expired freeze counting as working again."""
+    st = entry.get("status", "ok")
+    if st == "frozen" and entry.get("until", 0) <= time.time():
+        return "ok"
+    return st
+
+
+def provider_view(provider, status_map):
+    """Provider as sent to the UI: full keys never leave the server."""
+    view = {k: v for k, v in provider.items() if k != "api_keys"}
+    key_status = status_map.get(provider["id"], {})
+    view["keys"] = [
+        {"masked": _mask_key(k), "hash": _key_hash(k),
+         "status": _live_status(key_status.get(_key_hash(k), {})),
+         "detail": key_status.get(_key_hash(k), {}).get("detail", "")}
+        for k in provider.get("api_keys", [])
+    ]
+    return view
+
+
+def reg_view(reg):
+    status = _load_key_status()
+    return {
+        "active": reg.get("active"),
+        "backup": reg.get("backup"),
+        "providers": [provider_view(p, status) for p in reg["providers"]],
+    }
+
+
 def profile_brief(profile):
     return {
         "id": profile["profile_id"],
         "name": profile.get("channel_title") or profile.get("display_name"),
+        "logo_url": profile.get("logo_url", ""),
         "ready": eng.profile_is_ready(profile),
         "authorized": bool(profile.get("channel_id")),
         "languages": eng.get_profile_languages(profile),
@@ -196,6 +253,11 @@ def start_translation(payload):
     def progress(state, code, detail=""):
         job_progress(job, state, code, detail)
 
+    # все языки видны в панели с самого начала — иначе прогресс-бар считал
+    # проценты от уже отчитавшихся и прыгал на 100% с первым же языком
+    for code in langs:
+        job_progress(job, "start", code)
+
     def worker():
         THREAD_JOB[threading.get_ident()] = job["id"]
         try:
@@ -214,6 +276,8 @@ def start_translation(payload):
             with _LOCK:
                 job["videos_total"] = len(targets)
             for video_id in targets:
+                if job["cancel"]:
+                    break
                 try:
                     metadata = eng.fetch_video_source_metadata(client, video_id)
                 except Exception as error:
@@ -232,6 +296,9 @@ def start_translation(payload):
                     eng.localize_metadata_via_llm(metadata, langs, parts, progress=progress)
                 except Exception as error:
                     job_log(job, f"❌ {error}")
+                    continue
+                if job["cancel"]:
+                    # перевод языков уже оплачен, но результат не применяем
                     continue
                 localizations = eng.load_json_file(eng.LOCALIZATIONS_FILE)
                 try:
@@ -259,7 +326,6 @@ def start_translation(payload):
                         job_log(job, "⚠️ ddmmyy")
                 with _LOCK:
                     job["videos_done"] += 1
-            job_log(job, "✅ " + (eng.t("tr_done_all") if eng.STRINGS.get(eng._ui.get("language"), {}).get("tr_done_all") else "Done"))
         except Exception as error:
             with _LOCK:
                 job["error"] = str(error)
@@ -274,6 +340,35 @@ def start_translation(payload):
     return job
 
 
+def fill_missing_logos():
+    """Fetch channel avatars for profiles authorized before logos were saved.
+
+    Runs in the background: get_client() refreshes the token silently (no
+    browser), so this is quota-cheap and invisible to the user.
+    """
+
+    def worker():
+        for profile in eng.load_channel_profiles()["profiles"]:
+            if not profile.get("channel_id") or profile.get("logo_url"):
+                continue
+            try:
+                client = get_client(profile)
+                response = client.channels().list(
+                    part="snippet", id=profile["channel_id"]).execute()
+                items = response.get("items") or []
+                if not items:
+                    continue
+                thumbnails = items[0]["snippet"].get("thumbnails", {})
+                url = (thumbnails.get("medium") or thumbnails.get("default") or {}).get("url")
+                if url:
+                    update_profile(profile["profile_id"],
+                                   lambda p, u=url: p.__setitem__("logo_url", u))
+            except Exception:
+                continue
+
+    threading.Thread(target=worker, daemon=True).start()
+
+
 def schedule_video(payload):
     profile = active_profile()
     client = get_client(profile)
@@ -281,8 +376,16 @@ def schedule_video(payload):
     if not video_id:
         raise ValueError("bad link")
     publish_date = eng.datetime.strptime(str(payload.get("date", "")).strip(), "%d%m%y")
-    publish_datetime, publish_time = eng.to_publish_datetime(
-        publish_date, eng.load_calendar(profile))
+    custom_time = str(payload.get("time", "")).strip()
+    if custom_time:
+        # время, выбранное пользователем; без него берётся календарь публикаций
+        chosen = eng.datetime.strptime(custom_time, "%H:%M")
+        publish_time = custom_time
+        publish_datetime = eng.local_to_utc(
+            eng.datetime.combine(publish_date.date(), chosen.time()))
+    else:
+        publish_datetime, publish_time = eng.to_publish_datetime(
+            publish_date, eng.load_calendar(profile))
     if not eng.set_publishAt(client, video_id, publish_datetime):
         raise ValueError("YouTube refused the schedule")
     return {"video_id": video_id,
@@ -336,7 +439,7 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/api/auth":
                 return self._json(dict(AUTH))
             if path == "/api/providers":
-                return self._json(eng.load_provider_registry())
+                return self._json(reg_view(eng.load_provider_registry()))
             return self._json({"error": "not found"}, 404)
         except Exception as error:
             self._json({"error": str(error)}, 500)
@@ -365,6 +468,18 @@ class Handler(BaseHTTPRequestHandler):
                                          str(data.get("secrets_filename", "")),
                                          str(data.get("secrets_content", "")))
                 return self._json(profile_brief(profile))
+            if path == "/api/profiles/delete":
+                pid = data["profile_id"]
+                profiles = eng.load_channel_profiles()
+                profiles["profiles"] = [p for p in profiles["profiles"]
+                                        if p["profile_id"] != pid]
+                eng.save_channel_profiles(profiles)
+                shutil.rmtree(eng.data_file_path(f"profiles/{pid}"), ignore_errors=True)
+                CLIENTS.pop(pid, None)
+                if eng._ui.get("web_active_profile") == pid:
+                    eng._ui.pop("web_active_profile", None)
+                    eng.save_ui_settings()
+                return self._json({"ok": True})
             if path == "/api/auth":
                 profile = find_profile(data["profile_id"])
                 if AUTH["running"]:
@@ -380,6 +495,34 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"ok": True})
             if path == "/api/translate":
                 return self._json({"ok": True, "job": start_translation(data)["id"]})
+            if path == "/api/calendar":
+                profile = find_profile(data["profile_id"])
+                calendar = eng.load_calendar(profile)
+                return self._json({"days": {
+                    day: (calendar.get(day) or [""])[0]
+                    for day in ("Monday", "Tuesday", "Wednesday", "Thursday",
+                                "Friday", "Saturday", "Sunday")
+                }})
+            if path == "/api/calendar/save":
+                profile = find_profile(data["profile_id"])
+                days = data.get("days", {})
+                clean = {}
+                for day, time_text in days.items():
+                    if day not in ("Monday", "Tuesday", "Wednesday", "Thursday",
+                                   "Friday", "Saturday", "Sunday"):
+                        continue
+                    time_text = str(time_text).strip()
+                    if time_text and re.fullmatch(r"\d{1,2}:\d{2}", time_text):
+                        hour, minute = time_text.split(":")
+                        clean[day] = [f"{int(hour):02d}:{minute}"]
+                eng.save_json_file(profile["publ_calendar_file"], clean)
+                return self._json({"ok": True})
+            if path == "/api/job/cancel":
+                for candidate in sorted(JOBS.values(), key=lambda j: j["id"], reverse=True):
+                    if candidate["running"]:
+                        candidate["cancel"] = True
+                        return self._json({"ok": True})
+                return self._json({"ok": False})
             if path == "/api/schedule":
                 return self._json(schedule_video(data))
             if path == "/api/playlists/add":
@@ -433,17 +576,26 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/api/providers/save":
                 reg = eng.load_provider_registry()
                 entry = data["entry"]
+                keep = set(data.get("keep", []))
+                new_keys = [k for k in re.split(r"[,\s]+", str(data.get("new_keys", ""))) if k]
                 if entry.get("id") in {p["id"] for p in reg["providers"]}:
                     for index, old in enumerate(reg["providers"]):
                         if old["id"] == entry["id"]:
-                            reg["providers"][index] = entry
+                            if old.get("auth"):
+                                merged = [k for k in old.get("api_keys", [])
+                                          if _key_hash(k) in keep] + new_keys
+                            else:
+                                merged = []
+                            old.update(entry)
+                            old["api_keys"] = merged
                 else:
                     entry["id"] = entry.get("id") or eng.profile_slug(
                         entry["name"], {p["id"] for p in reg["providers"]})
+                    entry["api_keys"] = new_keys
                     reg["providers"].append(entry)
                     reg.setdefault("active", entry["id"])
                 eng.save_provider_registry(reg)
-                return self._json(reg)
+                return self._json(reg_view(reg))
             if path == "/api/providers/activate":
                 reg = eng.load_provider_registry()
                 if data.get("backup"):
@@ -451,7 +603,7 @@ class Handler(BaseHTTPRequestHandler):
                 else:
                     reg["active"] = data["id"]
                 eng.save_provider_registry(reg)
-                return self._json(reg)
+                return self._json(reg_view(reg))
             if path == "/api/providers/delete":
                 reg = eng.load_provider_registry()
                 reg["providers"] = [p for p in reg["providers"] if p["id"] != data["id"]]
@@ -460,9 +612,57 @@ class Handler(BaseHTTPRequestHandler):
                 if reg.get("backup") == data["id"]:
                     reg["backup"] = None
                 eng.save_provider_registry(reg)
-                return self._json(reg)
+                return self._json(reg_view(reg))
             if path == "/api/providers/models":
                 return self._json({"models": eng.fetch_local_models(data.get("base_url", ""))})
+            if path == "/api/providers/check_keys":
+                reg = eng.load_provider_registry()
+                provider = next((p for p in reg["providers"] if p["id"] == data["provider_id"]), None)
+                if provider is None:
+                    raise ValueError("provider not found")
+                keys = provider.get("api_keys", [])
+                base = (provider.get("base_url") or "").rstrip("/")
+
+                def test(key):
+                    try:
+                        if provider.get("kind") == "gemini":
+                            response = requests.get(
+                                "https://generativelanguage.googleapis.com/v1beta/models",
+                                params={"key": key}, timeout=10)
+                        else:
+                            response = requests.get(f"{base}/models",
+                                headers={"Authorization": f"Bearer {key}"}, timeout=10)
+                        if response.status_code == 200:
+                            return "ok", ""
+                        if response.status_code == 429:
+                            return "frozen", "HTTP 429"
+                        return "dead", f"HTTP {response.status_code}"
+                    except Exception as error:
+                        return "dead", str(error)[:80]
+
+                with ThreadPoolExecutor(max_workers=min(8, max(1, len(keys)))) as pool:
+                    verdicts = list(pool.map(test, keys))
+                status = _load_key_status()
+                per_provider = status.setdefault(provider["id"], {})
+                results = []
+                for key, (state, detail) in zip(keys, verdicts):
+                    per_provider[_key_hash(key)] = {
+                        "status": state, "detail": detail, "checked": time.time()}
+                    results.append({"masked": _mask_key(key), "hash": _key_hash(key),
+                                    "status": state, "detail": detail})
+                _save_key_status(status)
+                return self._json({"keys": results})
+
+            if path == "/api/providers/unfreeze":
+                status = _load_key_status()
+                per_provider = status.get(data["provider_id"], {})
+                for entry in per_provider.values():
+                    if entry.get("status") in ("frozen", "dead"):
+                        entry["status"] = "ok"
+                        entry["until"] = 0
+                _save_key_status(status)
+                return self._json(reg_view(eng.load_provider_registry()))
+
             if path == "/api/parallel":
                 config = eng.load_local_llm_config()
                 raw = data.get("value", "auto")
@@ -513,7 +713,7 @@ class Handler(BaseHTTPRequestHandler):
                     "ui_tr_source", "ui_tr_parts", "ui_add_defaults", "ui_sched")},
             "profiles": profiles,
             "secrets_found": bool(eng.find_secrets_files()),
-            "providers": reg,
+            "providers": reg_view(reg),
             "provider_online": bool(provider and provider.get("auth")),
             "parallel": config.get("max_parallel_languages", "auto"),
             "catalog": eng.available_language_catalog(),
@@ -550,6 +750,7 @@ def main():
         raise SystemExit("Все порты 8765–8789 заняты.")
     url = f"http://127.0.0.1:{server.server_address[1]}"
     print(f"\n🌐 Веб-интерфейс: {url}  (закрытие — Ctrl+C здесь или кнопка в меню)")
+    fill_missing_logos()
     threading.Timer(0.6, webbrowser.open, (url,)).start()
     try:
         server.serve_forever()

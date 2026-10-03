@@ -34,7 +34,7 @@ const T = {
     pl_add: "Добавить плейлист", pl_default: "По умолчанию", pl_none: "Плейлистов пока нет.",
     pl_video_title: "Добавить видео в плейлисты", pl_video_ph: "Ссылка на видео или ID",
     pl_pick: "Куда добавить", pl_added: "Добавлено в {n} плейлист(ов)",
-    sch_title: "Отложенная публикация", sch_sub: "Видео станет публичным в выбранный день, время возьмётся из календаря публикаций.",
+    sch_title: "Отложенная публикация", sch_sub: "Видео станет публичным в выбранные дату и время. Если время не выбрать — оно возьмётся из календаря публикаций.",
     sch_link_ph: "Ссылка на видео или ID", sch_date_ph: "Дата ddmmyy",
     sch_set: "Запланировать", sch_ok: "Видео {id} опубликуется {when}", sch_bad: "Некорректная ссылка или дата",
     ch_title: "Каналы", ch_sub: "Выбери активный канал или добавь новый.",
@@ -55,12 +55,26 @@ const T = {
     prov_active: "активный", prov_backup: "резервный",
     prov_edit: "Изменить", prov_activate: "Сделать активным", prov_backup_btn: "Сделать резервным",
     prov_kind: "Тип", kind_online: "Онлайн", kind_local: "Локальный",
-    prov_name: "Отображаемое имя", prov_base: "Base URL", prov_keys: "API-ключи (через запятую)",
+    prov_name: "Отображаемое имя", prov_base: "Base URL",
     prov_model: "Модель", fetch_models: "Получить модели", no_models: "Список не получен — впиши название вручную.",
     need_url: "Для онлайн-провайдера нужен base URL.", need_name: "Впиши имя провайдера.",
     prov_new: "Новый провайдер", prov_edit_title: "Настройка провайдера",
     set_langs: "Языки перевода", search_ph: "Поиск языка…", selected_n: "Выбрано: {n}",
     nothing_found: "Ничего не найдено",
+    ch_delete: "Удалить", local_app: "Приложение",
+    keys_add: "Добавить ключи", keys_clear: "Очистить все",
+    keys_check: "Проверить ключи", keys_unfreeze: "Разморозить все",
+    key_ok: "робочий", key_frozen: "в заморозке", key_dead: "сломан",
+    keys_help: "Зелёный — ключ отвечает. Синий — упёрся в лимит (заморожен, оживёт сам или через «Разморозить всё»). Красный — сервер его отверг (неверный или отозван). Проверка делает реальный запрос к списку моделей.",
+    keys_check_result: "Ключи: {ok} рабочих, {frozen} в заморозке, {dead} сломаны",
+    keys_need_save: "Сначала сохрани провайдера",
+    manual_title_s: "Название", manual_desc_s: "Описание",
+    job_cancel: "Отмена", job_cancelled: "⏹ Отменено. Текущий видео-этап завершится и применение остановится.",
+    cal_title: "График публикаций", cal_hint: "Время, которое по умолчанию подставится для отложенной публикации в этот день. Пусто — 10:00.",
+    day_Monday: "Понедельник", day_Tuesday: "Вторник", day_Wednesday: "Среда",
+    day_Thursday: "Четверг", day_Friday: "Пятница", day_Saturday: "Суббота", day_Sunday: "Воскресенье", job_cancelled: "⏹ Отменено. Текущий видео-этап завершится и применение остановится.", ch_delete_confirm: "Удалить канал «{name}»? Токен входа и календарь будут стёрты.",
+    prov_keys: "API-ключи (по одному в строке или через запятую)",
+    models_found: "Найдено моделей: {n}",
     quit_confirm: "Закрыть приложение?",
     pick_langs_first: "Сначала выбери языки перевода в Настройках.",
   },
@@ -94,7 +108,7 @@ const T = {
     pl_add: "Додати плейлист", pl_default: "За замовчуванням", pl_none: "Плейлистів ще немає.",
     pl_video_title: "Додати відео до плейлистів", pl_video_ph: "Посилання на відео або ID",
     pl_pick: "Куди додати", pl_added: "Додано до {n} плейлист(ів)",
-    sch_title: "Відкладена публікація", sch_sub: "Відео стане публічним у вибраний день, час візьметься з календаря публікацій.",
+    sch_title: "Відкладена публікація", sch_sub: "Відео стане публічним у вибрані дату й час. Якщо час не вибрати — він візьметься з календаря публікацій.",
     sch_link_ph: "Посилання на відео або ID", sch_date_ph: "Дата ddmmyy",
     sch_set: "Запланувати", sch_ok: "Відео {id} опублікується {when}", sch_bad: "Некоректне посилання або дата",
     ch_title: "Канали", ch_sub: "Виберіть активний канал або додайте новий.",
@@ -115,12 +129,26 @@ const T = {
     prov_active: "активний", prov_backup: "резервний",
     prov_edit: "Змінити", prov_activate: "Зробити активним", prov_backup_btn: "Зробити резервним",
     prov_kind: "Тип", kind_online: "Онлайн", kind_local: "Локальний",
-    prov_name: "Ім'я для показу", prov_base: "Base URL", prov_keys: "API-ключі (через кому)",
+    prov_name: "Ім'я для показу", prov_base: "Base URL",
     prov_model: "Модель", fetch_models: "Отримати моделі", no_models: "Список не отримано — введіть назву вручну.",
     need_url: "Для онлайн-провайдера потрібен base URL.", need_name: "Впишіть ім'я провайдера.",
     prov_new: "Новий провайдер", prov_edit_title: "Налаштування провайдера",
     set_langs: "Мови перекладу", search_ph: "Пошук мови…", selected_n: "Вибрано: {n}",
     nothing_found: "Нічого не знайдено",
+    ch_delete: "Видалити", local_app: "Програма",
+    keys_add: "Додати ключі", keys_clear: "Очистити всі",
+    keys_check: "Чи живі?", keys_unfreeze: "Розморозити всі",
+    key_ok: "робочий", key_frozen: "у заморозці", key_dead: "зламаний",
+    keys_help: "Зелений — ключ відповідає. Синій — вперся в ліміт (заморожений, оживе сам або через «Розморозити всі»). Червоний — сервер його відхилив (невірний або відкликаний). Перевірка робить реальний запит до списку моделей.",
+    keys_check_result: "Ключі: {ok} робочих, {frozen} у заморозці, {dead} зламані",
+    keys_need_save: "Спочатку збережіть провайдера",
+    manual_title_s: "Назва", manual_desc_s: "Опис",
+    job_cancel: "Скасувати", job_cancelled: "⏹ Скасовано. Поточний відео-етап завершиться і застосування зупиниться.",
+    cal_title: "Графік публікацій", cal_hint: "Час, який за замовчуванням підставиться для відкладеної публікації в цей день. Порожньо — 10:00.",
+    day_Monday: "Понеділок", day_Tuesday: "Вівторок", day_Wednesday: "Середа",
+    day_Thursday: "Четвер", day_Friday: "П'ятниця", day_Saturday: "Субота", day_Sunday: "Неділя", job_cancelled: "⏹ Скасовано. Поточний відео-етап завершиться і застосування зупиниться.", ch_delete_confirm: "Видалити канал «{name}»? Токен входу та календар буде стерто.",
+    prov_keys: "API-ключі (по одному в рядку або через кому)",
+    models_found: "Знайдено моделей: {n}",
     quit_confirm: "Закрити застосунок?",
     pick_langs_first: "Спочатку виберіть мови перекладу в Налаштуваннях.",
   },
@@ -154,7 +182,7 @@ const T = {
     pl_add: "Add playlist", pl_default: "Default", pl_none: "No playlists yet.",
     pl_video_title: "Add a video to playlists", pl_video_ph: "Video link or ID",
     pl_pick: "Where to add", pl_added: "Added to {n} playlist(s)",
-    sch_title: "Deferred publishing", sch_sub: "The video goes public on the chosen day; the time comes from the publishing calendar.",
+    sch_title: "Deferred publishing", sch_sub: "The video goes public at the chosen date and time. Leave the time empty and it comes from the publishing calendar.",
     sch_link_ph: "Video link or ID", sch_date_ph: "Date ddmmyy",
     sch_set: "Schedule", sch_ok: "{id} will be published {when}", sch_bad: "Invalid link or date",
     ch_title: "Channels", ch_sub: "Pick the active channel or add a new one.",
@@ -175,12 +203,26 @@ const T = {
     prov_active: "active", prov_backup: "backup",
     prov_edit: "Edit", prov_activate: "Make active", prov_backup_btn: "Make backup",
     prov_kind: "Type", kind_online: "Online", kind_local: "Local",
-    prov_name: "Display name", prov_base: "Base URL", prov_keys: "API keys (comma-separated)",
+    prov_name: "Display name", prov_base: "Base URL",
     prov_model: "Model", fetch_models: "Fetch models", no_models: "Couldn't fetch the list — type the name manually.",
     need_url: "An online provider needs a base URL.", need_name: "Enter a provider name.",
     prov_new: "New provider", prov_edit_title: "Provider settings",
     set_langs: "Translation languages", search_ph: "Search language…", selected_n: "Selected: {n}",
     nothing_found: "Nothing found",
+    ch_delete: "Delete", local_app: "App",
+    keys_add: "Add keys", keys_clear: "Clear all",
+    keys_check: "Check keys", keys_unfreeze: "Unfreeze all",
+    key_ok: "working", key_frozen: "frozen", key_dead: "dead",
+    keys_help: "Green — the key answers. Blue — hit a rate limit (frozen until the limit resets or you unfreeze all). Red — the server rejected it (invalid or revoked). Checking makes a real request to the models list.",
+    keys_check_result: "Keys: {ok} working, {frozen} frozen, {dead} dead",
+    keys_need_save: "Save the provider first",
+    manual_title_s: "Title", manual_desc_s: "Description",
+    job_cancel: "Cancel", job_cancelled: "⏹ Cancelled. The current video stage finishes and nothing more will be applied.",
+    cal_title: "Publishing schedule", cal_hint: "The default time for deferred publishing on that day. Empty — 10:00.",
+    day_Monday: "Monday", day_Tuesday: "Tuesday", day_Wednesday: "Wednesday",
+    day_Thursday: "Thursday", day_Friday: "Friday", day_Saturday: "Saturday", day_Sunday: "Sunday", job_cancelled: "⏹ Cancelled. The current video stage finishes and nothing more will be applied.", ch_delete_confirm: "Delete the channel “{name}”? Its sign-in token and calendar will be removed.",
+    prov_keys: "API keys (one per line, or comma-separated)",
+    models_found: "Found {n} models",
     quit_confirm: "Close the app?",
     pick_langs_first: "Pick translation languages in Settings first.",
   },
@@ -203,6 +245,21 @@ const $$ = (sel, root) => [...(root || document).querySelectorAll(sel)];
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g,
   (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
+function langName(code) {
+  /* Language name in the interface language (like YouTube itself); native as fallback. */
+  const table = LANG_LOCALIZED[S.ui.language] || {};
+  return table[code] || S.catalog[code] || code;
+}
+
+const ddmmyyToISO = (s) => {
+  const m = /^(\d{2})(\d{2})(\d{2})$/.exec(s || "");
+  return m ? `20${m[3]}-${m[2]}-${m[1]}` : "";
+};
+const isoToDdmmyy = (s) => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || "");
+  return m ? m[3] + m[2] + m[1].slice(2) : "";
+};
+
 function t(key, vars) {
   const lang = S.ui.language in T ? S.ui.language : "en";
   let text = T[lang][key] ?? T.en[key] ?? key;
@@ -221,8 +278,23 @@ async function api(path, body, method) {
   return data;
 }
 
-function toast(text, kind) {
-  const el = document.createElement("div");
+function fillAvatar(el) {
+  /* Channel logo if it was fetched; the letter is the fallback. */
+  const letter = el.dataset.letter || "?";
+  const logo = el.dataset.logo;
+  if (logo) {
+    const img = document.createElement("img");
+    img.src = logo;
+    img.alt = "";
+    img.onerror = () => { el.textContent = letter; };
+    el.textContent = "";
+    el.append(img);
+  } else {
+    el.textContent = letter;
+  }
+}
+
+function toast(text, kind) {  const el = document.createElement("div");
   el.className = "toast " + (kind || "");
   el.textContent = (kind === "fail" ? "❌ " : kind === "ok" ? "" : "") + text;
   $("#toasts").append(el);
@@ -297,11 +369,17 @@ function activeProfile() {
   return S.profiles.find((p) => p.id === S.activeId) || null;
 }
 
+function updateHello() {
+  const name = (S.ui.user_name || "").trim();
+  $("#hello").textContent = name ? `👋 ${name}` : "";
+}
+
 function startApp() {
   const saved = S.ui.web_active_profile;
   const savedProfile = S.profiles.find((p) => p.id === saved);
   S.activeId = (savedProfile || S.profiles.find((p) => p.authorized) || S.profiles[0] || {}).id || null;
   if (S.activeId) api("/api/ui", { web_active_profile: S.activeId }).catch(() => {});
+  updateHello();
   $("#app").classList.remove("hidden");
   buildNav();
   openScreen(S.profiles.length && S.activeId ? (S.screen === "translate" ? "translate" : S.screen) : "channels");
@@ -350,10 +428,10 @@ function segControl(items, value, onPick) {
   const btns = items.map(([val, label]) => {
     const b = document.createElement("button");
     b.textContent = label;
-    b.className = val === value ? "active" : "";
+    b.className = String(val) === String(value) ? "active" : "";
     b.onclick = () => {
-      btns.forEach((x) => (x.dataset.val === val ? x.classList.add("active")
-                                              : x.classList.remove("active")));
+      btns.forEach((x) => (String(x.dataset.val) === String(val) ? x.classList.add("active")
+                                                                : x.classList.remove("active")));
       moveThumb();
       onPick(val);
     };
@@ -390,21 +468,25 @@ function renderTranslate() {
       ${warns.map((w) => `<div class="card" style="border-color:rgba(251,191,36,.45);
           background:rgba(251,191,36,.07);font-weight:550">⚠️ ${esc(w)}</div>`).join("")}
       <div class="card stack" style="gap:16px" id="tr_form">
-        <div><span class="field-label">${esc(t("tr_mode"))}</span><div id="tr_mode"></div></div>
-        <div id="tr_type_wrap"><span class="field-label">${esc(t("tr_type"))}</span><div id="tr_type"></div></div>
+        <div class="two-col">
+          <div><span class="field-label">${esc(t("tr_mode"))}</span><div id="tr_mode"></div></div>
+          <div id="tr_type_wrap"><span class="field-label">${esc(t("tr_type"))}</span><div id="tr_type"></div></div>
+        </div>
         <div id="tr_links_wrap" class="hidden"><span class="field-label">${esc(t("tr_links"))}</span>
           <textarea id="tr_links" class="input" rows="3"></textarea></div>
-        <div><span class="field-label">${esc(t("tr_source"))}</span><div id="tr_source"></div></div>
+        <div class="two-col">
+          <div><span class="field-label">${esc(t("tr_source"))}</span><div id="tr_source"></div></div>
+          <div><span class="field-label">${esc(t("tr_parts"))}</span><div id="tr_parts"></div></div>
+        </div>
         <div id="tr_manual" class="hidden stack" style="gap:10px">
-          <div><span class="field-label">${esc(t("manual_title"))}</span>
+          <div id="tr_mtitle_wrap"><span class="field-label" id="tr_mtitle_lbl">${esc(t("manual_title"))}</span>
             <input id="tr_mtitle" class="input"></div>
-          <div><span class="field-label">${esc(t("manual_desc"))}</span>
+          <div id="tr_mdesc_wrap"><span class="field-label" id="tr_mdesc_lbl">${esc(t("manual_desc"))}</span>
             <textarea id="tr_mdesc" class="input" rows="4"></textarea></div>
         </div>
-        <div><span class="field-label">${esc(t("tr_parts"))}</span><div id="tr_parts"></div></div>
         <div><span class="field-label">${esc(t("tr_targets"))}</span>
           <div class="row">${selLangs.map((c, i) =>
-            `<span class="chip" style="--i:${i}">${esc(c)} — ${esc(S.catalog[c] || c)}</span>`).join("")
+            `<span class="chip" style="--i:${i}">${esc(c)} — ${esc(langName(c))}</span>`).join("")
             || `<span class="muted">${esc(t("targets_empty"))}</span>`}</div></div>
         <div><span class="field-label">${esc(t("tr_options"))}</span>
           <div class="row" style="gap:22px">
@@ -416,8 +498,8 @@ function renderTranslate() {
               <input type="checkbox" id="tr_sched" ${S.tr.do_schedule ? "checked" : ""}>
               <span class="track"></span><span class="knob"></span></span>
               <span style="font-weight:550">${esc(t("opt_schedule"))}</span></label>
-            <input id="tr_date" class="input" style="width:130px"
-              placeholder="${esc(t("sched_date_ph"))}" value="${esc(S.tr.schedule_date)}">
+            <input id="tr_date" type="date" class="input" style="width:auto"
+              value="${esc(ddmmyyToISO(S.tr.schedule_date))}" title="${esc(t("sched_date_ph"))}">
           </div></div>
         <button id="tr_go" class="btn primary big" ${warns.length ? "disabled" : ""}>
           🚀 ${esc(t("tr_start"))}</button>
@@ -439,7 +521,7 @@ function renderTranslate() {
   const partsSeg = segControl(
     [["title,description", t("parts_all")], ["title", t("parts_titles")],
      ["description", t("parts_descs")]], S.tr.parts,
-    (v) => { S.tr.parts = v; saveTrOptions(); });
+    (v) => { S.tr.parts = v; saveTrOptions(); syncParts(); });
   $("#tr_parts").append(partsSeg);
 
   function syncMode() {
@@ -449,12 +531,20 @@ function renderTranslate() {
   function syncSource() {
     $("#tr_manual").classList.toggle("hidden", S.tr.source !== "manual");
   }
-  syncMode(); syncSource();
+  function syncParts() {
+    // локализуем что-то одно — ручной ввод второго смысла не имеет
+    const parts = S.tr.parts;
+    $("#tr_mtitle_wrap").classList.toggle("hidden", parts === "description");
+    $("#tr_mdesc_wrap").classList.toggle("hidden", parts === "title");
+    $("#tr_mtitle_lbl").textContent = parts === "title" ? t("manual_title_s") : t("manual_title");
+    $("#tr_mdesc_lbl").textContent = parts === "description" ? t("manual_desc_s") : t("manual_desc");
+  }
+  syncMode(); syncSource(); syncParts();
 
   $("#tr_addpl").onchange = (e) => { S.tr.add_playlists = e.target.checked; saveTrOptions(); };
   $("#tr_sched").onchange = (e) => { S.tr.do_schedule = e.target.checked; saveTrOptions(); };
   $("#tr_date").addEventListener("input", (e) => {
-    S.tr.schedule_date = e.target.value;
+    S.tr.schedule_date = isoToDdmmyy(e.target.value);
     saveTrOptions();
   });
   $("#tr_go").onclick = startTranslation;
@@ -502,34 +592,94 @@ function renderJobPanel(job) {
   const total = langs.length || 1;
   const finished = langs.filter(([, v]) => v.state === "ok" || v.state === "fail").length;
   const running = job.running;
+  const hasContent = running || job.done || (job.log || []).length;
 
-  if (!running && !job.done && !job.error) { host.innerHTML = ""; return; }
-  if (host.dataset.jobId !== String(job.id)) {
+  if (!hasContent) { host.innerHTML = ""; return; }
+
+  // структура пересобирается только при смене задачи или фазы ( running -> done ),
+  // иначе каждый тик перерисовки моргали бы чипы, лог и заголовок
+  const phase = running ? "running" : "done";
+  if (host.dataset.jobId !== String(job.id) || host.dataset.phase !== phase) {
+    const finishedPhase = host.dataset.phase === "running" && phase === "done";
     host.dataset.jobId = String(job.id);
+    host.dataset.phase = phase;
+    host.dataset.langsKey = "";
+    host.dataset.logLines = "0";
     host.innerHTML = `
       <div class="card stack" style="gap:14px">
         <div class="row"><h2 style="margin:0">${running ? '<span class="spin"></span>' : "✅"}
-          ${esc(t("job_title"))}</h2>
-          ${!running ? `<button class="btn small" style="margin-left:auto" onclick="openScreen('translate')">${esc(t("job_new"))}</button>` : ""}</div>
+          ${esc(running ? t("job_title") : t("done"))}</h2>
+          ${running ? `<button id="job_cancel" class="btn small danger" style="margin-left:auto">⏹ ${esc(t("job_cancel"))}</button>`
+                    : `<button class="btn small" style="margin-left:auto" onclick="openScreen('translate')">${esc(t("job_new"))}</button>`}</div>
         ${job.video_title ? `<div class="muted">${esc(t("job_video"))}: <b>${esc(job.video_title)}</b></div>` : ""}
-        <div class="progress-track"><div class="progress-fill" style="width:${(finished / total) * 100}%"></div></div>
+        <div>
+          <div class="row" style="justify-content:space-between;margin-bottom:6px">
+            <span class="field-label" style="margin:0">${esc(t("job_progress"))}</span>
+            <span class="muted" id="job_pct">0%</span></div>
+          <div class="progress-track"><div class="progress-fill" style="width:0%"></div></div>
+        </div>
         <div class="job-langs" id="job_langs"></div>
         ${running ? `<div class="muted" style="font-size:12.5px">${esc(t("job_running_note"))}</div>` : ""}
         <div class="log" id="job_log"></div>
       </div>`;
+    if (finishedPhase && !job.error) {
+      const logHost = $("#job_log", host);
+      const div = document.createElement("div");
+      div.textContent = "✅ " + t("done");
+      logHost.append(div);
+      toast(t("done"), "ok");
+    }
+    if (finishedPhase && job.error) toast(job.error, "fail");
+    if (running) {
+      $("#job_cancel", host).onclick = async () => {
+        const btn = $("#job_cancel", host);
+        btn.disabled = true;
+        try {
+          await api("/api/job/cancel", {});
+          const logHost = $("#job_log", host);
+          const div = document.createElement("div");
+          div.textContent = "⏹ " + t("job_cancel");
+          logHost.append(div);
+          logHost.scrollTop = logHost.scrollHeight;
+          toast(t("job_cancelled"));
+        } catch (e) { toast(e.message, "fail"); }
+      };
+    }
   }
-  const langsHost = $("#job_langs", host);
-  langsHost.innerHTML = langs.map(([code, v], i) =>
-    `<span class="lang-chip ${v.state}" style="--i:${i}">${esc(code)}
-      <span class="st">${v.state === "start" || v.state === "retry"
-        ? '<span class="spin"></span>' : esc(STATE_MARK[v.state] || "")}</span></span>`).join("");
+
+  // прогресс-бар: по языкам текущего видео, при нескольких видео — суммарно
+  const videos = job.videos_total > 1 ? job.videos_total : 1;
+  const overall = job.videos_total > 1
+    ? ((job.videos_done + finished / total) / videos) * 100
+    : (finished / total) * 100;
+  const fill = $(".progress-fill", host);
+  fill.style.width = Math.round(overall) + "%";
+  $("#job_pct", host).textContent = Math.round(overall) + "%";
+
+  // чипы языков обновляются только при реальном изменении статусов
+  const langsKey = JSON.stringify(job.langs || {});
+  if (host.dataset.langsKey !== langsKey) {
+    host.dataset.langsKey = langsKey;
+    $("#job_langs", host).innerHTML = langs.map(([code, v], i) =>
+      `<span class="lang-chip ${v.state}" style="--i:${i}">${esc(code)}
+        <span class="st">${v.state === "start" || v.state === "retry"
+          ? '<span class="spin"></span>' : esc(STATE_MARK[v.state] || "")}</span></span>`).join("");
+  }
+
+  // лог: дописываются только новые строки, без перерисовки всего блока
   const logHost = $("#job_log", host);
+  const lines = job.log || [];
+  let rendered = parseInt(host.dataset.logLines || "0", 10);
+  if (lines.length < rendered) { logHost.innerHTML = ""; rendered = 0; }
   const stick = logHost.scrollHeight - logHost.scrollTop - logHost.clientHeight < 40;
-  logHost.innerHTML = (job.log || []).map((line) => `<div>${esc(line)}</div>`).join("");
+  for (let i = rendered; i < lines.length; i++) {
+    const div = document.createElement("div");
+    div.textContent = lines[i];
+    logHost.append(div);
+  }
+  host.dataset.logLines = String(lines.length);
   if (stick) logHost.scrollTop = logHost.scrollHeight;
   if (!running) { clearInterval(S.jobTimer); S.jobTimer = null; }
-  if (job.error) toast(job.error, "fail");
-  if (!running && !job.error && job.done) toast(t("done"), "ok");
 }
 
 function pollJob(force) {
@@ -632,16 +782,49 @@ function renderSchedule() {
   el.innerHTML = `
     <h1>${esc(t("sch_title"))}</h1>
     <p class="muted" style="max-width:640px">${esc(t("sch_sub"))}</p>
-    <div class="card stack" style="margin-top:18px;max-width:560px;gap:12px">
+    <div class="card stack" style="margin-top:18px;gap:12px">
       <input id="sch_link" class="input" placeholder="${esc(t("sch_link_ph"))}">
-      <input id="sch_date" class="input" placeholder="${esc(t("sch_date_ph"))}" style="width:160px">
-      <button id="sch_go" class="btn primary" style="align-self:flex-start">📅 ${esc(t("sch_set"))}</button>
+      <div class="row" style="flex-wrap:nowrap">
+        <input id="sch_date" type="datetime-local" class="input grow" title="${esc(t("sched_date_ph"))}">
+        <button id="sch_go" class="btn primary" style="flex:0 0 auto">📅 ${esc(t("sch_set"))}</button>
+      </div>
       <div id="sch_res" class="muted"></div>
+    </div>
+    <div class="card stack" style="margin-top:16px;gap:12px">
+      <h2 style="margin:0">${esc(t("cal_title"))}</h2>
+      <p class="muted" style="margin:0;font-size:13px">${esc(t("cal_hint"))}</p>
+      <div class="stack" style="gap:8px" id="cal_rows"></div>
     </div>`;
+  // график публикаций: время по дням недели, сохраняется сразу при изменении
+  const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  api("/api/calendar", { profile_id: activeProfile()?.id }).then(({ days }) => {
+    const rows = $("#cal_rows");
+    for (const day of DAYS) {
+      const row = document.createElement("div");
+      row.className = "list-row";
+      row.innerHTML = `
+        <div class="grow" style="font-weight:600">${esc(t("day_" + day))}</div>
+        <input type="time" class="input" data-day="${day}" style="width:130px"
+          value="${esc(days[day] || "")}">`;
+      $('input', row).addEventListener("change", async (e) => {
+        const times = {};
+        $$("#cal_rows input").forEach((inp) => { times[inp.dataset.day] = inp.value; });
+        await api("/api/calendar/save",
+          { profile_id: activeProfile().id, days: times }).catch((err) => toast(err.message, "fail"));
+        toast(t("saved"), "ok");
+      });
+      rows.append(row);
+    }
+  }).catch(() => {});
+
   $("#sch_go").onclick = async () => {
     try {
+      const dt = $("#sch_date").value;
       const res = await api("/api/schedule", {
-        link: $("#sch_link").value, date: $("#sch_date").value });
+        link: $("#sch_link").value,
+        date: isoToDdmmyy(dt.slice(0, 10)),
+        time: dt.slice(11, 16),
+      });
       $("#sch_res").innerHTML = `<span style="color:var(--ok)">✓ ${
         esc(t("sch_ok").replace("{id}", res.video_id).replace("{when}", res.when))}</span>`;
     } catch (e) {
@@ -672,7 +855,8 @@ function renderChannels() {
     card.style.setProperty("--i", 0);
     card.innerHTML = `
       <div class="row" style="flex-wrap:nowrap">
-        <div class="avatar">${esc((p.name || "?").slice(0, 1).toUpperCase())}</div>
+        <div class="avatar" data-letter="${esc((p.name || "?").slice(0, 1).toUpperCase())}"
+             data-logo="${esc(p.logo_url || "")}"></div>
         <div class="grow" style="min-width:0">
           <div class="name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.name)}</div>
           <span class="badge ${p.authorized ? "ok" : "warn"}">${esc(p.authorized ? t("ch_ready") : t("ch_no_token"))}</span>
@@ -686,7 +870,9 @@ function renderChannels() {
         ${!isActive ? `<button class="btn small" data-act="select">✓ ${esc(t("ch_select"))}</button>` : ""}
         ${!p.authorized ? `<button class="btn small primary" data-act="auth">🔑 ${esc(t("ch_login"))}</button>` : ""}
         ${!p.languages.length ? `<button class="btn small" data-act="langs">${esc(t("ch_need_langs"))}</button>` : ""}
+        <button class="btn small danger" data-act="delete" style="margin-left:auto">🗑 ${esc(t("ch_delete"))}</button>
       </div>`;
+    fillAvatar($("[data-letter]", card));
     $('[data-act=select]', card)?.addEventListener("click", async () => {
       S.activeId = p.id;
       await api("/api/ui", { web_active_profile: p.id }).catch(() => {});
@@ -695,6 +881,17 @@ function renderChannels() {
     });
     $('[data-act=auth]', card)?.addEventListener("click", () => startAuthFlow(p));
     $('[data-act=langs]', card)?.addEventListener("click", () => { openScreen("settings"); });
+    $('[data-act=delete]', card)?.addEventListener("click", async () => {
+      if (!confirm(t("ch_delete_confirm").replace("{name}", p.name))) return;
+      await api("/api/profiles/delete", { profile_id: p.id }).catch((e) => toast(e.message, "fail"));
+      S.profiles = (await api("/api/bootstrap")).profiles;
+      if (S.activeId === p.id) {
+        S.activeId = (S.profiles.find((x) => x.authorized) || S.profiles[0] || {}).id || null;
+        if (S.activeId) await api("/api/ui", { web_active_profile: S.activeId }).catch(() => {});
+      }
+      openScreen(S.profiles.length ? "channels" : "channels");
+      toast(t("done"), "ok");
+    });
     grid.append(card);
   }
 
@@ -783,6 +980,7 @@ function renderSettings() {
     <h1>${esc(t("set_title"))}</h1>
     <div class="stack" style="margin-top:18px">
 
+      <div class="two-col">
       <div class="card stack" style="gap:14px">
         <h2 style="margin:0">${esc(t("set_interface"))}</h2>
         <div><span class="field-label">${esc(t("set_ui_language"))}</span><div id="st_lang"></div></div>
@@ -803,7 +1001,9 @@ function renderSettings() {
           <span class="track"></span><span class="knob"></span></span>
           <span style="font-weight:550">${esc(t("set_ask_schedule"))}</span></label>
       </div>
+      </div>
 
+      <div class="two-col">
       <div class="card stack" style="gap:12px">
         <h2 style="margin:0">${esc(t("set_presets"))}</h2>
         <div class="row">
@@ -822,6 +1022,7 @@ function renderSettings() {
         <div class="row"><h2 style="margin:0;margin-right:auto">${esc(t("set_providers"))}</h2>
           <button id="pv_add" class="btn small primary">＋ ${esc(t("prov_add"))}</button></div>
         <div id="pv_rows" class="stack" style="gap:8px"></div>
+      </div>
       </div>
 
       <div class="card stack" style="gap:12px">
@@ -858,6 +1059,7 @@ function renderSettings() {
   $("#st_name_save").onclick = async () => {
     S.ui.user_name = $("#st_name").value.trim();
     await api("/api/ui", { user_name: S.ui.user_name }).catch((e) => toast(e.message, "fail"));
+    updateHello();
     toast(t("saved"), "ok");
   };
   $("#st_apl").onchange = async (e) => {
@@ -915,9 +1117,11 @@ function renderSettings() {
     cell.className = "lang-cell" + (S.langSel.has(code) ? " checked" : "");
     cell.style.setProperty("--i", Math.min(i, 40));
     cell.dataset.code = code.toLowerCase();
-    cell.dataset.name = (S.catalog[code] || "").toLowerCase();
+    cell.dataset.name = (langName(code) + " " + (S.catalog[code] || "")).toLowerCase();
+    cell.title = `${code} — ${langName(code)}` +
+      ((S.catalog[code] && S.catalog[code] !== langName(code)) ? ` (${S.catalog[code]})` : "");
     cell.innerHTML = `<span class="box"><svg viewBox="0 0 14 14"><path d="M2 7.5 5.5 11 12 3.5"/></svg></span>
-      <span class="code">${esc(code)}</span><span class="nm">${esc(S.catalog[code] || code)}</span>`;
+      <span class="code">${esc(code)}</span><span class="nm">${esc(langName(code))}</span>`;
     cell.onclick = () => {
       if (S.langSel.has(code)) S.langSel.delete(code); else S.langSel.add(code);
       cell.classList.toggle("checked", S.langSel.has(code));
@@ -954,7 +1158,7 @@ function renderProviderRows() {
         <div class="t">${esc(p.name)}
           <span class="muted" style="font-weight:400;font-size:12px">
             ${isActive ? "· " + t("prov_active") : isBackup ? "· " + t("prov_backup") : ""}</span></div>
-        <div class="s">${esc(p.model || "auto")} · ${p.api_keys.length} 🔑</div>
+        <div class="s">${esc(p.model || "auto")} · ${p.auth ? p.keys.length + " 🔑" : esc(p.base_url || "")}</div>
       </div>
       <button class="btn small" data-a="edit">✎ ${esc(t("prov_edit"))}</button>
       ${!isActive ? `<button class="btn small" data-a="activate">● ${esc(t("prov_activate"))}</button>` : ""}
@@ -989,11 +1193,27 @@ function providerEditor(provider) {
       <div><span class="field-label">${esc(t("prov_kind"))}</span><div id="pe_kind"></div></div>
       <div><span class="field-label">${esc(t("prov_name"))}</span>
         <input id="pe_name" class="input" value="${esc(provider?.name || "")}"></div>
-      <div><span class="field-label">${esc(t("prov_base"))}</span>
+      <div id="pe_base_wrap"><span class="field-label">${esc(t("prov_base"))}</span>
         <input id="pe_base" class="input" value="${esc(provider?.base_url || "")}"
           placeholder="https://…/v1"></div>
-      <div><span class="field-label">${esc(t("prov_keys"))}</span>
-        <textarea id="pe_keys" class="input" rows="2">${esc((provider?.api_keys || []).join(", "))}</textarea></div>
+      <div id="pe_presets_wrap" class="hidden"><span class="field-label">${esc(t("local_app"))}</span>
+        <div class="row">
+          <button type="button" class="btn small" data-base="http://localhost:1234/v1">LM Studio</button>
+          <button type="button" class="btn small" data-base="http://localhost:11434/v1">Ollama</button>
+        </div></div>
+      <div id="pe_keys_wrap">
+        <span class="field-label">${esc(t("prov_keys"))}
+          <span title="${esc(t("keys_help"))}" style="cursor:help;opacity:.7">ⓘ</span></span>
+        <div class="row" id="pe_key_chips"></div>
+        <div class="row" id="pe_key_btns" style="margin-top:8px">
+          <button type="button" id="pe_add_keys" class="btn small">＋ ${esc(t("keys_add"))}</button>
+          <button type="button" id="pe_clear_keys" class="btn small danger">${esc(t("keys_clear"))}</button>
+          <button type="button" id="pe_check_keys" class="btn small">? ${esc(t("keys_check"))}</button>
+          <button type="button" id="pe_unfreeze" class="btn small">☀ ${esc(t("keys_unfreeze"))}</button>
+        </div>
+        <textarea id="pe_keys" class="input" rows="3" style="margin-top:8px"
+          placeholder="${esc(t("prov_keys"))}"></textarea>
+      </div>
       <div><span class="field-label">${esc(t("prov_model"))}</span>
         <div class="row">
           <input id="pe_model" class="input grow" list="pe_models" value="${esc(provider?.model || "auto")}">
@@ -1005,32 +1225,127 @@ function providerEditor(provider) {
         <button id="pe_save" class="btn primary">${esc(t("save"))}</button></div>
     </div>`);
 
-  let online = isNew ? true : !!provider.auth;
+  let online = isNew ? "online" : (provider.auth ? "online" : "local");
   $("#pe_kind", root).append(segControl(
-    [[true, t("kind_online")], [false, t("kind_local")]], online, (v) => { online = v; }));
+    [["online", t("kind_online")], ["local", t("kind_local")]], online, (v) => { online = v; syncKind(); }));
 
-  $("#pe_fetch", root).onclick = async () => {
-    const models = await api("/api/providers/models", { base_url: $("#pe_base", root).value })
-      .then((r) => r.models).catch(() => []);
-    if (!models.length) return toast(t("no_models"), "fail");
-    $("#pe_models", root).innerHTML = models.map((m) => `<option>${esc(m)}</option>`).join("");
-    $("#pe_model", root).value = models[0];
-    toast(`✓ ${models.length}`);
+  function syncKind() {
+    const isLocal = online === "local";
+    // локальному провайдеру ключи не нужны — вместо них пресеты приложений
+    $("#pe_keys_wrap", root).classList.toggle("hidden", isLocal);
+    $("#pe_presets_wrap", root).classList.toggle("hidden", !isLocal);
+  }
+  syncKind();
+
+  /* --- ключи онлайн-провайдера: маскированные чипы + статусы --- */
+  let keyChips = (provider?.keys || []).map((k) => ({ ...k }));
+  const removedKeys = new Set();
+  const DOT = { ok: "green", frozen: "blue", dead: "red" };
+  let keysEditorOpen = isNew || !keyChips.length; // у нового провайдера поле открыто сразу
+
+  function renderKeyChips() {
+    const host = $("#pe_key_chips", root);
+    host.innerHTML = "";
+    const kept = keyChips.filter((c) => !removedKeys.has(c.hash));
+    for (const chip of kept) {
+      const el = document.createElement("span");
+      el.className = "key-chip";
+      const stText = t("key_" + (chip.status || "ok"));
+      el.title = `${chip.masked} — ${stText}${chip.detail ? " (" + chip.detail + ")" : ""}`;
+      el.innerHTML = `<span class="key-dot ${DOT[chip.status] || "green"}"></span>${esc(chip.masked)}
+        <button type="button" class="key-x" title="${esc(t("delete"))}">×</button>`;
+      $(".key-x", el).onclick = () => { removedKeys.add(chip.hash); renderKeyChips(); };
+      host.append(el);
+    }
+    // нет ключей — ни чипов, ни кнопок, только открытое поле ввода
+    const hasKeys = kept.length > 0;
+    $("#pe_key_chips", root).style.display = hasKeys ? "" : "none";
+    $("#pe_key_btns", root).style.display = hasKeys ? "" : "none";
+    $("#pe_keys", root).classList.toggle("hidden", hasKeys && !keysEditorOpen);
+    const hasFrozen = kept.some((c) => c.status === "frozen");
+    $("#pe_unfreeze", root).style.display = hasFrozen ? "" : "none";
+  }
+  renderKeyChips();
+
+  $("#pe_add_keys", root).onclick = () => { keysEditorOpen = !keysEditorOpen; renderKeyChips(); };
+  $("#pe_clear_keys", root).onclick = () => {
+    keyChips.forEach((c) => removedKeys.add(c.hash));
+    keysEditorOpen = true;
+    renderKeyChips();
   };
+  $("#pe_check_keys", root).onclick = async () => {
+    if (isNew || !provider.id) return toast(t("keys_need_save"), "fail");
+    const btn = $("#pe_check_keys", root);
+    btn.disabled = true;
+    try {
+      const res = await api("/api/providers/check_keys", { provider_id: provider.id });
+      for (const fresh of res.keys) {
+        const chip = keyChips.find((c) => c.hash === fresh.hash);
+        if (chip) { chip.status = fresh.status; chip.detail = fresh.detail; }
+      }
+      renderKeyChips();
+      const counts = { ok: 0, frozen: 0, dead: 0 };
+      for (const fresh of res.keys) counts[fresh.status] = (counts[fresh.status] || 0) + 1;
+      toast(t("keys_check_result").replace("{ok}", counts.ok)
+        .replace("{frozen}", counts.frozen).replace("{dead}", counts.dead),
+        counts.dead ? "fail" : "ok");
+    } catch (e) { toast(e.message, "fail"); }
+    finally { btn.disabled = false; }
+  };
+  $("#pe_unfreeze", root).onclick = async () => {
+    if (isNew || !provider.id) return toast(t("keys_need_save"), "fail");
+    try {
+      S.providers = await api("/api/providers/unfreeze", { provider_id: provider.id });
+      keyChips.forEach((c) => { if (c.status === "frozen") { c.status = "ok"; c.detail = ""; } });
+      renderKeyChips();
+      toast(t("saved"), "ok");
+    } catch (e) { toast(e.message, "fail"); }
+  };
+
+  async function fetchModels() {
+    const btn = $("#pe_fetch", root);
+    btn.disabled = true;
+    try {
+      const models = (await api("/api/providers/models", { base_url: $("#pe_base", root).value })).models || [];
+      if (!models.length) { toast(t("no_models"), "fail"); return false; }
+      $("#pe_models", root).innerHTML = models.map((m) => `<option>${esc(m)}</option>`).join("");
+      const current = $("#pe_model", root).value.trim();
+      if (!current || current === "auto") $("#pe_model", root).value = models[0];
+      toast(t("models_found").replace("{n}", models.length), "ok");
+      return true;
+    } catch (e) {
+      toast(e.message, "fail");
+      return false;
+    } finally {
+      btn.disabled = false;
+    }
+  }
+  $("#pe_fetch", root).onclick = fetchModels;
+
+  // пресет локального приложения: заполняет base URL и сразу тянет модели
+  $$("#pe_presets_wrap [data-base]", root).forEach((b) => {
+    b.onclick = async () => {
+      $("#pe_base", root).value = b.dataset.base;
+      await fetchModels();
+    };
+  });
 
   $("#pe_save", root).onclick = async () => {
     const name = $("#pe_name", root).value.trim();
     const base = $("#pe_base", root).value.trim();
-    const keys = $("#pe_keys", root).value.split(/[,\s]+/).filter(Boolean);
+    const isLocal = online === "local";
+    const newKeys = $("#pe_keys", root).value.split(/[,\s]+/).filter(Boolean);
     if (!name) return toast(t("need_name"), "fail");
-    if (online && !base) return toast(t("need_url"), "fail");
-    if (online && !keys.length) return toast(t("prov_keys"), "fail");
+    if (!isLocal && !base) return toast(t("need_url"), "fail");
+    const keptKeys = keyChips.filter((c) => !removedKeys.has(c.hash)).map((c) => c.hash);
+    if (!isLocal && !keptKeys.length && !newKeys.length) return toast(t("prov_keys"), "fail");
     const entry = {
-      id: provider?.id, name, kind: "openai", auth: online, base_url: base,
-      api_keys: keys, model: $("#pe_model", root).value.trim() || "auto",
+      id: provider?.id, name, kind: "openai", auth: !isLocal, base_url: base,
+      model: $("#pe_model", root).value.trim() || "auto",
     };
     try {
-      S.providers = await api("/api/providers/save", { entry });
+      S.providers = await api("/api/providers/save",
+        { entry, keep: isLocal ? [] : keptKeys, new_keys: isLocal ? "" : $("#pe_keys", root).value });
       closeModal(); renderProviderRows(); toast(t("saved"), "ok");
     } catch (e) { toast(e.message, "fail"); }
   };

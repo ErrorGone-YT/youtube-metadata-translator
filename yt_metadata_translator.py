@@ -49,7 +49,7 @@ ALLOWED_DAYS = ["Monday", "Wednesday", "Friday", "Sunday"]
 
 GITHUB_BASE = "https://github.com/ErrorGone-YT/youtube-metadata-translator"
 # READMEs live on the working branch until merged; switch to "main" after the merge.
-REPO_BRANCH = "Restructuring"
+REPO_BRANCH = "main"
 GUIDE_LINKS = {
     "en": f"{GITHUB_BASE}/blob/{REPO_BRANCH}/README.md",
     "uk": f"{GITHUB_BASE}/blob/{REPO_BRANCH}/README.uk.md",
@@ -857,6 +857,9 @@ def refresh_profile_identity(youtube, profile, profiles):
     channel = response["items"][0]
     profile["channel_id"] = channel["id"]
     profile["channel_title"] = channel["snippet"]["title"]
+    profile["logo_url"] = (channel["snippet"].get("thumbnails", {}).get("medium", {})
+                           or channel["snippet"].get("thumbnails", {}).get("default", {})
+                           or {}).get("url", "")
     save_channel_profiles(profiles)
     add_series_name(channel["snippet"]["title"])
 
