@@ -45,7 +45,7 @@ const T = {
     ch_auth_ok: "Авторизовано: {channel}", ch_auth_failed: "Ошибка авторизации",
     ch_name_ph: "Название профиля канала", ch_secrets: "client_secrets JSON от Google Cloud",
     ch_pick_file: "Выбрать файл…", ch_create: "Создать и войти",
-    set_title: "Настройки", set_interface: "Интерфейс", set_ui_language: "Язык интерфейса",
+    set_title: "Настройки", set_interface: "Интерфейс", set_ui_language: "Язык интерфейса", set_theme: "Тема",
     set_translation: "Перевод", set_parallel: "Одновременных переводов", parallel_auto: "Авто",
     set_ask_playlists: "Питаться про плейлисты после перевода",
     set_ask_schedule: "Спрашивать про отложенную публикацию после перевода",
@@ -72,7 +72,7 @@ const T = {
     job_cancel: "Отмена", job_cancelled: "⏹ Отменено. Текущий видео-этап завершится и применение остановится.",
     cal_title: "График публикаций", cal_hint: "Время, которое по умолчанию подставится для отложенной публикации в этот день. Пусто — 10:00.",
     day_Monday: "Понедельник", day_Tuesday: "Вторник", day_Wednesday: "Среда",
-    day_Thursday: "Четверг", day_Friday: "Пятница", day_Saturday: "Суббота", day_Sunday: "Воскресенье", job_cancelled: "⏹ Отменено. Текущий видео-этап завершится и применение остановится.", ch_delete_confirm: "Удалить канал «{name}»? Токен входа и календарь будут стёрты.",
+    day_Thursday: "Четверг", day_Friday: "Пятница", day_Saturday: "Суббота", day_Sunday: "Воскресенье", theme_dark: "Тёмная", theme_light: "Светлая", job_cancelled: "⏹ Отменено. Текущий видео-этап завершится и применение остановится.", ch_delete_confirm: "Удалить канал «{name}»? Токен входа и календарь будут стёрты.",
     prov_keys: "API-ключи (по одному в строке или через запятую)",
     models_found: "Найдено моделей: {n}",
     quit_confirm: "Закрыть приложение?",
@@ -119,7 +119,7 @@ const T = {
     ch_auth_ok: "Авторизовано: {channel}", ch_auth_failed: "Помилка авторизації",
     ch_name_ph: "Назва профілю каналу", ch_secrets: "client_secrets JSON від Google Cloud",
     ch_pick_file: "Вибрати файл…", ch_create: "Створити та увійти",
-    set_title: "Налаштування", set_interface: "Інтерфейс", set_ui_language: "Мова інтерфейсу",
+    set_title: "Налаштування", set_interface: "Інтерфейс", set_ui_language: "Мова інтерфейсу", set_theme: "Тема",
     set_translation: "Переклад", set_parallel: "Одночасних перекладів", parallel_auto: "Авто",
     set_ask_playlists: "Питати про плейлисти після перекладу",
     set_ask_schedule: "Питати про відкладену публікацію після перекладу",
@@ -146,7 +146,7 @@ const T = {
     job_cancel: "Скасувати", job_cancelled: "⏹ Скасовано. Поточний відео-етап завершиться і застосування зупиниться.",
     cal_title: "Графік публікацій", cal_hint: "Час, який за замовчуванням підставиться для відкладеної публікації в цей день. Порожньо — 10:00.",
     day_Monday: "Понеділок", day_Tuesday: "Вівторок", day_Wednesday: "Середа",
-    day_Thursday: "Четвер", day_Friday: "П'ятниця", day_Saturday: "Субота", day_Sunday: "Неділя", job_cancelled: "⏹ Скасовано. Поточний відео-етап завершиться і застосування зупиниться.", ch_delete_confirm: "Видалити канал «{name}»? Токен входу та календар буде стерто.",
+    day_Thursday: "Четвер", day_Friday: "П'ятниця", day_Saturday: "Субота", day_Sunday: "Неділя", theme_dark: "Темна", theme_light: "Світла", job_cancelled: "⏹ Скасовано. Поточний відео-етап завершиться і застосування зупиниться.", ch_delete_confirm: "Видалити канал «{name}»? Токен входу та календар буде стерто.",
     prov_keys: "API-ключі (по одному в рядку або через кому)",
     models_found: "Знайдено моделей: {n}",
     quit_confirm: "Закрити застосунок?",
@@ -193,7 +193,7 @@ const T = {
     ch_auth_ok: "Authorized: {channel}", ch_auth_failed: "Authorization failed",
     ch_name_ph: "Channel profile name", ch_secrets: "client_secrets JSON from Google Cloud",
     ch_pick_file: "Pick a file…", ch_create: "Create and sign in",
-    set_title: "Settings", set_interface: "Interface", set_ui_language: "Interface language",
+    set_title: "Settings", set_interface: "Interface", set_ui_language: "Interface language", set_theme: "Theme",
     set_translation: "Translation", set_parallel: "Parallel translations", parallel_auto: "Auto",
     set_ask_playlists: "Ask about playlists after translation",
     set_ask_schedule: "Ask about deferred publishing after translation",
@@ -220,7 +220,7 @@ const T = {
     job_cancel: "Cancel", job_cancelled: "⏹ Cancelled. The current video stage finishes and nothing more will be applied.",
     cal_title: "Publishing schedule", cal_hint: "The default time for deferred publishing on that day. Empty — 10:00.",
     day_Monday: "Monday", day_Tuesday: "Tuesday", day_Wednesday: "Wednesday",
-    day_Thursday: "Thursday", day_Friday: "Friday", day_Saturday: "Saturday", day_Sunday: "Sunday", job_cancelled: "⏹ Cancelled. The current video stage finishes and nothing more will be applied.", ch_delete_confirm: "Delete the channel “{name}”? Its sign-in token and calendar will be removed.",
+    day_Thursday: "Thursday", day_Friday: "Friday", day_Saturday: "Saturday", day_Sunday: "Sunday", theme_dark: "Dark", theme_light: "Light", job_cancelled: "⏹ Cancelled. The current video stage finishes and nothing more will be applied.", ch_delete_confirm: "Delete the channel “{name}”? Its sign-in token and calendar will be removed.",
     prov_keys: "API keys (one per line, or comma-separated)",
     models_found: "Found {n} models",
     quit_confirm: "Close the app?",
@@ -369,6 +369,10 @@ function activeProfile() {
   return S.profiles.find((p) => p.id === S.activeId) || null;
 }
 
+function applyTheme() {
+  document.body.dataset.theme = S.ui.theme === "light" ? "light" : "dark";
+}
+
 function updateHello() {
   const name = (S.ui.user_name || "").trim();
   $("#hello").textContent = name ? `👋 ${name}` : "";
@@ -379,6 +383,7 @@ function startApp() {
   const savedProfile = S.profiles.find((p) => p.id === saved);
   S.activeId = (savedProfile || S.profiles.find((p) => p.authorized) || S.profiles[0] || {}).id || null;
   if (S.activeId) api("/api/ui", { web_active_profile: S.activeId }).catch(() => {});
+  applyTheme();
   updateHello();
   $("#app").classList.remove("hidden");
   buildNav();
@@ -987,6 +992,7 @@ function renderSettings() {
         <div><span class="field-label">${esc(t("your_name"))}</span>
           <input id="st_name" class="input" style="max-width:340px" value="${esc(S.ui.user_name || "")}">
           <button id="st_name_save" class="btn small" style="margin-top:8px">${esc(t("save"))}</button></div>
+        <div><span class="field-label">${esc(t("set_theme"))}</span><div id="st_theme"></div></div>
       </div>
 
       <div class="card stack" style="gap:14px">
@@ -1040,6 +1046,16 @@ function renderSettings() {
       S.ui.language = v;
       await api("/api/ui", { language: v }).catch(() => {});
       buildNav(); renderSettings();
+    }));
+
+  // тема
+  $("#st_theme").append(segControl(
+    [["dark", t("theme_dark")], ["light", t("theme_light")]],
+    S.ui.theme === "light" ? "light" : "dark",
+    (v) => {
+      S.ui.theme = v;
+      applyTheme();
+      api("/api/ui", { theme: v }).catch((e) => toast(e.message, "fail"));
     }));
 
   // параллелизм

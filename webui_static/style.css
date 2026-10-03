@@ -16,6 +16,36 @@
   --radius: 18px;
   --shadow: 0 10px 40px rgba(0, 0, 0, .45);
   --ease-spring: cubic-bezier(.34, 1.45, .64, 1);
+  --input-bg: rgba(0, 0, 0, .28);
+  --input-bg-focus: rgba(0, 0, 0, .36);
+  --log-bg: rgba(0, 0, 0, .45);
+  --toast-bg: rgba(20, 22, 32, .92);
+  --scroll-thumb: rgba(255, 255, 255, .14);
+  --scroll-thumb-hover: rgba(255, 255, 255, .25);
+  --track-bg: rgba(255, 255, 255, .08);
+  --box-border: rgba(255, 255, 255, .3);
+  --switch-track: rgba(255, 255, 255, .14);
+  --spot-opacity: 1;
+}
+
+body[data-theme="light"] {
+  --bg: #eef1f8;
+  --panel: rgba(255, 255, 255, .72);
+  --panel-2: rgba(255, 255, 255, .95);
+  --border: rgba(20, 25, 45, .12);
+  --text: #181b29;
+  --muted: #5d647c;
+  --shadow: 0 10px 30px rgba(30, 40, 80, .12);
+  --input-bg: rgba(255, 255, 255, .85);
+  --input-bg-focus: #ffffff;
+  --log-bg: rgba(255, 255, 255, .9);
+  --toast-bg: rgba(255, 255, 255, .96);
+  --scroll-thumb: rgba(20, 25, 45, .18);
+  --scroll-thumb-hover: rgba(20, 25, 45, .3);
+  --track-bg: rgba(20, 25, 45, .08);
+  --box-border: rgba(20, 25, 45, .35);
+  --switch-track: rgba(20, 25, 45, .15);
+  --spot-opacity: .45;
 }
 
 * { box-sizing: border-box; }
@@ -31,6 +61,7 @@ html, body {
 /* атмосферные пятна света на фоне */
 body::before {
   content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  opacity: var(--spot-opacity);
   background:
     radial-gradient(600px 400px at 12% -5%, rgba(99, 102, 241, .16), transparent 70%),
     radial-gradient(700px 500px at 95% 10%, rgba(168, 85, 247, .11), transparent 70%),
@@ -44,8 +75,8 @@ h1 { font-size: 26px; margin: 0 0 6px; font-weight: 700; letter-spacing: -.02em;
 h2 { font-size: 20px; margin: 0 0 4px; font-weight: 650; letter-spacing: -.01em; }
 
 ::-webkit-scrollbar { width: 9px; height: 9px; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,.14); border-radius: 9px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.25); }
+::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 9px; }
+::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover); }
 ::-webkit-scrollbar-track { background: transparent; }
 
 /* ---------- layout ---------- */
@@ -132,11 +163,11 @@ label.row > span:last-child { flex: 1; }
 
 .input, textarea.input {
   width: 100%; padding: 11px 14px; border-radius: 13px;
-  border: 1px solid var(--border); background: rgba(0, 0, 0, .28); color: var(--text);
+  border: 1px solid var(--border); background: var(--input-bg); color: var(--text);
   font: inherit; outline: none; transition: border-color .2s, box-shadow .2s, background .2s;
 }
 .input:focus { border-color: rgba(99, 102, 241, .65);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, .14); background: rgba(0,0,0,.36); }
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, .14); background: var(--input-bg-focus); }
 textarea.input { resize: vertical; min-height: 74px; }
 
 .btn {
@@ -162,7 +193,7 @@ textarea.input { resize: vertical; min-height: 74px; }
 /* сегментированный переключатель с бегунком */
 .seg {
   position: relative; display: inline-flex; padding: 4px; gap: 2px;
-  background: rgba(0, 0, 0, .3); border: 1px solid var(--border); border-radius: 13px;
+  background: var(--input-bg); border: 1px solid var(--border); border-radius: 13px;
 }
 .seg-thumb {
   position: absolute; top: 4px; bottom: 4px; border-radius: 10px; background: var(--grad);
@@ -181,7 +212,7 @@ textarea.input { resize: vertical; min-height: 74px; }
 .switch { position: relative; width: 42px; height: 24px; flex: 0 0 42px; cursor: pointer; }
 .switch input { display: none; }
 .switch .track {
-  position: absolute; inset: 0; border-radius: 24px; background: rgba(255,255,255,.14);
+  position: absolute; inset: 0; border-radius: 24px; background: var(--switch-track);
   transition: background .25s;
 }
 .switch .knob {
@@ -242,7 +273,7 @@ textarea.input { resize: vertical; min-height: 74px; }
 .toast {
   display: flex; align-items: center; gap: 10px; padding: 12px 18px;
   border-radius: 14px; border: 1px solid var(--border);
-  background: rgba(20, 22, 32, .92); backdrop-filter: blur(12px);
+  background: var(--toast-bg); backdrop-filter: blur(12px);
   box-shadow: var(--shadow); font-weight: 550; max-width: 480px;
   animation: toastIn .4s var(--ease-spring); pointer-events: auto;
 }
@@ -293,7 +324,7 @@ textarea.input { resize: vertical; min-height: 74px; }
 .lang-chip.start { border-color: rgba(99,102,241,.6); }
 .lang-chip .spin { width: 12px; height: 12px; border-width: 2px; border-color: rgba(99,102,241,.3); border-top-color: var(--accent); }
 
-.progress-track { height: 8px; border-radius: 8px; background: rgba(255,255,255,.08); overflow: hidden; }
+.progress-track { height: 8px; border-radius: 8px; background: var(--track-bg); overflow: hidden; }
 .progress-fill {
   height: 100%; border-radius: 8px; background: var(--grad); width: 0;
   transition: width .7s cubic-bezier(.25,.6,.35,1); position: relative;
@@ -306,7 +337,7 @@ textarea.input { resize: vertical; min-height: 74px; }
 @keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
 
 .log {
-  background: rgba(0, 0, 0, .45); border: 1px solid var(--border); border-radius: 14px;
+  background: var(--log-bg); border: 1px solid var(--border); border-radius: 14px;
   padding: 14px 16px; font: 12.5px/1.65 Consolas, "Cascadia Mono", monospace;
   height: 220px; overflow-y: auto; white-space: pre-wrap; word-break: break-word;
 }
@@ -329,7 +360,7 @@ textarea.input { resize: vertical; min-height: 74px; }
 .lang-cell.checked { border-color: rgba(99,102,241,.5); background: rgba(99,102,241,.1); }
 .lang-cell .box {
   width: 19px; height: 19px; flex: 0 0 19px; border-radius: 6px;
-  border: 1.5px solid rgba(255,255,255,.3); display: flex; align-items: center; justify-content: center;
+  border: 1.5px solid var(--box-border); display: flex; align-items: center; justify-content: center;
   transition: all .2s var(--ease-spring);
 }
 .lang-cell.checked .box { background: var(--grad); border-color: transparent;
@@ -376,7 +407,7 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
 /* чипы API-ключей */
 .key-chip {
   display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px 6px 12px;
-  border-radius: 999px; border: 1px solid var(--border); background: rgba(0, 0, 0, .28);
+  border-radius: 999px; border: 1px solid var(--border); background: var(--input-bg);
   font-family: Consolas, "Cascadia Mono", monospace; font-size: 12.5px;
   animation: pop .25s var(--ease-spring) both;
 }

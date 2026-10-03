@@ -458,7 +458,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"ok": True})
             if path == "/api/ui":
                 for key in ("language", "user_name", "ask_playlists", "ask_schedule",
-                            "language_presets", "web_active_profile"):
+                            "language_presets", "web_active_profile", "theme"):
                     if key in data:
                         eng._ui[key] = data[key]
                 eng.save_ui_settings()
@@ -709,7 +709,7 @@ class Handler(BaseHTTPRequestHandler):
         self._json({
             "ui": {k: eng._ui.get(k) for k in
                    ("language", "user_name", "ask_playlists", "ask_schedule",
-                    "language_presets", "web_active_profile", "ui_tr_mode", "ui_tr_type",
+                    "language_presets", "web_active_profile", "theme", "ui_tr_mode", "ui_tr_type",
                     "ui_tr_source", "ui_tr_parts", "ui_add_defaults", "ui_sched")},
             "profiles": profiles,
             "secrets_found": bool(eng.find_secrets_files()),
@@ -749,13 +749,33 @@ def main():
     if server is None:
         raise SystemExit("Все порты 8765–8789 заняты.")
     url = f"http://127.0.0.1:{server.server_address[1]}"
-    print(f"\n🌐 Веб-интерфейс: {url}  (закрытие — Ctrl+C здесь или кнопка в меню)")
+    print()
+    print(f"🌐 Веб-интерфейс: {url}  (закрытие — Ctrl+C здесь или кнопка в меню)")
     fill_missing_logos()
-    threading.Timer(0.6, webbrowser.open, (url,)).start()
+
+    # pywebview, если установлен, показывает интерфейс в отдельном окне;
+    # без него всё открывается в браузере как обычно.
     try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        print("\nПока!")
+        import webview
+    except ImportError:
+        webview = None
+
+    if webview is not None:
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        webview.create_window(
+            "YouTube Metadata Translator", url,
+            width=1280, height=840, min_size=(420, 560))
+        try:
+            webview.start()
+        finally:
+            os._exit(0)
+    else:
+        threading.Timer(0.6, webbrowser.open, (url,)).start()
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            print()
+            print("Пока!")
 
 
 if __name__ == "__main__":
