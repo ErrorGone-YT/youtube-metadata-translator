@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YouTube Metadata Translator</title>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+</head>
+<body>
+
+<!-- Онбординг -->
+<div id="onboarding" class="overlay hidden">
+  <div class="onboard-card card">
+    <div class="onboard-logo">🎬</div>
+    <h1 data-i18n="app_title"></h1>
+    <p class="muted" data-i18n="onboard_sub"></p>
+    <div class="lang-picker" id="ob_langs"></div>
+    <label class="field-label" data-i18n="your_name"></label>
+    <input id="ob_name" class="input" data-i18n-ph="your_name_ph" autocomplete="off">
+    <button id="ob_start" class="btn primary big" data-i18n="start"></button>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-icon">🎬</span><span>Metadata<br>Translator</span></div>
+    <nav id="nav"></nav>
+    <div class="sidebar-foot">
+      <div id="nav_job_dot" class="job-dot hidden" title="…"></div>
+      <button id="quit_btn" class="icon-btn" title="✕">⏻</button>
+    </div>
+  </aside>
+
+  <main id="screen" class="screen"></main>
+</div>
+
+<div id="modal_root" class="hidden"></div>
+<div id="toasts"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
