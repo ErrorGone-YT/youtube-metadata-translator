@@ -125,6 +125,26 @@ Translations run in parallel across languages; the number of simultaneous transl
 
 A translation can be cancelled — already finished languages are kept, nothing further is applied.
 
+## As a desktop app (no browser)
+
+By default the interface opens in your browser. Want a separate window like a regular app?
+
+```
+pip install pywebview
+```
+
+After that "Запустить веб-интерфейс…" opens the interface in its own window (it uses the web engine built into Windows/macOS — nothing heavy gets installed). Without it everything works through the browser as usual.
+
+## Packaging into a ready app (optional)
+
+Want a single exe without installing Python?
+
+1. `pip install pyinstaller`
+2. Windows: run **«Собрать приложение (Windows).cmd»** — the ready file appears in `dist/`.
+3. macOS: `pyinstaller --noconfirm --clean --onefile --windowed --name "YouTube Metadata Translator" --icon webui_static/app_icon.icns --add-data "webui_static:webui_static" webui.py` (convert the icon to icns: `sips -s format icns webui_static/app_icon_512.png --out app_icon.icns`).
+
+Data (`data/`) lives next to the built file, so the exe can be copied and moved together with the `data` folder.
+
 ## Console version
 
 Prefer the terminal? **Запустить (Windows).cmd** / **Запустить (Mac).command** run the classic console version with the same engine and the same data.
