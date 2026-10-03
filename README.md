@@ -1,20 +1,21 @@
 # YouTube Metadata Translator
 
-A CLI tool for YouTube creators: it localizes video titles and descriptions into 12+ languages with an AI model (CodeCraft/DeepSeek, Google Gemini, Ollama or a local LM Studio), updates video metadata, adds videos to playlists and schedules publishing for specific weekdays.
+A tool for YouTube creators: it localizes video titles and descriptions into 90+ languages with an AI model, updates video metadata, adds videos to playlists and schedules deferred publishing. Managed from a **web interface** that runs locally on your machine and opens in your browser.
 
 Works on Windows and macOS. Everything it needs is free or nearly free.
 
 > 🇺🇦 Інструкція українською: [README.uk.md](README.uk.md)
-> 🇷🇺 Инструкция на русском: [README.ru.md](README.ru.md)
+> 🇷🇸 Инструкция на русском: [README.ru.md](README.ru.md)
 
 ## What you need (~30 minutes of one-time setup)
 
-1. **Python 3.10 or newer** — the language the script is written in.
+1. **Python 3.10 or newer** — the language the tool is written in.
 2. A **Google account** that owns the YouTube channel.
-3. A **translation API key** — one of:
-   - [CodeCraft API](https://codecraftapi.com) — the most stable option, has a free tier;
-   - Google **Gemini** keys — free, but the model is sometimes overloaded.
-4. ~30 minutes for the setup (done once).
+3. A **translation provider** — any one of:
+   - a local app: **LM Studio** or **Ollama** (free, runs on your machine);
+   - an **online OpenAI-compatible API** with keys (e.g. OpenRouter or any aggregator);
+   - Google **Gemini** keys from AI Studio (free, used by the console version).
+4. A browser (Chrome, Edge, Firefox, Safari).
 
 ## Step 1. Install Python
 
@@ -30,7 +31,6 @@ Works on Windows and macOS. Everything it needs is free or nearly free.
 
 1. Go to https://www.python.org/downloads/ — the site offers the right version for Mac. Install it like a normal app.
 2. Check: open **Terminal** (Cmd + Space, type "Terminal"), type `python3 --version`.
-3. `tkinter` (needed for the description input window) comes with the python.org installer automatically.
 
 ## Step 2. Install the libraries
 
@@ -44,7 +44,7 @@ pip install -r requirements.txt
 
 ## Step 3. Create your Google keys (client_secrets) — the longest step
 
-These keys let the script manage **your** YouTube channel. Done once.
+These keys let the tool manage **your** YouTube channel. Done once.
 
 ### 3.1. Create a Google Cloud project
 
@@ -70,10 +70,10 @@ While the app is in **Testing** mode, Google only lets in **users whose emails y
 
 1. In **OAuth consent screen** (or **Google Auth Platform → Audience**) find **Test users**.
 2. Press **+ Add Users**.
-3. Enter **the email of your channel's Google account** (and the email of anyone else who will use the script).
+3. Enter **the email of your channel's Google account** (and the email of anyone else who will use the tool).
 4. **Save**.
 
-> ⚠️ In Testing mode the access token lives **7 days**, then the script asks you to sign in again. Tired of that? Press **Publish App** on the consent screen — sign-in then works indefinitely (Google may show an "unverified app" warning; for personal use just press Advanced → Go to the app).
+> ⚠️ In Testing mode the access token lives **7 days**, then you'll be asked to sign in again. Tired of that? Press **Publish App** on the consent screen — sign-in then works indefinitely (Google may show an "unverified app" warning; for personal use just press Advanced → Go to the app).
 
 ### 3.5. Download client_secrets
 
@@ -81,92 +81,77 @@ While the app is in **Testing** mode, Google only lets in **users whose emails y
 2. **+ Create Credentials** → **OAuth client ID**.
 3. **Application type**: **Desktop app** (not Web, not Android!).
 4. Name it anything → **Create** → **Download JSON**.
-5. Rename the file to **`client_secrets.json`**.
-6. Put it into the **`data`** folder next to the script.
+5. Keep the downloaded file — you will pick it in the web interface when adding a channel. No need to rename or move it anywhere.
 
-> 💡 Managing **several channels**? Each channel needs its own `client_secrets.json` (from that channel's Google account) and its own profile. Files can have different names — the script asks for the filename when creating a profile and auto-detects any `client_secrets*.json` in `data/`.
+> 💡 Managing **several channels**? Each channel needs its own client_secrets file (from that channel's Google account) and its own profile in the tool. Add them one by one on the **Channels** screen.
 
-## Step 4. Connect a translation provider
-
-The script detects the provider automatically from the key file you create in `data/`.
-
-### Option A — CodeCraft API (recommended: stable, fast, cheap)
-
-1. Sign up at https://codecraftapi.com (free tier: 1M tokens/month ≈ 60 full translations).
-2. **Dashboard → API Keys → Create Key**. Keys start with `cc_` and are shown **once** — copy immediately.
-3. Create **`data/codecraft_api.json`** (the key must be in quotes!):
-
-```json
-{ "CODECRAFT_API_KEY": "cc_your_key_here" }
-```
-
-4. Default model: `deepseek-v4-flash-0731` (great quality at $0.12 per million tokens ≈ half a cent per video). Other models: https://codecraftapi.com/models, switch via `codecraft_model` in `data/local_llm.json`.
-
-### Option B — Gemini keys from Google (free)
-
-1. Go to https://aistudio.google.com/apikey.
-2. **Create API key** → copy (starts with `AIza...`).
-3. Create **several keys** — they work as a pool with automatic rotation.
-4. Create **`data/gemini_api.json`**:
-
-```json
-{ "GEMINI_API_KEY": "AIza_key1, AIza_key2, AIza_key3" }
-```
-
-> Gemini sometimes answers "model overloaded" — the script retries patiently, runs just take a bit longer. CodeCraft is more stable.
-
-## Step 5. First run
+## Step 4. First run
 
 ### Windows
 
-Double-click **Запустить (Windows).cmd**.
+Double-click **Запустить веб-интерфейс (Windows).cmd** — the server starts and your browser opens the interface.
 
 ### macOS
 
-1. Open Terminal, type `chmod +x ` (with a trailing space), drag **Запустить (Mac).command** into the window, press Enter. One-time only.
+1. Open Terminal, type `chmod +x ` (with a trailing space), drag **Запустить веб-интерфейс (Mac).command** into the window, press Enter. One-time only.
 2. After that just double-click the file.
-3. If macOS says the file is from the internet: System Settings → Privacy & Security → "Open Anyway".
 
 ### First-launch wizard
 
-1. **Language** — English / Українська / Русский.
-2. **Your name** — how the script addresses you.
-3. **Profile name** — anything.
-4. The script finds your `client_secrets*.json` automatically.
-5. **Playlist ID** — optional (Enter to skip).
-6. A browser window opens — **sign in to the channel's Google account**. If Google warns about an unverified app: Advanced → Go to the app.
-7. Done — the token is saved in `data/tokens/`, no repeated sign-ins.
+1. **Interface language** — Русский / Українська / English.
+2. **Your name** — how the tool greets you.
+3. On the **Channels** screen press **Add a channel**: enter a name and pick the client_secrets JSON file downloaded in step 3.5.
+4. A Google window opens — **sign in to the channel's account**. If Google warns about an unverified app: Advanced → Go to the app.
+5. Done — the token is saved in `data/profiles/<channel>/`, no repeated sign-ins.
 
-Until the setup is finished, the menu shows **Settings only**. Setup is complete once you've chosen translation languages (Settings) and added a translation key.
+## Step 5. Connect a translation provider
 
-## Menu
+Open **Settings → API providers → Add provider**.
 
-| Item | What it does |
+- **Local** — pick the app preset (**LM Studio** or **Ollama**): the address fills in automatically and the model list is fetched from the running app. No keys needed.
+- **Online** — enter the base URL (e.g. `https://openrouter.ai/api/v1`), paste your keys (one per line) and choose a model. Keys are stored masked, and the **Check keys** button shows which ones are alive, rate-limited or rejected.
+
+Translations run in parallel across languages; the number of simultaneous translations is set in Settings (Auto works for most cases).
+
+## The screens
+
+| Screen | What it does |
 |---|---|
-| **Translation** | Takes the actual title/description of a video, localizes them into the selected languages and applies them back. |
-| **Add to playlist** | Adds videos to the profile's playlist. |
-| **Scheduled publishing** | Schedules a video for a specific date. |
-| **Settings** | Interface language, your name, translation languages, parallel translations. |
+| **Translate** | Takes the actual title/description of a video (latest, specific or all), localizes them into the selected languages with a live progress bar and log, and applies them back. |
+| **Playlists** | Manage the channel's playlists and default playlists; add a video to several playlists at once. |
+| **Publishing** | Deferred publishing with date and time; edit the per-weekday publishing schedule below. |
+| **Channels** | Add channels (with client_secrets upload), sign in, switch the active channel, delete profiles. |
+| **Settings** | Interface language, your name, parallel translations, language presets, API providers, translation languages (searchable, localized like on YouTube). |
+
+A translation can be cancelled — already finished languages are kept, nothing further is applied.
+
+## Console version
+
+Prefer the terminal? **Запустить (Windows).cmd** / **Запустить (Mac).command** run the classic console version with the same engine and the same data.
 
 ## Files and folders
 
 ```
 youtube-metadata-translator/
-├── yt_metadata_translator.py ← the script
-├── Запустить (Windows).cmd   ← Windows launcher
-├── Запустить (Mac).command   ← macOS launcher
-├── requirements.txt          ← library list
-├── README.md                 ← this guide
-└── data/                     ← all data (put your key files here)
-    ├── local_llm.json        ← translator settings
-    ├── client_secrets.json   ← Google keys (step 3.5)
-    ├── codecraft_api.json    ← CodeCraft key (step 4, option A)
-    ├── gemini_api.json       ← Gemini keys (step 4, option B)
-    ├── channel_profiles.json ← channel profiles (auto-created)
-    ├── metadata.json         ← last translated title/description
-    ├── localizations.json    ← last set of translations
-    ├── ui_settings.json      ← interface language and your name (auto-created)
-    └── tokens/               ← saved Google sign-ins (auto-created)
+├── yt_metadata_translator.py        ← the engine (console version)
+├── webui.py                         ← web interface server
+├── webui_static/                    ← web interface files
+├── Запустить веб-интерфейс (Windows).cmd  ← launch the web interface (Windows)
+├── Запустить веб-интерфейс (Mac).command  ← launch the web interface (macOS)
+├── Запустить (Windows).cmd          ← launch the console version (Windows)
+├── Запустить (Mac).command          ← launch the console version (macOS)
+├── requirements.txt                 ← library list
+├── README.md                        ← this guide
+└── data/                            ← all data (auto-created)
+    ├── local_llm.json               ← translator settings
+    ├── api_providers.json           ← translation providers and keys (masked in the UI)
+    ├── api_key_status.json          ← key liveness results
+    ├── channel_profiles.json        ← channel profiles
+    ├── client_secrets*.json         ← Google keys (step 3.5)
+    ├── metadata.json                ← last translated title/description
+    ├── localizations.json           ← last set of translations
+    ├── ui_settings.json             ← interface language, your name, presets
+    └── profiles/<channel>/          ← Google token and publishing calendar per channel
 ```
 
 Enjoy! 🧙
