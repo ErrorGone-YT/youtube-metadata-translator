@@ -155,3 +155,7 @@ youtube-metadata-translator/
 ```
 
 Enjoy! 🧙
+
+---
+
+License: [MIT](LICENSE) — free to use, modify and distribute.
