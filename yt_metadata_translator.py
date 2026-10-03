@@ -1537,18 +1537,21 @@ def localize_language_via_llm(provider, config, language_code,
     backup = get_backup_provider()
     try:
         return _localize_with_provider(provider, config, language_code,
-                                       language_name, source_title, source_description)
+                                       language_name, source_title, source_description,
+                                       progress=progress)
     except Exception as error:
         if backup and backup["id"] != provider.get("id"):
             print(f"⚠️ Провайдер '{provider.get('name')}' не сработал "
                   f"({str(error).splitlines()[0][:90]}), пробую резервного '{backup['name']}'.")
             return _localize_with_provider(backup, config, language_code,
-                                           language_name, source_title, source_description)
+                                           language_name, source_title, source_description,
+                                           progress=progress)
         raise
 
 
 def _localize_with_provider(provider, config, language_code,
-                            language_name, source_title, source_description):
+                            language_name, source_title, source_description,
+                            progress=None):
     max_attempts = max(1, config.get("retry_attempts", 6 if provider.get("auth") else 3))
     system_prompt = "You are a precise multilingual YouTube metadata localizer."
     series_names = load_series_names()
@@ -1762,12 +1765,33 @@ def valid_language_code(code):
 
 
 def available_language_catalog():
+    # Full YouTube locale list with native names.
     catalog = {
-        "en": "English", "es": "Spanish", "pt": "Portuguese", "hi": "Hindi",
-        "id": "Indonesian", "it": "Italian", "ja": "Japanese", "ko": "Korean",
-        "de": "German", "fr": "French", "ru": "Russian", "ar": "Arabic",
-        "tr": "Turkish", "vi": "Vietnamese", "pl": "Polish", "nl": "Dutch",
-        "uk": "Ukrainian",
+        "af": "Afrikaans", "az": "Azərbaycan", "id": "Bahasa Indonesia",
+        "ms": "Bahasa Malaysia", "bs": "Bosanski", "ca": "Català", "cs": "Čeština",
+        "cy": "Cymraeg", "da": "Dansk", "de": "Deutsch", "et": "Eesti",
+        "en": "English", "en-CA": "English (Canada)", "en-GB": "English (UK)",
+        "en-IN": "English (India)", "en-US": "English (US)", "es": "Español",
+        "es-419": "Español (Latinoamérica)", "es-US": "Español (EE. UU.)",
+        "eu": "Euskara", "fil": "Filipino", "fr": "Français", "fr-CA": "Français (Canada)",
+        "gl": "Galego", "gu": "ગુજરાતી", "hr": "Hrvatski", "is": "Íslenska",
+        "it": "Italiano", "jv": "Basa Jawa", "kn": "ಕನ್ನಡ", "la": "Latin",
+        "lv": "Latviešu", "lt": "Lietuvių", "hu": "Magyar", "nl": "Nederlands",
+        "ne": "नेपाली", "no": "Norsk", "or": "ଓଡ଼ିଆ", "pa": "ਪੰਜਾਬੀ",
+        "pl": "Polski", "pt": "Português (Brasil)", "pt-PT": "Português (Portugal)",
+        "ro": "Română", "rm": "Rumantsch", "si": "සිංහල", "sk": "Slovenčina",
+        "sl": "Slovenščina", "fi": "Suomi", "sv": "Svenska", "sw": "Kiswahili",
+        "tl": "Tagalog", "ta": "தமிழ்", "te": "తెలుగు", "th": "ไทย",
+        "vi": "Tiếng Việt", "tr": "Türkçe", "uk": "Українська", "ur": "اردو",
+        "zh-Hans": "中文（简体）", "zh-Hant": "中文（繁體）", "zh-TW": "中文（台灣）",
+        "zu": "IsiZulu", "el": "Ελληνικά", "bg": "Български", "ru": "Русский",
+        "sr": "Српски", "mk": "Македонски", "kk": "Қазақ тілі", "ky": "Кыргызча",
+        "hy": "Հայերեն", "ka": "ქართული", "mn": "Монгол", "my": "ဗမာ",
+        "km": "ខ្មែរ", "lo": "ລາວ", "he": "עברית", "ar": "العربية",
+        "fa": "فارسی", "sd": "سنڌي", "am": "አማርኛ", "yo": "Yorùbá",
+        "ha": "Hausa", "ig": "Igbo", "qu": "Runasimi", "nso": "Sepedi",
+        "bn": "বাংলা", "hi": "हिन्दी", "ja": "日本語", "ko": "한국어",
+        "so": "Soomaali", "sq": "Shqip",
     }
     try:
         catalog.update(load_local_llm_config().get("language_names", {}))

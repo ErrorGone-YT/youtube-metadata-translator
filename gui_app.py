@@ -1,6 +1,6 @@
 """YouTube Metadata Translator — desktop GUI (customtkinter, Windows/macOS/Linux)."""
 import os
-import queue
+import re
 import shutil
 import threading
 import tkinter.filedialog as filedialog
@@ -16,20 +16,26 @@ ctk.set_default_color_theme("blue")
 FONT = ("Segoe UI", 14)
 FONT_SMALL = ("Segoe UI", 12)
 FONT_BOLD = ("Segoe UI", 15, "bold")
+FONT_TITLE = ("Segoe UI", 22, "bold")
 LANG_CODES = ("en", "uk", "ru")
+COLOR_OK = "#4ade80"
+COLOR_FAIL = "#f87171"
+COLOR_RETRY = "#fbbf24"
+COLOR_INFO = "#93c5fd"
 
 GUI_STRINGS = {
     "en": {
         "app_title": "YouTube Metadata Translator",
         "lang_name": "English",
         "tab_translate": "Translate", "tab_playlists": "Playlists",
-        "tab_schedule": "Publishing", "tab_settings": "Settings", "tab_profile": "Profile",
+        "tab_schedule": "Publishing", "tab_settings": "Settings", "tab_profile": "Channels",
         "choose_language": "Interface language", "your_name": "Your name",
-        "next": "Next", "save": "Save", "back": "Back",
+        "next": "Next", "save": "Save", "back": "Back", "cancel": "Cancel",
         "secrets_missing": "No client_secrets file found. Pick the JSON downloaded from Google Cloud.",
         "secrets_pick": "Pick client_secrets.json",
-        "profile_title": "Channels", "profile_name": "New channel profile name",
-        "profile_add": "Add channel (pick client_secrets.json)", "profile_continue": "Continue",
+        "profile_title": "Channels — click one to sign in",
+        "profile_name": "Name for the new channel profile",
+        "profile_add": "Add a new channel",
         "auth_opening": "Browser will open — sign in to the channel's Google account…",
         "auth_ok": "Authorized: {channel}", "auth_failed": "Authorization failed: {error}",
         "tr_mode": "What to translate", "tr_last": "Latest video", "tr_specific": "Specific videos",
@@ -48,26 +54,42 @@ GUI_STRINGS = {
         "pl_video_link": "Video link or ID", "pl_added": "Added to {n} playlist(s)",
         "pl_target_pick": "Pick playlists (multiple allowed)",
         "sched_link": "Video link or ID", "sched_date": "Publishing date (ddmmyy)",
-        "sched_set": "Schedule", "sched_done": "✓ Scheduled for {date}", "sched_bad_date": "Invalid date",
+        "sched_set": "Schedule", "sched_done": "✓ Scheduled for {date}",
+        "sched_bad_date": "Invalid date",
         "set_interface": "Interface", "set_language": "Language", "set_name": "Your name",
-        "set_parallel": "Parallel translations", "set_auto": "Auto",
+        "set_parallel": "Parallel translations", "set_auto": "Auto", "set_saved": "✓ Saved",
         "set_ask_playlists": "Ask about playlists after translation",
         "set_ask_schedule": "Ask about deferred publishing after translation",
-        "set_saved": "✓ Saved",
-        "api_title": "API providers", "api_activate": "Make active",
+        "set_languages": "Translation languages",
+        "lang_custom_code": "Custom code (e.g. pt-BR)",
+        "lang_custom_name": "Name for the AI (e.g. Brazilian Portuguese)",
+        "lang_add": "Add language",
+        "presets_title": "Language presets",
+        "preset_apply": "Apply", "preset_save": "Save current as preset",
+        "preset_delete": "Delete preset", "preset_name_prompt": "Preset name:",
+        "preset_none": "No presets yet.",
+        "api_title": "API providers", "api_add": "Add provider", "api_activate": "Make active",
         "api_online": "Online", "api_local": "Local", "api_keys_n": "{n} key(s)",
+        "api_kind": "Type", "api_name": "Display name", "api_base": "Base URL",
+        "api_keys": "API keys (comma-separated)", "api_model": "Model",
+        "api_fetch_models": "Fetch models",
+        "api_no_models": "Couldn't fetch the model list — type the name manually.",
+        "api_need_url": "A base URL is required for an online provider.",
+        "provider_new_title": "— Adding a provider —",
+        "provider_edit_title": "— Editing provider: {name} —",
     },
     "uk": {
         "app_title": "YouTube Metadata Translator",
         "lang_name": "Українська",
         "tab_translate": "Переклад", "tab_playlists": "Плейлисти",
-        "tab_schedule": "Публікація", "tab_settings": "Налаштування", "tab_profile": "Профіль",
+        "tab_schedule": "Публікація", "tab_settings": "Налаштування", "tab_profile": "Канали",
         "choose_language": "Мова інтерфейсу", "your_name": "Ваше ім'я",
-        "next": "Далі", "save": "Зберегти", "back": "Назад",
+        "next": "Далі", "save": "Зберегти", "back": "Назад", "cancel": "Скасувати",
         "secrets_missing": "Не знайдено client_secrets. Виберіть JSON, завантажений з Google Cloud.",
         "secrets_pick": "Виберіть client_secrets.json",
-        "profile_title": "Канали", "profile_name": "Назва нового профілю каналу",
-        "profile_add": "Додати канал (виберіть client_secrets.json)", "profile_continue": "Продовжити",
+        "profile_title": "Канали — клацніть, щоб увійти",
+        "profile_name": "Назва нового профілю каналу",
+        "profile_add": "Додати новий канал",
         "auth_opening": "Відкриється браузер — увійдіть в Google-акаунт каналу…",
         "auth_ok": "Авторизовано: {channel}", "auth_failed": "Помилка авторизації: {error}",
         "tr_mode": "Що перекладаємо", "tr_last": "Останнє відео", "tr_specific": "Конкретні відео",
@@ -86,26 +108,42 @@ GUI_STRINGS = {
         "pl_video_link": "Посилання на відео або ID", "pl_added": "Додано до {n} плейлистів",
         "pl_target_pick": "Вибрати плейлисти (можна кілька)",
         "sched_link": "Посилання на відео або ID", "sched_date": "Дата публікації (ddmmyy)",
-        "sched_set": "Запланувати", "sched_done": "✓ Заплановано на {date}", "sched_bad_date": "Некоректна дата",
+        "sched_set": "Запланувати", "sched_done": "✓ Заплановано на {date}",
+        "sched_bad_date": "Некоректна дата",
         "set_interface": "Інтерфейс", "set_language": "Мова", "set_name": "Ваше ім'я",
-        "set_parallel": "Одночасні переклади", "set_auto": "Авто",
+        "set_parallel": "Одночасні переклади", "set_auto": "Авто", "set_saved": "✓ Збережено",
         "set_ask_playlists": "Питати про плейлисти після перекладу",
         "set_ask_schedule": "Питати про відкладену публікацію після перекладу",
-        "set_saved": "✓ Збережено",
-        "api_title": "API-провайдери", "api_activate": "Зробити активним",
+        "set_languages": "Мови перекладу",
+        "lang_custom_code": "Свій код (наприклад pt-BR)",
+        "lang_custom_name": "Назва для нейромережі (наприклад Brazilian Portuguese)",
+        "lang_add": "Додати мову",
+        "presets_title": "Пресети мов",
+        "preset_apply": "Застосувати", "preset_save": "Зберегти поточний як пресет",
+        "preset_delete": "Видалити пресет", "preset_name_prompt": "Назва пресета:",
+        "preset_none": "Пресетів ще немає.",
+        "api_title": "API-провайдери", "api_add": "Додати провайдера", "api_activate": "Зробити активним",
         "api_online": "Онлайн", "api_local": "Локальний", "api_keys_n": "ключів: {n}",
+        "api_kind": "Тип", "api_name": "Ім'я для показу", "api_base": "Base URL",
+        "api_keys": "API-ключі через кому", "api_model": "Модель",
+        "api_fetch_models": "Отримати моделі",
+        "api_no_models": "Не вдалося отримати список моделей — введіть назву вручну.",
+        "api_need_url": "Для онлайн-провайдера потрібен base URL.",
+        "provider_new_title": "— Додавання провайдера —",
+        "provider_edit_title": "— Зміна провайдера: {name} —",
     },
     "ru": {
         "app_title": "YouTube Metadata Translator",
         "lang_name": "Русский",
         "tab_translate": "Перевод", "tab_playlists": "Плейлисты",
-        "tab_schedule": "Публикация", "tab_settings": "Настройки", "tab_profile": "Профиль",
+        "tab_schedule": "Публикация", "tab_settings": "Настройки", "tab_profile": "Каналы",
         "choose_language": "Язык интерфейса", "your_name": "Твоё имя",
-        "next": "Далее", "save": "Сохранить", "back": "Назад",
+        "next": "Далее", "save": "Сохранить", "back": "Назад", "cancel": "Отмена",
         "secrets_missing": "Не найден client_secrets. Выбери JSON, скачанный из Google Cloud.",
         "secrets_pick": "Выбери client_secrets.json",
-        "profile_title": "Каналы", "profile_name": "Название нового профиля канала",
-        "profile_add": "Добавить канал (выбери client_secrets.json)", "profile_continue": "Продолжить",
+        "profile_title": "Каналы — кликни, чтобы войти",
+        "profile_name": "Название нового профиля канала",
+        "profile_add": "Добавить новый канал",
         "auth_opening": "Откроется браузер — войди в Google-аккаунт канала…",
         "auth_ok": "Авторизовано: {channel}", "auth_failed": "Ошибка авторизации: {error}",
         "tr_mode": "Что переводим", "tr_last": "Последнее видео", "tr_specific": "Конкретные видео",
@@ -124,14 +162,29 @@ GUI_STRINGS = {
         "pl_video_link": "Ссылка на видео или ID", "pl_added": "Добавлено в {n} плейлистов",
         "pl_target_pick": "Выбрать плейлисты (можно несколько)",
         "sched_link": "Ссылка на видео или ID", "sched_date": "Дата публикации (ddmmyy)",
-        "sched_set": "Запланировать", "sched_done": "✓ Запланировано на {date}", "sched_bad_date": "Некорректная дата",
+        "sched_set": "Запланировать", "sched_done": "✓ Запланировано на {date}",
+        "sched_bad_date": "Некорректная дата",
         "set_interface": "Интерфейс", "set_language": "Язык", "set_name": "Твоё имя",
-        "set_parallel": "Одновременные переводы", "set_auto": "Авто",
+        "set_parallel": "Одновременные переводы", "set_auto": "Авто", "set_saved": "✓ Сохранено",
         "set_ask_playlists": "Спрашивать про плейлисты после перевода",
         "set_ask_schedule": "Спрашивать про отложенную публикацию после перевода",
-        "set_saved": "✓ Сохранено",
-        "api_title": "API-провайдеры", "api_activate": "Сделать активным",
+        "set_languages": "Языки перевода",
+        "lang_custom_code": "Свой код (например pt-BR)",
+        "lang_custom_name": "Название для нейросети (например Brazilian Portuguese)",
+        "lang_add": "Добавить язык",
+        "presets_title": "Пресеты языков",
+        "preset_apply": "Применить", "preset_save": "Сохранить текущий как пресет",
+        "preset_delete": "Удалить пресет", "preset_name_prompt": "Название пресета:",
+        "preset_none": "Пресетов ещё нет.",
+        "api_title": "API-провайдеры", "api_add": "Добавить провайдера", "api_activate": "Сделать активным",
         "api_online": "Онлайн", "api_local": "Локальный", "api_keys_n": "ключей: {n}",
+        "api_kind": "Тип", "api_name": "Отображаемое имя", "api_base": "Base URL",
+        "api_keys": "API-ключи через запятую", "api_model": "Модель",
+        "api_fetch_models": "Получить модели",
+        "api_no_models": "Не удалось получить список моделей — введи название вручную.",
+        "api_need_url": "Для онлайн-провайдера нужен base URL.",
+        "provider_new_title": "— Добавление провайдера —",
+        "provider_edit_title": "— Изменение провайдера: {name} —",
     },
 }
 
@@ -140,6 +193,11 @@ def g(key, **kwargs):
     lang = eng._ui.get("language") or "en"
     text = GUI_STRINGS.get(lang, GUI_STRINGS["en"]).get(key) or GUI_STRINGS["en"][key]
     return text.format(**kwargs) if kwargs else text
+
+
+def lang_display(code):
+    """Native name for a language code; the code itself when unknown."""
+    return eng.available_language_catalog().get(code, code)
 
 
 def create_profile_gui(name, secrets_path):
@@ -178,13 +236,28 @@ class App(ctk.CTk):
         self.profile = None
         self.youtube = None
         self.log_box = None
-        self.lang_labels = {}
-        self.show_onboarding()
+        self.lang_states = {}
+        self.sidebar_buttons = {}
+        self.header_label = None
+        self.tab_frames = {}
+        # First run without saved language/name -> onboarding; otherwise jump
+        # to the secrets gate (auto-skipped when data/ has client_secrets*).
+        if not eng._ui.get("language") or not eng._ui.get("user_name"):
+            self.show_onboarding()
+        elif not eng.find_secrets_files():
+            self.show_secrets_gate()
+        else:
+            self.show_profiles()
 
     # ---------- helpers ----------
 
+    def clear(self):
+        for widget in self.winfo_children():
+            widget.destroy()
+
     def log(self, text):
         """Thread-safe append to the on-screen log."""
+
         def append():
             if self.log_box and self.log_box.winfo_exists():
                 self.log_box.configure(state="normal")
@@ -194,17 +267,23 @@ class App(ctk.CTk):
         self.after(0, append)
 
     def lang_status(self, code, state, detail=""):
-        colors = {"ok": "#4ade80", "fail": "#f87171", "retry": "#fbbf24", "start": "#93c5fd"}
-        def update():
-            label = self.lang_labels.get(code)
-            if label and label.winfo_exists():
-                label.configure(text=f"{code}: {state} {detail}".strip(),
-                                text_color=colors.get(state))
-        self.after(0, update)
+        self.lang_states[code] = (state, detail)
+        self.after(0, self._render_lang_states)
 
-    def clear(self):
-        for widget in self.winfo_children():
-            widget.destroy()
+    def _render_lang_states(self):
+        """One comma-separated line: German ✓, Español ⏳, 日本語 …"""
+        if not (self.lang_label and self.lang_label.winfo_exists()):
+            return
+        marks = {"ok": "✓", "fail": "✗", "retry": "⏳", "start": "…"}
+        chunks = [
+            f"{lang_display(code)} {marks.get(state, '')} {detail}".strip()
+            for code, (state, detail) in self.lang_states.items()
+        ]
+        self.lang_label.configure(text=", ".join(chunks))
+
+    def switch_language(self, code):
+        eng._ui["language"] = code
+        eng.save_ui_settings()
 
     # ---------- onboarding ----------
 
@@ -224,7 +303,7 @@ class App(ctk.CTk):
         ctk.CTkLabel(frame, text=g("your_name"), font=FONT).pack(pady=(28, 6))
         name_entry = ctk.CTkEntry(frame, width=320, font=FONT)
         name_entry.pack()
-        status = ctk.CTkLabel(frame, text="", font=FONT_SMALL, text_color="#fbbf24")
+        status = ctk.CTkLabel(frame, text="", font=FONT_SMALL, text_color=COLOR_RETRY)
         status.pack(pady=10)
 
         def proceed():
@@ -238,20 +317,19 @@ class App(ctk.CTk):
 
         ctk.CTkButton(frame, text=g("next"), font=FONT, width=220, command=proceed).pack(pady=16)
 
-    def switch_language(self, code):
-        eng._ui["language"] = code
-        eng.save_ui_settings()
-
     # ---------- secrets gate ----------
 
     def show_secrets_gate(self):
+        if eng.find_secrets_files():
+            self.show_profiles()
+            return
         self.clear()
         frame = ctk.CTkFrame(self)
         frame.pack(expand=True, fill="both")
         ctk.CTkLabel(frame, text=g("secrets_missing"), font=FONT,
                      wraplength=700).pack(pady=(90, 24))
         picked = {"path": None}
-        label = ctk.CTkLabel(frame, text="", font=FONT_SMALL, text_color="#93c5fd")
+        label = ctk.CTkLabel(frame, text="", font=FONT_SMALL, text_color=COLOR_INFO)
         label.pack()
 
         def pick():
@@ -261,8 +339,7 @@ class App(ctk.CTk):
             if path:
                 picked["path"] = path
                 label.configure(text=os.path.basename(path))
-        ctk.CTkButton(frame, text=g("secrets_pick"), font=FONT,
-                      command=pick).pack(pady=8)
+        ctk.CTkButton(frame, text=g("secrets_pick"), font=FONT, command=pick).pack(pady=8)
 
         def proceed():
             if not picked["path"]:
@@ -274,8 +351,7 @@ class App(ctk.CTk):
             if not os.path.exists(dest):
                 shutil.copy(picked["path"], dest)
             self.show_profiles()
-        ctk.CTkButton(frame, text=g("next"), font=FONT, width=220,
-                      command=proceed).pack(pady=12)
+        ctk.CTkButton(frame, text=g("next"), font=FONT, width=220, command=proceed).pack(pady=12)
 
     # ---------- profiles ----------
 
@@ -283,54 +359,50 @@ class App(ctk.CTk):
         self.clear()
         frame = ctk.CTkFrame(self)
         frame.pack(expand=True, fill="both")
-        ctk.CTkLabel(frame, text=g("profile_title"),
-                     font=("Segoe UI", 22, "bold")).pack(pady=(50, 20))
-        profiles = eng.load_channel_profiles()
-        selected = {"id": None}
-        buttons = {}
+        ctk.CTkLabel(frame, text=g("profile_title"), font=FONT_TITLE).pack(pady=(50, 24))
+        profiles = eng.load_channel_profiles()["profiles"]
 
-        def select(profile):
-            selected["id"] = profile["profile_id"]
-            for pid, btn in buttons.items():
-                btn.configure(border_width=3 if pid == selected["id"] else 0)
-
-        for profile in profiles["profiles"]:
+        # Clicking a channel signs in immediately (no extra Continue step).
+        for profile in profiles:
             name = profile.get("channel_title") or profile.get("display_name")
-            btn = ctk.CTkButton(frame, text=name, font=FONT, width=480, height=46,
-                                border_width=0, fg_color="transparent",
-                                text_color=("gray10", "#DCE4EE"),
-                                hover_color=("gray70", "gray30"),
-                                command=lambda p=profile: select(p))
-            btn.pack(pady=4)
-            buttons[profile["profile_id"]] = btn
+            ctk.CTkButton(frame, text=name, font=FONT, width=480, height=46,
+                          border_width=0, fg_color="transparent",
+                          text_color=("gray10", "#DCE4EE"),
+                          hover_color=("gray70", "gray30"),
+                          command=lambda p=profile: self.authorize(p)).pack(pady=4)
 
-        ctk.CTkLabel(frame, text=g("profile_name"), font=FONT).pack(pady=(30, 4))
-        name_entry = ctk.CTkEntry(frame, width=480, font=FONT)
+        ctk.CTkButton(frame, text="＋ " + g("profile_add"), font=FONT, width=480, height=46,
+                      command=lambda: self.add_channel_dialog()).pack(pady=(20, 0))
+
+    def add_channel_dialog(self):
+        top = ctk.CTkToplevel(self)
+        top.title(g("profile_add"))
+        top.geometry("560x360")
+        top.grab_set()
+        ctk.CTkLabel(top, text=g("profile_name"), font=FONT).pack(pady=(24, 4))
+        name_entry = ctk.CTkEntry(top, width=440, font=FONT)
         name_entry.pack()
         secrets = {"path": None}
-        secrets_label = ctk.CTkLabel(frame, text="", font=FONT_SMALL, text_color="#93c5fd")
-        secrets_label.pack()
+        secrets_label = ctk.CTkLabel(top, text="", font=FONT_SMALL, text_color=COLOR_INFO)
+        secrets_label.pack(pady=6)
 
-        def pick_secrets():
+        def pick():
             path = filedialog.askopenfilename(title=g("secrets_pick"),
                                               filetypes=[("JSON", "*.json")])
             if path:
                 secrets["path"] = path
                 secrets_label.configure(text=os.path.basename(path))
-        ctk.CTkButton(frame, text=g("profile_add"), font=FONT_SMALL,
-                      command=pick_secrets).pack(pady=(12, 4))
+        ctk.CTkButton(top, text=g("secrets_pick"), font=FONT_SMALL, command=pick).pack(pady=6)
 
-        def proceed():
-            profile = None
-            if selected["id"]:
-                profile = next(p for p in profiles["profiles"]
-                               if p["profile_id"] == selected["id"])
-            elif secrets["path"] and name_entry.get().strip():
-                profile = create_profile_gui(name_entry.get().strip(), secrets["path"])
-            if profile:
-                self.authorize(profile)
-        ctk.CTkButton(frame, text=g("profile_continue"), font=FONT, width=280,
-                      command=proceed).pack(pady=16)
+        def save():
+            if not secrets["path"]:
+                secrets_label.configure(text=g("secrets_pick"), text_color=COLOR_RETRY)
+                return
+            name = name_entry.get().strip() or \
+                os.path.splitext(os.path.basename(secrets["path"]))[0]
+            top.destroy()
+            self.authorize(create_profile_gui(name, secrets["path"]))
+        ctk.CTkButton(top, text=g("save"), font=FONT, command=save).pack(pady=10)
 
     def authorize(self, profile):
         self.clear()
@@ -347,17 +419,25 @@ class App(ctk.CTk):
             try:
                 youtube = eng.authenticate(profile)
                 eng.refresh_profile_identity(youtube, profile, eng.load_channel_profiles())
-                self.profile = profile
-                self.youtube = youtube
-                self.after(0, self.show_main)
             except Exception as error:
-                def fail():
-                    status.configure(text=g("auth_failed").format(error=error),
-                                     text_color="#f87171")
+                message = str(error)
+
+                def fail(message=message):
+                    status.configure(text=g("auth_failed").format(error=message),
+                                     text_color=COLOR_FAIL)
                 self.after(0, fail)
+                return
+            self.profile = profile
+            self.youtube = youtube
+            self.after(0, self.show_main)
         threading.Thread(target=worker, daemon=True).start()
 
-    # ---------- main window ----------
+    # ---------- main window: persistent sidebar + tab frames ----------
+
+    TAB_DEFS = (("translate", "tab_translate", "build_translate"),
+                ("playlists", "tab_playlists", "build_playlists"),
+                ("schedule", "tab_schedule", "build_schedule"),
+                ("settings", "tab_settings", "build_settings"))
 
     def show_main(self):
         self.clear()
@@ -367,26 +447,58 @@ class App(ctk.CTk):
         sidebar.pack(side="left", fill="y", padx=14, pady=14)
         content = ctk.CTkFrame(shell)
         content.pack(side="right", expand=True, fill="both", padx=(0, 14), pady=14)
+        self.content = content
 
-        def open_tab(handler):
-            for widget in content.winfo_children():
+        self.header_label = ctk.CTkLabel(
+            sidebar, text=f"👋 {eng._ui.get('user_name', '')}",
+            font=FONT_BOLD, wraplength=200)
+        self.header_label.pack(pady=(14, 18), padx=10)
+
+        self.tab_frames = {}
+        self.sidebar_buttons = {}
+        content.grid_rowconfigure(0, weight=1)
+        content.grid_columnconfigure(0, weight=1)
+        for name, label_key, builder in self.TAB_DEFS:
+            tab = ctk.CTkFrame(content, fg_color="transparent")
+            tab.grid(row=0, column=0, sticky="nsew")
+            self.tab_frames[name] = (tab, getattr(self, builder))
+            btn = ctk.CTkButton(sidebar, text=g(label_key), font=FONT, anchor="w",
+                                height=44, command=lambda n=name: self.open_tab(n))
+            btn.pack(pady=6, padx=10, fill="x")
+            self.sidebar_buttons[name] = (btn, label_key)
+        self.open_tab("translate")
+
+    def open_tab(self, name):
+        tab, builder = self.tab_frames[name]
+        for widget in tab.winfo_children():
+            widget.destroy()
+        builder(tab)
+        tab.tkraise()
+
+    def update_texts(self):
+        """Refresh sidebar labels (called on language change)."""
+        if not self.header_label:
+            return
+        self.header_label.configure(text=f"👋 {eng._ui.get('user_name', '')}")
+        for name, (btn, label_key) in self.sidebar_buttons.items():
+            btn.configure(text=g(label_key))
+
+    def rebuild_tabs(self):
+        """Rebuild every tab's content (after a language or data change)."""
+        for name, (tab, builder) in self.tab_frames.items():
+            for widget in tab.winfo_children():
                 widget.destroy()
-            handler(content)
+            builder(tab)
+        self.open_tab("translate")
 
-        for label, handler in (
-                (g("tab_translate"), self.show_translate),
-                (g("tab_playlists"), self.show_playlists),
-                (g("tab_schedule"), self.show_schedule),
-                (g("tab_settings"), self.show_settings),
-                (g("tab_profile"), self.show_profiles)):
-            ctk.CTkButton(sidebar, text=label, font=FONT, anchor="w", height=44,
-                          command=lambda h=handler: open_tab(h)).pack(pady=6, padx=10, fill="x")
-        open_tab(self.show_translate)
+    def refresh_after_language_change(self):
+        self.update_texts()
+        self.rebuild_tabs()
 
     # ---------- translate tab ----------
 
-    def show_translate(self, content):
-        frame = ctk.CTkFrame(content, fg_color="transparent")
+    def build_translate(self, tab):
+        frame = ctk.CTkFrame(tab, fg_color="transparent")
         frame.pack(expand=True, fill="both")
 
         ctk.CTkLabel(frame, text=g("tr_mode"), font=FONT_SMALL).pack(anchor="w")
@@ -421,8 +533,9 @@ class App(ctk.CTk):
         desc_box.pack(fill="x", pady=(2, 0))
 
         def on_source(value):
+            # Manual fields appear between the language row and the log.
             if value == g("tr_source_manual"):
-                manual.pack(fill="x", pady=(0, 12))
+                manual.pack(fill="x", pady=(0, 12), before=self.log_box)
             else:
                 manual.pack_forget()
         ctk.CTkOptionMenu(frame, values=[g("tr_source_video"), g("tr_source_manual")],
@@ -453,15 +566,11 @@ class App(ctk.CTk):
                                       start_btn))
         start_btn.pack(fill="x", pady=12)
 
-        self.lang_labels = {}
-        lang_row = ctk.CTkFrame(frame, fg_color="transparent")
-        lang_row.pack(fill="x")
-        for code in eng.get_profile_languages(self.profile):
-            if code == "en":
-                continue
-            label = ctk.CTkLabel(lang_row, text=f"{code}: …", font=FONT_SMALL)
-            label.pack(side="left", padx=(0, 12))
-            self.lang_labels[code] = label
+        self.lang_states = {}
+        self.lang_label = ctk.CTkLabel(frame, text="", font=FONT_SMALL,
+                                       justify="left", wraplength=900)
+        self.lang_label.pack(fill="x", pady=(10, 0))
+        self._render_lang_states()
 
         self.log_box = ctk.CTkTextbox(frame, height=190, font=FONT_SMALL)
         self.log_box.pack(expand=True, fill="both", pady=(8, 0))
@@ -471,7 +580,6 @@ class App(ctk.CTk):
                           manual_title, manual_desc, parts_name, add_playlists,
                           do_schedule, date_text, button):
         button.configure(state="disabled")
-        self.lang_labels = getattr(self, "lang_labels", {})
         mode = {g("tr_last"): "last", g("tr_specific"): "specific", g("tr_all"): "all"}[mode_name]
         want_short = type_name == g("tr_short")
         parts = {g("parts_all"): ("title", "description"),
@@ -486,8 +594,13 @@ class App(ctk.CTk):
             self.log_box.configure(state="normal")
             self.log_box.delete("1.0", "end")
             self.log_box.configure(state="disabled")
-        for label in self.lang_labels.values():
-            label.configure(text=f"…", text_color="#93c5fd")
+        self.lang_states = {}
+        self._render_lang_states()
+
+        def progress(state, code, detail=""):
+            self.lang_status(code, state, detail)
+            if state in ("ok", "fail"):
+                self.log(f"{'✅' if state == 'ok' else '❌'} {lang_display(code)} {detail}")
 
         def worker():
             try:
@@ -500,8 +613,7 @@ class App(ctk.CTk):
                     targets = eng._pick_translation_targets(
                         videos, durations, "all_short" if want_short else "all_long")
                 else:
-                    targets = [eng.extract_video_id(link) for link in links]
-                    targets = [v for v in targets if v]
+                    targets = [v for v in (eng.extract_video_id(link) for link in links) if v]
                 if not targets:
                     self.log(g("tr_no_matches"))
                     return
@@ -520,7 +632,7 @@ class App(ctk.CTk):
                     eng.save_json_file(eng.METADATA_FILE, metadata)
                     self.log(f"🎬 {video_id} — {metadata['title']}")
                     try:
-                        eng.localize_metadata_via_llm(metadata, langs, parts, progress=self.progress)
+                        eng.localize_metadata_via_llm(metadata, langs, parts, progress=progress)
                     except Exception as error:
                         self.log(f"❌ {error}")
                         continue
@@ -556,15 +668,10 @@ class App(ctk.CTk):
 
         threading.Thread(target=worker, daemon=True).start()
 
-    def progress(self, state, code, detail=""):
-        self.lang_status(code, state, detail)
-        if state in ("ok", "fail"):
-            self.log(f"{'✅' if state == 'ok' else '❌'} {code} {detail}")
-
     # ---------- playlists tab ----------
 
-    def show_playlists(self, content):
-        frame = ctk.CTkFrame(content, fg_color="transparent")
+    def build_playlists(self, tab):
+        frame = ctk.CTkFrame(tab, fg_color="transparent")
         frame.pack(expand=True, fill="both")
 
         ctk.CTkLabel(frame, text=g("pl_defaults"), font=FONT_SMALL).pack(anchor="w")
@@ -678,8 +785,8 @@ class App(ctk.CTk):
 
     # ---------- schedule tab ----------
 
-    def show_schedule(self, content):
-        frame = ctk.CTkFrame(content, fg_color="transparent")
+    def build_schedule(self, tab):
+        frame = ctk.CTkFrame(tab, fg_color="transparent")
         frame.pack(expand=True, fill="both")
         link_entry = ctk.CTkEntry(frame, placeholder_text=g("sched_link"), font=FONT)
         link_entry.pack(fill="x")
@@ -697,17 +804,17 @@ class App(ctk.CTk):
                 publish_datetime, publish_time = eng.to_publish_datetime(
                     publish_date, eng.load_calendar(self.profile))
             except ValueError:
-                status.configure(text=g("sched_bad_date"), text_color="#fbbf24")
+                status.configure(text=g("sched_bad_date"), text_color=COLOR_RETRY)
                 return
             if eng.set_publishAt(self.youtube, video_id, publish_datetime):
                 status.configure(text=g("sched_done").format(
-                    date=publish_datetime.strftime("%d.%m.%Y %H:%M")), text_color="#4ade80")
+                    date=publish_datetime.strftime("%d.%m.%Y %H:%M")), text_color=COLOR_OK)
         ctk.CTkButton(frame, text=g("sched_set"), font=FONT, command=schedule).pack(anchor="w")
 
     # ---------- settings tab ----------
 
-    def show_settings(self, content):
-        frame = ctk.CTkFrame(content, fg_color="transparent")
+    def build_settings(self, tab):
+        frame = ctk.CTkScrollableFrame(tab, fg_color="transparent")
         frame.pack(expand=True, fill="both")
 
         ctk.CTkLabel(frame, text=g("set_language"), font=FONT_SMALL).pack(anchor="w")
@@ -715,7 +822,7 @@ class App(ctk.CTk):
         codes = {GUI_STRINGS[c]["lang_name"]: c for c in LANG_CODES}
         lang_menu = ctk.CTkOptionMenu(frame, values=names, font=FONT_SMALL,
                                       command=lambda v: (self.switch_language(codes[v]),
-                                                         self.show_main()))
+                                                         self.refresh_after_language_change()))
         lang_menu.set(GUI_STRINGS[eng._ui.get("language") or "en"]["lang_name"])
         lang_menu.pack(fill="x", pady=(0, 10))
 
@@ -749,9 +856,115 @@ class App(ctk.CTk):
             llm["max_parallel_languages"] = "auto" if raw == g("set_auto") else int(raw)
             eng.save_json_file("local_llm.json", llm)
             eng.save_ui_settings()
-            self.show_main()
+            self.update_texts()
         ctk.CTkButton(frame, text=g("save"), font=FONT, command=save_common).pack(anchor="w")
 
+        # --- translation languages (scrollable grid) ---
+        ctk.CTkLabel(frame, text=g("set_languages"),
+                     font=("Segoe UI", 18, "bold")).pack(anchor="w", pady=(26, 6))
+        catalog = eng.available_language_catalog()
+        current_langs = set(eng.get_profile_languages(self.profile))
+        grid = ctk.CTkScrollableFrame(frame, height=220, fg_color="transparent")
+        grid.pack(fill="x", pady=(0, 8))
+
+        def toggle_lang(c, v):
+            langs = set(eng.get_profile_languages(self.profile))
+            if v.get():
+                langs.add(c)
+            else:
+                langs.discard(c)
+            self.profile["languages"] = sorted(langs)
+            eng.save_channel_profiles(eng.load_channel_profiles())
+        for index, code in enumerate(sorted(catalog)):
+            var = ctk.BooleanVar(value=code in current_langs)
+            cb = ctk.CTkCheckBox(grid, text=f"{code} — {catalog[code]}", variable=var,
+                                 command=lambda c=code, v=var: toggle_lang(c, v),
+                                 font=FONT_SMALL)
+            cb.grid(row=index // 3, column=index % 3, sticky="w", padx=4, pady=2)
+        for column in range(3):
+            grid.grid_columnconfigure(column, weight=1)
+
+        custom_row = ctk.CTkFrame(frame, fg_color="transparent")
+        custom_row.pack(fill="x", pady=(0, 6))
+        code_entry = ctk.CTkEntry(custom_row, placeholder_text=g("lang_custom_code"),
+                                  width=200, font=FONT_SMALL)
+        code_entry.pack(side="left", padx=(0, 8))
+        name_entry = ctk.CTkEntry(custom_row, placeholder_text=g("lang_custom_name"),
+                                  font=FONT_SMALL)
+        name_entry.pack(side="left", expand=True, fill="x", padx=(0, 8))
+        status = ctk.CTkLabel(frame, text="", font=FONT_SMALL)
+
+        def add_custom():
+            code = code_entry.get().strip()
+            if not re.fullmatch(r"[a-zA-Z]{2,3}(?:-[A-Za-z0-9]{2,8})?", code):
+                status.configure(text=g("lang_custom_code"), text_color=COLOR_RETRY)
+                return
+            name = name_entry.get().strip() or code
+            llm = eng.load_local_llm_config()
+            llm.setdefault("language_names", {})[code] = name
+            eng.save_json_file("local_llm.json", llm)
+            langs = set(eng.get_profile_languages(self.profile))
+            langs.add(code)
+            self.profile["languages"] = sorted(langs)
+            eng.save_channel_profiles(eng.load_channel_profiles())
+            self.rebuild_tabs()
+        ctk.CTkButton(custom_row, text=g("lang_add"), font=FONT_SMALL,
+                      command=add_custom).pack(side="left")
+        status.pack(anchor="w")
+
+        # --- language presets ---
+        ctk.CTkLabel(frame, text=g("presets_title"),
+                     font=("Segoe UI", 18, "bold")).pack(anchor="w", pady=(26, 6))
+        preset_row = ctk.CTkFrame(frame, fg_color="transparent")
+        preset_row.pack(fill="x")
+        presets = eng._ui.setdefault("language_presets", {})
+
+        def apply_preset(value):
+            codes = presets.get(value, [])
+            if codes:
+                self.profile["languages"] = sorted(codes)
+                eng.save_channel_profiles(eng.load_channel_profiles())
+                self.rebuild_tabs()
+        preset_menu = ctk.CTkOptionMenu(preset_row, values=list(presets) or ["—"],
+                                        command=apply_preset, font=FONT_SMALL, width=220)
+        preset_menu.set(list(presets)[0] if presets else "—")
+        preset_menu.pack(side="left", padx=(0, 8))
+
+        def save_preset():
+            top = ctk.CTkToplevel(self)
+            top.title(g("preset_name_prompt"))
+            top.geometry("420x200")
+            top.grab_set()
+            ctk.CTkLabel(top, text=g("preset_name_prompt"), font=FONT).pack(pady=(24, 4))
+            entry = ctk.CTkEntry(top, width=280, font=FONT)
+            entry.pack(pady=8)
+            entry.focus_set()
+
+            def apply_name():
+                name = entry.get().strip()
+                if not name:
+                    return
+                presets[name] = list(eng.get_profile_languages(self.profile))
+                eng.save_ui_settings()
+                top.destroy()
+                self.rebuild_tabs()
+            ctk.CTkButton(top, text=g("save"), font=FONT, command=apply_name).pack()
+            entry.bind("<Return>", lambda e: apply_name())
+        ctk.CTkButton(preset_row, text=g("preset_save"), font=FONT_SMALL,
+                      command=save_preset).pack(side="left", padx=(0, 8))
+
+        def delete_preset():
+            value = preset_menu.get()
+            if value in presets:
+                del presets[value]
+                eng.save_ui_settings()
+                self.rebuild_tabs()
+        ctk.CTkButton(preset_row, text=g("preset_delete"), font=FONT_SMALL, width=40,
+                      fg_color="#7f1d1d", command=delete_preset).pack(side="left")
+        if not presets:
+            ctk.CTkLabel(frame, text=g("preset_none"), font=FONT_SMALL).pack(anchor="w")
+
+        # --- API providers ---
         ctk.CTkLabel(frame, text=g("api_title"),
                      font=("Segoe UI", 18, "bold")).pack(anchor="w", pady=(26, 8))
         reg = eng.load_provider_registry()
@@ -771,10 +984,14 @@ class App(ctk.CTk):
                           f"({g('api_keys_n').format(n=len(provider.get('api_keys', [])))})")
             ctk.CTkLabel(row, text=label_text, font=FONT_SMALL).pack(side="left")
 
+            def edit(p=provider):
+                self._provider_editor(tab, reg, p)
+            ctk.CTkButton(row, text="✎", width=40, command=edit).pack(side="right", padx=2)
+
             def activate(p=provider):
                 reg["active"] = p["id"]
                 eng.save_provider_registry(reg)
-                self.show_main()
+                self.rebuild_tabs()
             ctk.CTkButton(row, text="●", width=40, command=activate).pack(side="right", padx=2)
 
             def remove(p=provider):
@@ -784,9 +1001,111 @@ class App(ctk.CTk):
                 if reg.get("backup") == p["id"]:
                     reg["backup"] = None
                 eng.save_provider_registry(reg)
-                self.show_main()
+                self.rebuild_tabs()
             ctk.CTkButton(row, text="✕", width=40, fg_color="#7f1d1d",
                           command=remove).pack(side="right", padx=2)
+
+        def add_provider():
+            self._provider_editor(tab, reg, None)
+        ctk.CTkButton(frame, text="＋ " + g("api_add"), font=FONT,
+                      command=add_provider).pack(anchor="w", pady=(8, 0))
+
+    def _provider_editor(self, tab, reg, provider):
+        """Inline add/edit form for one API provider (replaces the provider list)."""
+        for widget in tab.winfo_children():
+            widget.destroy()
+        is_new = provider is None
+
+        def rerender():
+            self.rebuild_tabs()
+
+        ctk.CTkLabel(tab, text=g("provider_new_title") if is_new
+                     else g("provider_edit_title").format(name=provider.get("name", "")),
+                     font=("Segoe UI", 20, "bold")).pack(anchor="w", pady=(0, 12))
+
+        ctk.CTkLabel(tab, text=g("api_kind"), font=FONT_SMALL).pack(anchor="w")
+        kind = ctk.StringVar(value=g("api_online") if (is_new or provider.get("auth"))
+                             else g("api_local"))
+        ctk.CTkSegmentedButton(tab, values=[g("api_online"), g("api_local")],
+                               variable=kind, font=FONT_SMALL).pack(fill="x", pady=(0, 10))
+
+        ctk.CTkLabel(tab, text=g("api_name"), font=FONT_SMALL).pack(anchor="w")
+        name_entry = ctk.CTkEntry(tab, font=FONT_SMALL)
+        if not is_new:
+            name_entry.insert(0, provider.get("name", ""))
+        name_entry.pack(fill="x", pady=(0, 10))
+
+        ctk.CTkLabel(tab, text=g("api_base"), font=FONT_SMALL).pack(anchor="w")
+        base_entry = ctk.CTkEntry(tab, font=FONT_SMALL)
+        base_entry.insert(0, "" if is_new else provider.get("base_url", ""))
+        base_entry.pack(fill="x", pady=(0, 10))
+
+        ctk.CTkLabel(tab, text=g("api_keys"), font=FONT_SMALL).pack(anchor="w")
+        keys_box = ctk.CTkTextbox(tab, height=70, font=FONT_SMALL)
+        if not is_new and provider.get("api_keys"):
+            keys_box.insert("1.0", ", ".join(provider["api_keys"]))
+        keys_box.pack(fill="x", pady=(0, 10))
+
+        ctk.CTkLabel(tab, text=g("api_model"), font=FONT_SMALL).pack(anchor="w")
+        model_row = ctk.CTkFrame(tab, fg_color="transparent")
+        model_row.pack(fill="x", pady=(0, 10))
+        model_entry = ctk.CTkEntry(model_row, font=FONT_SMALL)
+        model_entry.pack(side="left", expand=True, fill="x", padx=(0, 8))
+        if not is_new:
+            model_entry.insert(0, provider.get("model", "auto"))
+
+        def fetch_models():
+            models = eng.fetch_local_models(base_entry.get().strip())
+            if not models:
+                status.configure(text=g("api_no_models"), text_color=COLOR_RETRY)
+                return
+
+            def set_model(value):
+                model_entry.delete(0, "end")
+                model_entry.insert(0, value)
+            menu = ctk.CTkOptionMenu(model_row, values=models, font=FONT_SMALL,
+                                     command=set_model)
+            menu.set(models[0])
+            menu.pack(side="left")
+        ctk.CTkButton(model_row, text=g("api_fetch_models"), font=FONT_SMALL,
+                      command=fetch_models).pack(side="left")
+
+        status = ctk.CTkLabel(tab, text="", font=FONT_SMALL)
+        status.pack(pady=6)
+
+        def save():
+            name = name_entry.get().strip()
+            base = base_entry.get().strip()
+            online = kind.get() == g("api_online")
+            keys = [key.strip() for key in re.split(r"[,\s]+",
+                                                    keys_box.get("1.0", "end").strip())
+                    if key.strip()]
+            model = model_entry.get().strip() or "auto"
+            if not name:
+                status.configure(text=g("api_name"), text_color=COLOR_RETRY)
+                return
+            if online and not base:
+                status.configure(text=g("api_need_url"), text_color=COLOR_RETRY)
+                return
+            if online and not keys:
+                status.configure(text=g("api_keys"), text_color=COLOR_RETRY)
+                return
+            entry = {
+                "id": provider["id"] if not is_new else
+                      eng.profile_slug(name, {p["id"] for p in reg["providers"]}),
+                "name": name, "kind": "openai", "auth": online,
+                "base_url": base, "api_keys": keys, "model": model,
+            }
+            if is_new:
+                reg["providers"].append(entry)
+                reg.setdefault("active", entry["id"])
+            else:
+                provider.update(entry)
+            eng.save_provider_registry(reg)
+            rerender()
+        ctk.CTkButton(tab, text=g("save"), font=FONT, command=save).pack(anchor="w")
+        ctk.CTkButton(tab, text=g("cancel"), font=FONT, fg_color="gray40",
+                      command=rerender).pack(anchor="w", pady=6)
 
 
 def main():
@@ -797,6 +1116,7 @@ def main():
         eng._ui["user_name"] = str(saved.get("user_name", "")).strip()
         eng._ui["ask_playlists"] = bool(saved.get("ask_playlists", True))
         eng._ui["ask_schedule"] = bool(saved.get("ask_schedule", True))
+        eng._ui["language_presets"] = saved.get("language_presets", {})
     except (FileNotFoundError, ValueError):
         pass
     if not eng._ui["language"] or not eng._ui["user_name"]:
