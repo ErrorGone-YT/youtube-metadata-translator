@@ -756,7 +756,7 @@ def main():
     # pywebview, если установлен, показывает интерфейс в отдельном окне;
     # без него всё открывается в браузере как обычно.
     try:
-        import webview
+        import webview  # type: ignore[import-not-found]  # опциональный пакет
     except ImportError:
         webview = None
 
