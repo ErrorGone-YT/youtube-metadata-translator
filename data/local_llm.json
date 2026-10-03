@@ -1,34 +1,6 @@
 {
-  "base_url": "http://localhost:1234/v1",
-  "model": "auto",
   "temperature": 0.25,
   "max_tokens": 2400,
   "timeout_seconds": 180,
-  "max_parallel_languages": 5,
-  "codecraft_model": "deepseek-v4-flash-0731",
-  "gemini_model": "gemini-2.5-flash",
-  "language_names": {
-    "en": "English",
-    "nl": "Dutch",
-    "ja": "Japanese",
-    "sv": "Swedish",
-    "fr": "French",
-    "pt": "Portuguese",
-    "de": "German",
-    "it": "Italian",
-    "es": "Spanish",
-    "en-CA": "Canadian English",
-    "en-AU": "Australian English",
-    "en-GB": "British English",
-    "en-US": "American English",
-    "hi": "Hindi",
-    "id": "Indonesian",
-    "ko": "Korean",
-    "ru": "Russian",
-    "ar": "Arabic",
-    "tr": "Turkish",
-    "vi": "Vietnamese",
-    "pl": "Polish",
-    "uk": "Ukrainian"
-  }
+  "max_parallel_languages": "auto"
 }
