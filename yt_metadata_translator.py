@@ -1531,7 +1531,8 @@ def clean_existing_series_footers(localizations, source_description):
 
 
 def localize_language_via_llm(provider, config, language_code,
-                              language_name, source_title, source_description):
+                              language_name, source_title, source_description,
+                              progress=None):
     """Localize for one language; on final failure try the backup provider."""
     backup = get_backup_provider()
     try:
@@ -1601,13 +1602,16 @@ SOURCE DESCRIPTION:
                     wait_seconds = 10
                 else:
                     wait_seconds = 2
-            print(t("engine_retry").format(
+            retry_line = t("engine_retry").format(
                 code=language_code, attempt=attempt, attempts=max_attempts - 1,
-                wait=wait_seconds, message=message.splitlines()[0]))
+                wait=wait_seconds, message=message.splitlines()[0])
+            if progress:
+                progress("retry", language_code, message.splitlines()[0])
+            print(retry_line)
             time.sleep(wait_seconds)
 
 
-def localize_metadata_via_llm(metadata, target_languages=None, parts=("title", "description")):
+def localize_metadata_via_llm(metadata, target_languages=None, parts=("title", "description"), progress=None):
     """Create localized titles and descriptions via the active API provider."""
     config = load_local_llm_config()
     provider = get_active_provider()
@@ -1642,6 +1646,7 @@ def localize_metadata_via_llm(metadata, target_languages=None, parts=("title", "
                 return localize_language_via_llm(
                     provider, config,
                     code, language_names.get(code, code), source_title, source_description,
+                    progress=progress,
                 )
             futures = {pool.submit(delayed, idx, code): code for idx, code in enumerate(queued)}
             for future in as_completed(futures):
@@ -1649,11 +1654,16 @@ def localize_metadata_via_llm(metadata, target_languages=None, parts=("title", "
                 try:
                     translated[language_code] = future.result()
                     result = translated[language_code]
+                    if progress:
+                        progress("ok", language_code,
+                                 f"{len(result['title'])}/{len(result['description'])}")
                     print(t("engine_ok").format(
                         code=language_code,
                         t=len(result['title']), d=len(result['description'])))
                 except Exception as error:
                     errors.append(f"{language_code}: {error}")
+                    if progress:
+                        progress("fail", language_code, str(error).splitlines()[0])
                     print(t("engine_failed").format(code=language_code, error=error))
 
     if errors:
