@@ -19,8 +19,18 @@ import requests
 
 import yt_metadata_translator as eng
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-STATIC_DIR = os.path.join(BASE_DIR, "webui_static")
+import sys
+
+if getattr(sys, "frozen", False):
+    # сборка PyInstaller: интерфейс — во временной распаковке,
+    # данные (data/) — рядом с exe, чтобы переживали перезапуски
+    BASE_DIR = os.path.dirname(sys.executable)
+    STATIC_DIR = os.path.join(sys._MEIPASS, "webui_static")
+    eng.BASE_DIR = BASE_DIR
+    eng.DATA_DIR = os.path.join(BASE_DIR, "data")
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    STATIC_DIR = os.path.join(BASE_DIR, "webui_static")
 PORT_RANGE = range(8765, 8790)
 
 # ---------------------------------------------------------------------------
@@ -65,6 +75,12 @@ class _JobTee:
 
     def __init__(self, origin):
         self.origin = origin
+        # консоль/пайпы Windows часто в cp1251 — эмодзи убивают print
+        if hasattr(origin, "reconfigure"):
+            try:
+                origin.reconfigure(errors="replace")
+            except Exception:
+                pass
 
     def write(self, text):
         job_id = THREAD_JOB.get(threading.get_ident())
@@ -734,9 +750,19 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
-    eng.restore_ui_settings()
-    sys_stdout = __import__("sys").stdout
+    try:
+        eng.restore_ui_settings()
+    except (EOFError, OSError):
+        # сборка без консоли: первичная настройка пройдёт в веб-интерфейсе
+        pass
     import sys
+    import io
+    # под pythonw (запуск без консоли) stdout/stderr равны None
+    if sys.stdout is None:
+        sys.stdout = io.StringIO()
+    if sys.stderr is None:
+        sys.stderr = io.StringIO()
+    sys_stdout = sys.stdout
     sys.stdout = _JobTee(sys_stdout)
 
     server = None
@@ -770,7 +796,8 @@ def main():
         finally:
             os._exit(0)
     else:
-        threading.Timer(0.6, webbrowser.open, (url,)).start()
+        if not os.environ.get("YTMT_NO_BROWSER"):
+            threading.Timer(0.6, webbrowser.open, (url,)).start()
         try:
             server.serve_forever()
         except KeyboardInterrupt:

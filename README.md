@@ -139,6 +139,26 @@ pip install -r requirements.txt
 
 ---
 
+## Упаковка в готовое приложение (optional)
+
+Хочешь один exe-файл без установки Python? Собери его сам:
+
+1. `pip install pyinstaller pillow`
+2. Windows: запусти **«Собрать приложение (Windows).cmd»** — готовый файл появится в `dist/`.
+3. macOS: `pyinstaller --noconfirm --clean --onefile --windowed --name "YouTube Metadata Translator" --icon webui_static/app_icon.icns --add-data "webui_static:webui_static" webui.py` (иконку можно перевести в icns: `sips -s format icns webui_static/app_icon_512.png --out app_icon.icns`).
+
+Данные (`data/`) живут рядом с собранным файлом, так что exe можно копировать и переносить вместе с папкой `data`.
+
+## Упаковка в готовое приложение (по желанию)
+
+Хочешь один exe-файл без установки Python?
+
+1. `pip install pyinstaller`
+2. Windows: запусти **«Собрать приложение (Windows).cmd»** — готовый файл появится в `dist/`.
+3. macOS: `pyinstaller --noconfirm --clean --onefile --windowed --name "YouTube Metadata Translator" --icon webui_static/app_icon.icns --add-data "webui_static:webui_static" webui.py` (иконку можно перевести в icns: `sips -s format icns webui_static/app_icon_512.png --out app_icon.icns`).
+
+Данные (`data/`) живут рядом с собранным файлом, так что exe можно копировать и переносить вместе с папкой `data`.
+
 ## Как приложение (без браузера)
 
 По умолчанию интерфейс открывается в браузере. Хочешь отдельное окно, как у обычной программы?
