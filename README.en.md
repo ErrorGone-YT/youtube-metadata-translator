@@ -83,7 +83,7 @@ While the app is in **Testing** mode, Google only lets in **users whose emails y
 4. Name it anything → **Create** → **Download JSON**.
 5. Keep the downloaded file — you will pick it in the web interface when adding a channel. No need to rename or move it anywhere.
 
-> 💡 Managing **several channels**? Each channel needs its own client_secrets file (from that channel's Google account) and its own profile in the tool. Add them one by one on the **Channels** screen.
+> 💡 Managing **several channels**? You need **one client_secrets file for all of them** — it belongs to the app, not to a channel. Just add a profile per channel on the **Channels** screen, signing in with the corresponding Google account (its email must be in Test users on the Branding screen). The Google quota is shared across the project.
 
 ## Step 4. First run
 
