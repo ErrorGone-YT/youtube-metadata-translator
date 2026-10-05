@@ -863,19 +863,21 @@ function renderChannels() {
         <div class="avatar" data-letter="${esc((p.name || "?").slice(0, 1).toUpperCase())}"
              data-logo="${esc(p.logo_url || "")}"></div>
         <div class="grow" style="min-width:0">
-          <div class="name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.name)}</div>
-          <span class="badge ${p.authorized ? "ok" : "warn"}">${esc(p.authorized ? t("ch_ready") : t("ch_no_token"))}</span>
+          <div class="name" title="${esc(p.name)}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.name)}</div>
+          <div class="row" style="gap:6px;margin-top:2px">
+            <span class="badge ${p.authorized ? "ok" : "warn"}">${esc(p.authorized ? t("ch_ready") : t("ch_no_token"))}</span>
+            ${isActive ? `<span class="badge ok">★ ${esc(t("ch_selected"))}</span>` : ""}
+          </div>
         </div>
-        ${isActive ? `<span class="badge ok">★ ${esc(t("ch_selected"))}</span>` : ""}
       </div>
       <div class="muted" style="font-size:12.5px">${p.languages.length
         ? esc(p.languages.slice(0, 8).join(", ")) + (p.languages.length > 8 ? "…" : "")
         : esc(t("targets_empty"))}</div>
-      <div class="row">
+      <div class="row ch-actions">
         ${!isActive ? `<button class="btn small" data-act="select">✓ ${esc(t("ch_select"))}</button>` : ""}
         ${!p.authorized ? `<button class="btn small primary" data-act="auth">🔑 ${esc(t("ch_login"))}</button>` : ""}
         ${!p.languages.length ? `<button class="btn small" data-act="langs">${esc(t("ch_need_langs"))}</button>` : ""}
-        <button class="btn small danger" data-act="delete" style="margin-left:auto">🗑 ${esc(t("ch_delete"))}</button>
+        <button class="btn small danger" data-act="delete">🗑 ${esc(t("ch_delete"))}</button>
       </div>`;
     fillAvatar($("[data-letter]", card));
     $('[data-act=select]', card)?.addEventListener("click", async () => {

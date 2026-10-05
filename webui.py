@@ -759,10 +759,28 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
+    import sys
+    import io
+    # windowed-сборка или pythonw не имеют stdin: интерактивные вопросы движка
+    # там невозможны (RuntimeError: lost sys.stdin) — настройки читаем молча,
+    # недостающее спросит веб-интерфейс
+    interactive = False
     try:
-        eng.restore_ui_settings()
-    except (EOFError, OSError):
-        # сборка без консоли: первичная настройка пройдёт в веб-интерфейсе
+        interactive = bool(sys.stdin and sys.stdin.isatty())
+    except Exception:
+        pass
+    try:
+        if interactive:
+            eng.restore_ui_settings()
+        else:
+            saved = eng.load_json_file(eng.UI_SETTINGS_FILE)
+            if saved.get("ui_language") in eng.STRINGS:
+                eng._ui["language"] = saved["ui_language"]
+            if saved.get("user_name"):
+                eng._ui["user_name"] = saved["user_name"]
+            eng._ui["ask_playlists"] = bool(saved.get("ask_playlists", True))
+            eng._ui["ask_schedule"] = bool(saved.get("ask_schedule", True))
+    except Exception:
         pass
     # restore_ui_settings грузит только язык/имя/флаги; веб-ключи (пресеты,
     # тема и т.д.) иначе сбрасывались бы при каждом запуске сервера
@@ -775,8 +793,6 @@ def main():
                 eng._ui[key] = saved[key]
     except (FileNotFoundError, ValueError):
         pass
-    import sys
-    import io
     # под pythonw (запуск без консоли) stdout/stderr равны None
     if sys.stdout is None:
         sys.stdout = io.StringIO()
