@@ -26,6 +26,14 @@
   --box-border: rgba(255, 255, 255, .3);
   --switch-track: rgba(255, 255, 255, .14);
   --spot-opacity: 1;
+  --sidebar-bg: rgba(255, 255, 255, .025);
+  --overlay-bg: rgba(5, 6, 10, .6);
+  --spin-track: rgba(255, 255, 255, .25);
+  --spin-fg: #fff;
+  --badge-ok-color: #34d399;
+  --badge-ok-bg: rgba(52, 211, 153, .12);
+  --badge-warn-color: #fbbf24;
+  --badge-warn-bg: rgba(251, 191, 36, .12);
 }
 
 body[data-theme="light"] {
@@ -46,6 +54,14 @@ body[data-theme="light"] {
   --box-border: rgba(20, 25, 45, .35);
   --switch-track: rgba(20, 25, 45, .15);
   --spot-opacity: .45;
+  --sidebar-bg: rgba(255, 255, 255, .6);
+  --overlay-bg: rgba(30, 40, 80, .38);
+  --spin-track: rgba(20, 25, 45, .15);
+  --spin-fg: #6366f1;
+  --badge-ok-color: #059669;
+  --badge-ok-bg: rgba(5, 150, 105, .12);
+  --badge-warn-color: #b45309;
+  --badge-warn-bg: rgba(180, 83, 9, .12);
 }
 
 * { box-sizing: border-box; }
@@ -86,7 +102,7 @@ h2 { font-size: 20px; margin: 0 0 4px; font-weight: 650; letter-spacing: -.01em;
 .sidebar {
   width: 232px; flex: 0 0 232px; display: flex; flex-direction: column;
   padding: 20px 14px; border-right: 1px solid var(--border);
-  background: rgba(255, 255, 255, .025); backdrop-filter: blur(14px);
+  background: var(--sidebar-bg); backdrop-filter: blur(14px);
 }
 
 .brand {
@@ -244,7 +260,7 @@ textarea.input { resize: vertical; min-height: 74px; }
 
 .overlay {
   position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center;
-  background: rgba(5, 6, 10, .6); backdrop-filter: blur(18px);
+  background: var(--overlay-bg); backdrop-filter: blur(18px);
   animation: fadeIn .35s ease;
 }
 @keyframes fadeIn { from { opacity: 0; } }
@@ -306,12 +322,12 @@ textarea.input { resize: vertical; min-height: 74px; }
 .avatar img { width: 100%; height: 100%; object-fit: cover; }
 .profile-card .name { font-weight: 650; font-size: 16px; }
 .badge { font-size: 11.5px; font-weight: 650; padding: 3px 9px; border-radius: 999px; letter-spacing: .02em; }
-.badge.ok { color: var(--ok); background: rgba(52,211,153,.12); }
-.badge.warn { color: var(--warn); background: rgba(251,191,36,.12); }
+.badge.ok { color: var(--badge-ok-color); background: var(--badge-ok-bg); }
+.badge.warn { color: var(--badge-warn-color); background: var(--badge-warn-bg); }
 
 .spin {
   display: inline-block; width: 15px; height: 15px; border-radius: 50%;
-  border: 2px solid rgba(255,255,255,.25); border-top-color: #fff;
+  border: 2px solid var(--spin-track); border-top-color: var(--spin-fg);
   animation: rot .7s linear infinite;
 }
 @keyframes rot { to { transform: rotate(360deg); } }
@@ -411,10 +427,9 @@ textarea.input { resize: vertical; min-height: 74px; }
 .mark { font-size: 15px; }
 .mark.active { color: var(--ok); } .mark.backup { color: var(--warn); }
 
-/* нативные календари в тёмной теме: светлый индикатор + тёмный попап */
-input[type="date"], input[type="datetime-local"], input[type="time"] {
-  color-scheme: dark;
-}
+/* нативные календари следуют теме: тёмный попап в dark, светлый в light */
+body { color-scheme: dark; }
+body[data-theme="light"] { color-scheme: light; }
 input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="datetime-local"]::-webkit-calendar-picker-indicator,
 input[type="time"]::-webkit-calendar-picker-indicator {
