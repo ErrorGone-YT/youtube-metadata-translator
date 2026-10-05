@@ -15,7 +15,7 @@ Works on Windows and macOS. Everything it needs is free or nearly free.
    - a local app: **LM Studio** or **Ollama** (free, runs on your machine);
    - an **online OpenAI-compatible API** with keys (e.g. OpenRouter or any aggregator);
    - Google **Gemini** keys from AI Studio (free, used by the console version).
-4. A browser (Chrome, Edge, Firefox, Safari).
+4. Everything else installs itself from `requirements.txt` — including the app window.
 
 ## Step 1. Install Python
 
@@ -89,7 +89,7 @@ While the app is in **Testing** mode, Google only lets in **users whose emails y
 
 ### Windows
 
-Double-click **Запустить веб-интерфейс (Windows).cmd** — the server starts and your browser opens the interface.
+Double-click **Запустить веб-интерфейс (Windows).cmd** — the interface opens in its own app window.
 
 ### macOS
 
@@ -103,6 +103,8 @@ Double-click **Запустить веб-интерфейс (Windows).cmd** — 
 3. On the **Channels** screen press **Add a channel**: enter a name and pick the client_secrets JSON file downloaded in step 3.5.
 4. A Google window opens — **sign in to the channel's account**. If Google warns about an unverified app: Advanced → Go to the app.
 5. Done — the token is saved in `data/profiles/<channel>/`, no repeated sign-ins.
+
+> The interface lives in its own window (the pywebview engine is already in requirements.txt). Prefer a browser tab? Open `http://127.0.0.1:8765` manually — the server prints the address to the console.
 
 ## Step 5. Connect a translation provider
 
@@ -124,16 +126,6 @@ Translations run in parallel across languages; the number of simultaneous transl
 | **Settings** | Interface language, your name, parallel translations, language presets, API providers, translation languages (searchable, localized like on YouTube). |
 
 A translation can be cancelled — already finished languages are kept, nothing further is applied.
-
-## As a desktop app (no browser)
-
-By default the interface opens in your browser. Want a separate window like a regular app?
-
-```
-pip install pywebview
-```
-
-After that "Запустить веб-интерфейс…" opens the interface in its own window (it uses the web engine built into Windows/macOS — nothing heavy gets installed). Without it everything works through the browser as usual.
 
 ## Packaging into a ready app (optional)
 
