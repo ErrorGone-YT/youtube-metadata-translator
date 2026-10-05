@@ -223,6 +223,13 @@ textarea.input { resize: vertical; min-height: 74px; }
 .switch input:checked ~ .track { background: var(--grad); }
 .switch input:checked ~ .knob { left: 21px; }
 
+/* выбранный найденный файл в модалке канала */
+#m_found .chip { transition: all .2s var(--ease-spring); }
+#m_found .chip.active {
+  background: var(--grad); border-color: transparent; color: #fff;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, .4);
+}
+
 /* чипы языков */
 .chip {
   display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;

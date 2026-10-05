@@ -167,6 +167,7 @@ def profile_brief(profile):
     return {
         "id": profile["profile_id"],
         "name": profile.get("channel_title") or profile.get("display_name"),
+        "client_secrets_file": profile.get("client_secrets_file", ""),
         "logo_url": profile.get("logo_url", ""),
         "ready": eng.profile_is_ready(profile),
         "authorized": bool(profile.get("channel_id")),
@@ -207,13 +208,14 @@ def active_profile():
 
 def create_profile(name, secrets_filename, secrets_content):
     """New profile + client_secrets file uploaded from the browser."""
-    json.loads(secrets_content)  # raises when the picked file is not JSON
     profiles = eng.load_channel_profiles()
     profile_id = eng.profile_slug(name, {p["profile_id"] for p in profiles["profiles"]})
     secrets_name = secrets_filename if str(secrets_filename).startswith("client_secrets") \
         else f"client_secrets_{profile_id}.json"
     dest = eng.data_file_path(secrets_name)
     if not os.path.exists(dest):
+        # файл уже лежит в data/ (найден сканером) — просто переиспользуем
+        json.loads(secrets_content or "{}")
         with open(dest, "w", encoding="utf-8") as f:
             f.write(secrets_content)
     profile = {
@@ -238,7 +240,13 @@ def start_auth(profile):
     def worker():
         try:
             client = eng.authenticate(profile)
-            eng.refresh_profile_identity(client, profile, eng.load_channel_profiles())
+            # identity вносим в профиль внутри одного прочитанного списка и
+            # сохраняем этот же список — иначе channel_id теряется (движок
+            # перечитывает файл при каждом load_channel_profiles)
+            profiles = eng.load_channel_profiles()
+            target = next(p for p in profiles["profiles"]
+                          if p["profile_id"] == profile["profile_id"])
+            eng.refresh_profile_identity(client, target, profiles)
             CLIENTS[profile["profile_id"]] = client
             AUTH.update(running=False, ok=True, error="",
                         channel=profile.get("channel_title") or profile.get("display_name"))
@@ -729,6 +737,7 @@ class Handler(BaseHTTPRequestHandler):
                     "ui_tr_source", "ui_tr_parts", "ui_add_defaults", "ui_sched")},
             "profiles": profiles,
             "secrets_found": bool(eng.find_secrets_files()),
+            "secrets_files": eng.find_secrets_files(),
             "providers": reg_view(reg),
             "provider_online": bool(provider and provider.get("auth")),
             "parallel": config.get("max_parallel_languages", "auto"),
@@ -754,6 +763,17 @@ def main():
         eng.restore_ui_settings()
     except (EOFError, OSError):
         # сборка без консоли: первичная настройка пройдёт в веб-интерфейсе
+        pass
+    # restore_ui_settings грузит только язык/имя/флаги; веб-ключи (пресеты,
+    # тема и т.д.) иначе сбрасывались бы при каждом запуске сервера
+    try:
+        saved = eng.load_json_file(eng.UI_SETTINGS_FILE)
+        for key in ("language_presets", "theme", "web_active_profile", "ui_tr_mode",
+                    "ui_tr_type", "ui_tr_source", "ui_tr_parts", "ui_add_defaults",
+                    "ui_sched", "ui_sched_date"):
+            if saved.get(key) is not None:
+                eng._ui[key] = saved[key]
+    except (FileNotFoundError, ValueError):
         pass
     import sys
     import io

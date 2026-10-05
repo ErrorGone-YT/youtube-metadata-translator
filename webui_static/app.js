@@ -44,7 +44,7 @@ const T = {
     ch_auth_opening: "Откроется окно браузера Google — войди в аккаунт канала…",
     ch_auth_ok: "Авторизовано: {channel}", ch_auth_failed: "Ошибка авторизации",
     ch_name_ph: "Название профиля канала", ch_secrets: "client_secrets JSON от Google Cloud",
-    ch_pick_file: "Выбрать файл…", ch_create: "Создать и войти",
+    ch_pick_file: "Выбрать файл…", ch_found: "Найдено в data/:", ch_create: "Создать и войти",
     set_title: "Настройки", set_interface: "Интерфейс", set_ui_language: "Язык интерфейса", set_theme: "Тема",
     set_translation: "Перевод", set_parallel: "Одновременных переводов", parallel_auto: "Авто",
     set_ask_playlists: "Питаться про плейлисты после перевода",
@@ -118,7 +118,7 @@ const T = {
     ch_auth_opening: "Відкриється вікно браузера Google — увійдіть в акаунт каналу…",
     ch_auth_ok: "Авторизовано: {channel}", ch_auth_failed: "Помилка авторизації",
     ch_name_ph: "Назва профілю каналу", ch_secrets: "client_secrets JSON від Google Cloud",
-    ch_pick_file: "Вибрати файл…", ch_create: "Створити та увійти",
+    ch_pick_file: "Вибрати файл…", ch_found: "Знайдено в data/:", ch_create: "Створити та увійти",
     set_title: "Налаштування", set_interface: "Інтерфейс", set_ui_language: "Мова інтерфейсу", set_theme: "Тема",
     set_translation: "Переклад", set_parallel: "Одночасних перекладів", parallel_auto: "Авто",
     set_ask_playlists: "Питати про плейлисти після перекладу",
@@ -192,7 +192,7 @@ const T = {
     ch_auth_opening: "A Google browser window will open — sign in to the channel's account…",
     ch_auth_ok: "Authorized: {channel}", ch_auth_failed: "Authorization failed",
     ch_name_ph: "Channel profile name", ch_secrets: "client_secrets JSON from Google Cloud",
-    ch_pick_file: "Pick a file…", ch_create: "Create and sign in",
+    ch_pick_file: "Pick a file…", ch_found: "Found in data/:", ch_create: "Create and sign in",
     set_title: "Settings", set_interface: "Interface", set_ui_language: "Interface language", set_theme: "Theme",
     set_translation: "Translation", set_parallel: "Parallel translations", parallel_auto: "Auto",
     set_ask_playlists: "Ask about playlists after translation",
@@ -322,7 +322,7 @@ async function boot() {
     Object.assign(S, {
       ui: data.ui, profiles: data.profiles, catalog: data.catalog,
       providers: data.providers, provider_online: data.provider_online,
-      parallel: data.parallel,
+      parallel: data.parallel, secretsFiles: data.secrets_files || [],
     });
   } catch (e) {
     document.body.innerHTML = `<div style="padding:40px;font-family:sans-serif">
@@ -906,6 +906,8 @@ function renderChannels() {
       <div class="stack" style="margin-top:14px;gap:12px">
         <div><span class="field-label">${esc(t("ch_name_ph"))}</span>
           <input id="m_name" class="input"></div>
+        <div id="m_found_wrap" class="hidden"><span class="field-label">${esc(t("ch_found"))}</span>
+          <div class="row" id="m_found"></div></div>
         <div><span class="field-label">${esc(t("ch_secrets"))}</span>
           <div class="row">
             <button id="m_pick" class="btn">📄 ${esc(t("ch_pick_file"))}</button>
@@ -917,10 +919,36 @@ function renderChannels() {
         </div>
       </div>`);
     let file = null;
+    let foundName = null;
+    const foundWrap = $("#m_found_wrap", root);
+    const unclaimed = (S.secretsFiles || []).filter(
+      (f) => !S.profiles.some((p) => p.client_secrets_file === f));
+    if (unclaimed.length) {
+      foundWrap.classList.remove("hidden");
+      const host = $("#m_found", root);
+      for (const name of unclaimed) {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "chip";
+        chip.style.cursor = "pointer";
+        chip.textContent = "🔑 " + name;
+        chip.onclick = () => {
+          foundName = name;
+          file = null;
+          $("#m_file", root).textContent = "";
+          $$("#m_found .chip", root).forEach((c) => c.classList.remove("active"));
+          chip.classList.add("active");
+          $("#m_create", root).disabled = false;
+        };
+        host.append(chip);
+      }
+    }
     $("#m_pick", root).onclick = () => {
       const inp = document.createElement("input");
       inp.type = "file"; inp.accept = ".json,application/json";
       inp.onchange = () => {
+        foundName = null;
+        $$("#m_found .chip", root).forEach((c) => c.classList.remove("active"));
         file = inp.files[0];
         file.text().then((txt) => {
           try { JSON.parse(txt); } catch { toast("Invalid JSON", "fail"); file = null; return; }
@@ -932,10 +960,17 @@ function renderChannels() {
     };
     $("#m_create", root).onclick = async () => {
       try {
-        const txt = await file.text();
+        let filename, content, fallbackName;
+        if (foundName) {
+          filename = foundName; content = ""; fallbackName = foundName;
+        } else {
+          filename = file.name;
+          content = await file.text();
+          fallbackName = file.name.replace(/\.json$/i, "");
+        }
         const brief = await api("/api/profiles", {
-          name: $("#m_name", root).value.trim() || file.name.replace(/\.json$/i, ""),
-          secrets_filename: file.name, secrets_content: txt });
+          name: $("#m_name", root).value.trim() || fallbackName,
+          secrets_filename: filename, secrets_content: content });
         closeModal();
         toast(t("saved"), "ok");
         const data = await api("/api/bootstrap");
