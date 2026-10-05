@@ -73,7 +73,7 @@ While the app is in **Testing** mode, Google only lets in **users whose emails y
 3. Enter **the email of your channel's Google account** (and the email of anyone else who will use the tool).
 4. **Save**.
 
-> ⚠️ In Testing mode the access token lives **7 days**, then you'll be asked to sign in again. Tired of that? Press **Publish App** on the consent screen — sign-in then works indefinitely (Google may show an "unverified app" warning; for personal use just press Advanced → Go to the app).
+> ⚠️ In Testing mode the access token lives **7 days**, then you'll be asked to sign in again. Tired of that? Press **Publish App** (on the Audience screen): sign-in then works indefinitely (Google may show an "unverified app" warning; for personal use just press Advanced → Go to the app). Google may ask for a home page and privacy policy — use this repository's links: home page — `https://github.com/ErrorGone-YT/youtube-metadata-translator`, policy — [PRIVACY.md](PRIVACY.md).
 
 ### 3.5. Download client_secrets
 
