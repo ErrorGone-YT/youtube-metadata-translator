@@ -207,6 +207,7 @@ textarea.input { resize: vertical; min-height: 74px; }
   transition: color .2s; white-space: nowrap;
 }
 .seg button.active { color: #fff; }
+.seg button:disabled { opacity: .4; cursor: default; }
 
 /* переключатель-тумблер */
 .switch { position: relative; width: 42px; height: 24px; flex: 0 0 42px; cursor: pointer; }
@@ -343,6 +344,21 @@ textarea.input { resize: vertical; min-height: 74px; }
   animation: shimmer 1.6s linear infinite;
 }
 @keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+
+.prev-desc {
+  border: 1px solid var(--border); border-radius: 11px;
+  background: var(--input-bg); overflow: hidden;
+}
+.prev-desc summary {
+  padding: 8px 12px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted);
+  transition: color .15s;
+}
+.prev-desc summary:hover { color: var(--text); }
+.prev-desc > div {
+  padding: 4px 12px 12px; font-size: 13px; line-height: 1.5;
+  white-space: pre-wrap; word-break: break-word;
+  max-height: 160px; overflow-y: auto;
+}
 
 .log {
   background: var(--log-bg); border: 1px solid var(--border); border-radius: 14px;

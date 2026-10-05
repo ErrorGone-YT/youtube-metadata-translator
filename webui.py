@@ -112,6 +112,8 @@ def get_client(profile):
 
 
 KEY_STATUS_FILE = "api_key_status.json"
+PREVIEW_CACHE = {}          # cache key -> {"data": ..., "ts": ...}
+PREVIEW_TTL = 300           # seconds
 
 
 def _key_hash(key):
@@ -263,7 +265,7 @@ def start_translation(payload):
     job = new_job("translate")
 
     mode = payload.get("mode", "last")
-    want_short = bool(payload.get("want_short"))
+    vtype = payload.get("type", "long")  # long | short | live
     links = [line.strip() for line in payload.get("links", []) if line.strip()]
     manual = payload.get("source") == "manual"
     manual_title = str(payload.get("manual_title", "")).strip()
@@ -286,14 +288,15 @@ def start_translation(payload):
         THREAD_JOB[threading.get_ident()] = job["id"]
         try:
             job_log(job, f"🎬 {eng.t('translating').format(n=len(langs))}")
-            videos, durations = eng.get_channel_videos(client)
-            videos.sort(key=lambda x: x["snippet"]["publishedAt"], reverse=True)
+            videos, durations, shorts, lives = eng.get_channel_videos(client)
+            sort_key = lambda x: x["snippet"]["publishedAt"]
+            videos.sort(key=sort_key, reverse=True)
+            lives.sort(key=sort_key, reverse=True)
             if mode == "specific":
                 targets = [v for v in (eng.extract_video_id(link) for link in links) if v]
             else:
                 targets = eng._pick_translation_targets(
-                    videos, durations, ("last_short" if want_short else "last_long")
-                    if mode == "last" else ("all_short" if want_short else "all_long"))
+                    videos, shorts, lives, ("last_" if mode == "last" else "all_") + vtype)
             if not targets:
                 job_log(job, eng.t("tr_no_matches"))
                 return
@@ -541,6 +544,29 @@ class Handler(BaseHTTPRequestHandler):
                         clean[day] = [f"{int(hour):02d}:{minute}"]
                 eng.save_json_file(profile["publ_calendar_file"], clean)
                 return self._json({"ok": True})
+            if path == "/api/preview":
+                profile = active_profile()
+                client = get_client(profile)
+                ptype = data.get("type") or ("short" if data.get("want_short") else "long")
+                if ptype not in ("long", "short", "live"):
+                    ptype = "long"
+                mode = "last_" + ("live" if ptype == "live" else ptype)
+                cache_key = (profile["profile_id"], mode)
+                cached = PREVIEW_CACHE.get(cache_key)
+                if cached and time.time() - cached["ts"] < PREVIEW_TTL:
+                    return self._json(cached["data"])
+                videos, durations, shorts, lives = eng.get_channel_videos(client)
+                sort_key = lambda x: x["snippet"]["publishedAt"]
+                videos.sort(key=sort_key, reverse=True)
+                lives.sort(key=sort_key, reverse=True)
+                targets = eng._pick_translation_targets(videos, shorts, lives, mode)
+                if not targets:
+                    return self._json({"video_id": "", "title": "", "description": ""})
+                metadata = eng.fetch_video_source_metadata(client, targets[0])
+                result = {"video_id": targets[0], "title": metadata["title"],
+                          "description": metadata["description"]}
+                PREVIEW_CACHE[cache_key] = {"data": result, "ts": time.time()}
+                return self._json(result)
             if path == "/api/job/cancel":
                 for candidate in sorted(JOBS.values(), key=lambda j: j["id"], reverse=True):
                     if candidate["running"]:

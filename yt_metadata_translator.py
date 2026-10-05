@@ -936,8 +936,23 @@ def ask_publish_date(publ_calendar):
         return to_publish_datetime(publish_date, publ_calendar)
 
 
+def _is_short_video(video, duration):
+    """Shorts = up to 3 minutes AND a vertical thumbnail (YouTube's own rule
+    since 2024-10: Shorts may be 180s long; a horizontal clip is never one)."""
+    if not 0 < duration <= 180:
+        return False
+    thumbs = video["snippet"].get("thumbnails", {})
+    for key in ("maxres", "standard", "high", "medium"):
+        thumb = thumbs.get(key) or {}
+        width, height = thumb.get("width"), thumb.get("height")
+        if width and height:
+            return height > width
+    return False
+
+
 def get_channel_videos(youtube):
-    """Uploads playlist entries for normal (non-live) videos, with their durations."""
+    """Uploads playlist entries for normal (non-live) videos, with their
+    durations and the set of video ids that are Shorts."""
     videos = []
     next_page_token = None
     response = youtube.channels().list(part="contentDetails", mine=True).execute()
@@ -956,10 +971,12 @@ def get_channel_videos(youtube):
             break
 
     filtered = []
+    live_items = []
     durations = {}
+    shorts = set()
+    live_ids = set()
     video_ids = [item["snippet"]["resourceId"]["videoId"] for item in videos]
     found_ids = set()
-    live_ids = set()
     # videos().list accepts up to 50 ids per call; batching saves a lot of quota.
     for start in range(0, len(video_ids), 50):
         batch = video_ids[start:start + 50]
@@ -971,14 +988,20 @@ def get_channel_videos(youtube):
             durations[video["id"]] = isodate.parse_duration(
                 video["contentDetails"]["duration"]
             ).total_seconds()
-            live_status = video["snippet"].get("liveBroadcastContent", "none")
-            if live_status in ["live", "upcoming"]:
+            if _is_short_video(video, durations[video["id"]]):
+                shorts.add(video["id"])
+            if video["snippet"].get("liveBroadcastContent", "none") in ("live", "upcoming"):
                 live_ids.add(video["id"])
     for item in videos:
         video_id = item["snippet"]["resourceId"]["videoId"]
-        if video_id in found_ids and video_id not in live_ids:
+        if video_id not in found_ids:
+            continue
+        # live/upcoming — активные трансляции и запланированные премьеры
+        if video_id in live_ids:
+            live_items.append(item)
+        else:
             filtered.append(item)
-    return filtered, durations
+    return filtered, durations, shorts, live_items
 
 
 def update_video_metadata(youtube, video_id, title, description, localizations):
@@ -2700,18 +2723,25 @@ def apply_translations(youtube, profile, video_id, metadata, localizations):
             print(t("quota_exceeded") if _is_quota(error) else f"❌ {error}")
 
 
-def _pick_translation_targets(videos, durations, mode):
-    """Video ids for a translation mode: (last|all) x (long|short|specific)."""
+def _pick_translation_targets(videos, shorts, lives, mode):
+    """Video ids for a translation mode: (last|all) x (long|short|live|specific).
+
+    Shorts is the set computed by get_channel_videos: duration <= 180s AND a
+    vertical thumbnail — everything else is a long video. Lives is the list of
+    currently-live and scheduled stream/premiere items."""
+    if mode in ("last_live", "all_live"):
+        ids = [item["snippet"]["resourceId"]["videoId"] for item in lives]
+        return ids[:1] if mode == "last_live" else ids
     if mode == "last_long":
         for item in videos:
             video_id = item["snippet"]["resourceId"]["videoId"]
-            if durations.get(video_id, 0) > 60:
+            if video_id not in shorts:
                 return [video_id]
         return []
     if mode == "last_short":
         for item in videos:
             video_id = item["snippet"]["resourceId"]["videoId"]
-            if 0 < durations.get(video_id, 0) <= 60:
+            if video_id in shorts:
                 return [video_id]
         return []
     if mode in ("all_long", "all_short"):
@@ -2719,7 +2749,7 @@ def _pick_translation_targets(videos, durations, mode):
         return [
             item["snippet"]["resourceId"]["videoId"]
             for item in videos
-            if (durations.get(item["snippet"]["resourceId"]["videoId"], 0) <= 60) == want_short
+            if (item["snippet"]["resourceId"]["videoId"] in shorts) == want_short
         ]
     return []
 
@@ -2838,7 +2868,7 @@ def _translate_one(youtube, profile, video_id, context, parts=None, ask_source=T
 
 def translation_menu(youtube, profile, profiles):
     try:
-        videos, durations = get_channel_videos(youtube)
+        videos, durations, shorts, lives = get_channel_videos(youtube)
     except HttpError as error:
         print(t("quota_exceeded") if _is_quota(error) else f"❌ {error}")
         return
@@ -2846,6 +2876,7 @@ def translation_menu(youtube, profile, profiles):
         print(t("no_videos"))
         return
     videos.sort(key=lambda x: x["snippet"]["publishedAt"], reverse=True)
+    lives.sort(key=lambda x: x["snippet"]["publishedAt"], reverse=True)
 
     while True:
         clear_console()
@@ -2872,7 +2903,7 @@ def translation_menu(youtube, profile, profiles):
                 if pick == "0":
                     break
                 mode = "last_long" if pick == "1" else "last_short"
-                targets = _pick_translation_targets(videos, durations, mode)
+                targets = _pick_translation_targets(videos, shorts, lives, mode)
                 if not targets:
                     print(t("tr_no_matches"))
                     continue
@@ -2906,7 +2937,7 @@ def translation_menu(youtube, profile, profiles):
                 if pick == "0":
                     break
                 mode = "all_long" if pick == "1" else "all_short"
-                targets = _pick_translation_targets(videos, durations, mode)
+                targets = _pick_translation_targets(videos, shorts, lives, mode)
                 if not targets:
                     print(t("tr_no_matches"))
                     continue
@@ -3056,7 +3087,7 @@ def _add_video_to_playlists(youtube, video_id, pl_ids):
 
 def add_to_playlist_menu(youtube, profile, profiles):
     try:
-        videos, durations = get_channel_videos(youtube)
+        videos, durations, shorts, lives = get_channel_videos(youtube)
     except HttpError as error:
         print(t("quota_exceeded") if _is_quota(error) else f"❌ {error}")
         return
@@ -3064,6 +3095,7 @@ def add_to_playlist_menu(youtube, profile, profiles):
         print(t("no_videos"))
         return
     videos.sort(key=lambda x: x["snippet"]["publishedAt"], reverse=True)
+    lives.sort(key=lambda x: x["snippet"]["publishedAt"], reverse=True)
 
     while True:
         show_menu(t("pl_menu_title"), [
@@ -3087,7 +3119,7 @@ def add_to_playlist_menu(youtube, profile, profiles):
                 if pick == "0":
                     break
                 mode = "last_long" if pick == "1" else "last_short"
-                targets = _pick_translation_targets(videos, durations, mode)
+                targets = _pick_translation_targets(videos, shorts, lives, mode)
                 if not targets:
                     print(t("tr_no_matches"))
                     continue
@@ -3121,7 +3153,7 @@ def add_to_playlist_menu(youtube, profile, profiles):
                 if pick == "0":
                     break
                 mode = "all_long" if pick == "1" else "all_short"
-                targets = _pick_translation_targets(videos, durations, mode)
+                targets = _pick_translation_targets(videos, shorts, lives, mode)
                 if not targets:
                     print(t("tr_no_matches"))
                     continue

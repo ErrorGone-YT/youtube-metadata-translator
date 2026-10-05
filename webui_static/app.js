@@ -14,7 +14,7 @@ const T = {
     saved: "✓ Сохранено", done: "✓ Готово", error: "Ошибка",
     tr_title: "Перевод", tr_mode: "Что переводим",
     mode_last: "Последнее видео", mode_specific: "Конкретные видео", mode_all: "Все видео",
-    tr_type: "Тип видео", type_long: "Лонг", type_short: "Шортс",
+    tr_type: "Тип видео", type_long: "Лонг", type_short: "Шортс", type_live: "Активная трансляция",
     tr_links: "Ссылки на видео (по одной в строке)",
     tr_source: "Название и описание", source_video: "Из видео", source_manual: "Вписать самому",
     manual_title: "Своё название (пусто — оставить с видео)",
@@ -25,6 +25,7 @@ const T = {
     tr_options: "После перевода", opt_playlists: "Добавлять в плейлисты по умолчанию",
     opt_schedule: "Спросить про отложенную публикацию", sched_date_ph: "Дата ddmmyy",
     tr_start: "Перевести и применить",
+    prev_heading: "Что будет переведено", prev_desc: "Описание", prev_none: "Подходящее видео не найдено.",
     warn_not_authorized: "Канал ещё не авторизован — войди на вкладке «Каналы».",
     warn_no_provider: "Не настроен ни один API-провайдер — добавь его в Настройках.",
     job_title: "Идёт перевод", job_video: "Видео", job_progress: "Прогресс",
@@ -88,7 +89,7 @@ const T = {
     saved: "✓ Збережено", done: "✓ Готово", error: "Помилка",
     tr_title: "Переклад", tr_mode: "Що перекладаємо",
     mode_last: "Останнє відео", mode_specific: "Конкретні відео", mode_all: "Усі відео",
-    tr_type: "Тип відео", type_long: "Лонг", type_short: "Шортс",
+    tr_type: "Тип відео", type_long: "Лонг", type_short: "Шортс", type_live: "Активна трансляція",
     tr_links: "Посилання на відео (по одному в рядку)",
     tr_source: "Назва та опис", source_video: "З відео", source_manual: "Вписати самому",
     manual_title: "Своя назва (порожньо — залишити з відео)",
@@ -99,6 +100,7 @@ const T = {
     tr_options: "Після перекладу", opt_playlists: "Додавати до плейлистів за замовчуванням",
     opt_schedule: "Питати про відкладену публікацію", sched_date_ph: "Дата ddmmyy",
     tr_start: "Перекласти та застосувати",
+    prev_heading: "Що буде перекладено", prev_desc: "Опис", prev_none: "Підходящого відео не знайдено.",
     warn_not_authorized: "Канал ще не авторизований — увійдіть на вкладці «Канали».",
     warn_no_provider: "Не налаштовано жодного API-провайдера — додайте його в Налаштуваннях.",
     job_title: "Триває переклад", job_video: "Відео", job_progress: "Прогрес",
@@ -162,7 +164,7 @@ const T = {
     saved: "✓ Saved", done: "✓ Done", error: "Error",
     tr_title: "Translate", tr_mode: "What to translate",
     mode_last: "Latest video", mode_specific: "Specific videos", mode_all: "All videos",
-    tr_type: "Video type", type_long: "Long", type_short: "Shorts",
+    tr_type: "Video type", type_long: "Long", type_short: "Shorts", type_live: "Live stream",
     tr_links: "Video links (one per line)",
     tr_source: "Title and description", source_video: "From the video", source_manual: "Enter manually",
     manual_title: "Custom title (empty — keep the video's one)",
@@ -173,6 +175,7 @@ const T = {
     tr_options: "After translation", opt_playlists: "Add to default playlists",
     opt_schedule: "Ask about deferred publishing", sched_date_ph: "Date ddmmyy",
     tr_start: "Translate and apply",
+    prev_heading: "What will be translated", prev_desc: "Description", prev_none: "No matching video found.",
     warn_not_authorized: "The channel is not signed in yet — go to the «Channels» tab.",
     warn_no_provider: "No API provider configured — add one in Settings.",
     job_title: "Translation in progress", job_video: "Video", job_progress: "Progress",
@@ -233,7 +236,7 @@ const T = {
 const S = {
   ui: {}, profiles: [], catalog: {}, providers: null, provider_online: false,
   parallel: "auto", activeId: null, screen: "translate",
-  tr: { mode: "last", want_short: false, source: "video", parts: "title,description",
+  tr: { mode: "last", type: "long", source: "video", parts: "title,description",
         add_playlists: false, do_schedule: false, schedule_date: "" },
   jobTimer: null, authTimer: null, langSel: new Set(),
 };
@@ -330,7 +333,7 @@ async function boot() {
     return;
   }
   S.tr.mode = S.ui.ui_tr_mode || "last";
-  S.tr.want_short = S.ui.ui_tr_type === "short";
+  S.tr.type = ["long", "short", "live"].includes(S.ui.ui_tr_type) ? S.ui.ui_tr_type : "long";
   S.tr.source = S.ui.ui_tr_source || "video";
   S.tr.parts = S.ui.ui_tr_parts || "title,description";
   S.tr.add_playlists = !!S.ui.ui_add_defaults;
@@ -483,6 +486,7 @@ function renderTranslate() {
           <div><span class="field-label">${esc(t("tr_source"))}</span><div id="tr_source"></div></div>
           <div><span class="field-label">${esc(t("tr_parts"))}</span><div id="tr_parts"></div></div>
         </div>
+        <div id="tr_preview"></div>
         <div id="tr_manual" class="hidden stack" style="gap:10px">
           <div id="tr_mtitle_wrap"><span class="field-label" id="tr_mtitle_lbl">${esc(t("manual_title"))}</span>
             <input id="tr_mtitle" class="input"></div>
@@ -514,11 +518,11 @@ function renderTranslate() {
 
   const modeSeg = segControl(
     [["last", t("mode_last")], ["specific", t("mode_specific")], ["all", t("mode_all")]],
-    S.tr.mode, (v) => { S.tr.mode = v; saveTrOptions(); syncMode(); });
+    S.tr.mode, (v) => { S.tr.mode = v; saveTrOptions(); syncMode(); fetchPreview(); });
   $("#tr_mode").append(modeSeg);
-  const typeSeg = segControl([["long", t("type_long")], ["short", t("type_short")]],
-    S.tr.want_short ? "short" : "long",
-    (v) => { S.tr.want_short = v === "short"; saveTrOptions(); });
+  const typeSeg = segControl([["long", t("type_long")], ["short", t("type_short")],
+    ["live", t("type_live")]], S.tr.type,
+    (v) => { S.tr.type = v; saveTrOptions(); fetchPreview(); });
   $("#tr_type").append(typeSeg);
   const srcSeg = segControl([["video", t("source_video")], ["manual", t("source_manual")]],
     S.tr.source, (v) => { S.tr.source = v; saveTrOptions(); syncSource(); });
@@ -531,11 +535,62 @@ function renderTranslate() {
 
   function syncMode() {
     $("#tr_links_wrap").classList.toggle("hidden", S.tr.mode !== "specific");
-    $("#tr_type_wrap").classList.toggle("hidden", S.tr.mode === "specific");
+    // в конкретных ссылок тип видео ни на что не влияет — гасим кнопки
+    // и снимаем выделение, чтобы не подсвечивать нерабочий вариант
+    const off = S.tr.mode === "specific";
+    $$("#tr_type button").forEach((b) => {
+      b.disabled = off;
+      b.classList.toggle("active", !off && b.dataset.val === S.tr.type);
+    });
   }
   function syncSource() {
     $("#tr_manual").classList.toggle("hidden", S.tr.source !== "manual");
   }
+  let previewSeq = 0;
+
+  async function fetchPreview() {
+    const host = $("#tr_preview");
+    if (!host) return;
+    if (S.tr.mode !== "last") { host.innerHTML = ""; S.previewKey = ""; return; }
+    const key = S.tr.type;
+    if (S.previewKey === key && host.dataset.rendered === key) return;
+    S.previewKey = key;
+    const seq = ++previewSeq;
+    host.innerHTML = `<div class="card" style="padding:14px">
+      <div class="row"><span class="spin"></span>
+        <span class="muted" style="font-weight:550">${esc(t("prev_heading"))}…</span></div></div>`;
+    try {
+      const data = await api("/api/preview", { type: S.tr.type });
+      if (seq !== previewSeq) return;
+      if (!data.video_id) {
+        host.innerHTML = `<div class="muted" style="font-size:13px">${esc(t("prev_none"))}</div>`;
+        host.dataset.rendered = key;
+        return;
+      }
+      host.innerHTML = `<div class="card stack" style="gap:10px;padding:16px">
+        <div class="row" style="gap:8px">
+          <span class="badge ok">▶ ${esc(data.video_id)}</span>
+          <span class="field-label" style="margin:0">${esc(t("prev_heading"))}</span>
+          <button class="btn small" id="prev_refresh" style="margin-left:auto" title="↻">↻</button>
+        </div>
+        <div style="font-weight:650;font-size:15px;line-height:1.35">${esc(data.title)}</div>
+        <details class="prev-desc">
+          <summary>${esc(t("prev_desc"))}</summary>
+          <div>${esc(data.description)}</div>
+        </details>
+      </div>`;
+      host.dataset.rendered = key;
+      $("#prev_refresh", host).onclick = () => {
+        host.dataset.rendered = "";
+        fetchPreview();
+      };
+    } catch (e) {
+      if (seq === previewSeq) {
+        host.innerHTML = `<div class="muted" style="font-size:13px">❌ ${esc(e.message)}</div>`;
+      }
+    }
+  }
+
   function syncParts() {
     // локализуем что-то одно — ручной ввод второго смысла не имеет
     const parts = S.tr.parts;
@@ -544,7 +599,7 @@ function renderTranslate() {
     $("#tr_mtitle_lbl").textContent = parts === "title" ? t("manual_title_s") : t("manual_title");
     $("#tr_mdesc_lbl").textContent = parts === "description" ? t("manual_desc_s") : t("manual_desc");
   }
-  syncMode(); syncSource(); syncParts();
+  syncMode(); syncSource(); syncParts(); fetchPreview();
 
   $("#tr_addpl").onchange = (e) => { S.tr.add_playlists = e.target.checked; saveTrOptions(); };
   $("#tr_sched").onchange = (e) => { S.tr.do_schedule = e.target.checked; saveTrOptions(); };
@@ -557,7 +612,7 @@ function renderTranslate() {
 
 function saveTrOptions() {
   api("/api/ui", {
-    ui_tr_mode: S.tr.mode, ui_tr_type: S.tr.want_short ? "short" : "long",
+    ui_tr_mode: S.tr.mode, ui_tr_type: S.tr.type,
     ui_tr_source: S.tr.source, ui_tr_parts: S.tr.parts,
     ui_add_defaults: S.tr.add_playlists, ui_sched: S.tr.do_schedule,
     ui_sched_date: S.tr.schedule_date,
@@ -569,7 +624,7 @@ async function startTranslation() {
   try {
     await api("/api/translate", {
       mode: S.tr.mode,
-      want_short: S.tr.want_short,
+      type: S.tr.type,
       links: $("#tr_links").value.split("\n"),
       source: S.tr.source,
       manual_title: $("#tr_mtitle").value,
